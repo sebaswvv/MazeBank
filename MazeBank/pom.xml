@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>W</groupId>
-	<artifactId>Maze-bank</artifactId>
+	<artifactId>MazeBank</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Maze-bank</name>
+	<name>MazeBank</name>
 	<description>Project 2.4 - Banking API</description>
 	<properties>
 		<java.version>17</java.version>
@@ -26,6 +26,11 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

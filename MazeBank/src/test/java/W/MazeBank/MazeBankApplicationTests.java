@@ -1,4 +1,4 @@
-package W.Mazebank;
+package W.MazeBank;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
