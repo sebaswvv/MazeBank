@@ -1,19 +1,144 @@
 package W.MazeBank.models;
 
 import W.MazeBank.enums.RoleType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
-public class User{
-
+@Entity
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private int bsn;
-    private String firstName;
-    private String lastName;
+
+    @Column(unique = true)
     private String email;
+
+    @Column(unique = true)
+    private int bsn;
+
+    private String firstName;
+
+    private String lastName;
+
     private String password;
+
     private String phoneNumber;
+
+    @Enumerated(EnumType.ORDINAL)
     private RoleType role;
+
     private LocalDate dateOfBirth;
-    private LocalDate createdAt;
+
+    private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy="user")
+    @JsonBackReference
+    private List<Account> accounts;
+
+    protected User() {}
+
+    public User(long id, String email, int bsn, String firstName, String lastName, String password, String phoneNumber, RoleType role, LocalDate dateOfBirth, LocalDateTime createdAt) {
+        this.id = id;
+        this.email = email;
+        this.bsn = bsn;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.password = password;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+        this.dateOfBirth = dateOfBirth;
+        this.createdAt = createdAt;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public int getBsn() {
+        return bsn;
+    }
+
+    public void setBsn(int bsn) {
+        this.bsn = bsn;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public RoleType getRole() {
+        return role;
+    }
+
+    public void setRole(RoleType role) {
+        this.role = role;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+    }
 }
