@@ -2,6 +2,7 @@ package W.MazeBank.models;
 
 import W.MazeBank.enums.RoleType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,13 +37,16 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy="user")
+    private boolean blocked;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Account> accounts;
 
-    protected User() {}
+    protected User() {
+    }
 
-    public User(long id, String email, int bsn, String firstName, String lastName, String password, String phoneNumber, RoleType role, LocalDate dateOfBirth, LocalDateTime createdAt) {
+    public User(long id, String email, int bsn, String firstName, String lastName, String password, String phoneNumber, RoleType role, LocalDate dateOfBirth, LocalDateTime createdAt, boolean blocked) {
         this.id = id;
         this.email = email;
         this.bsn = bsn;
@@ -52,6 +57,7 @@ public class User {
         this.role = role;
         this.dateOfBirth = dateOfBirth;
         this.createdAt = createdAt;
+        this.blocked = blocked;
     }
 
     public long getId() {
@@ -132,6 +138,14 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
     }
 
     public List<Account> getAccounts() {

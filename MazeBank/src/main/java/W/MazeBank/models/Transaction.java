@@ -4,7 +4,7 @@ import W.MazeBank.enums.TransactionType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Transaction {
@@ -18,22 +18,23 @@ public class Transaction {
 
     @Nullable
     @ManyToOne
-    @JoinColumn(name="sender_id")
+    @JoinColumn(name = "sender_id")
     private Account sender;
 
     @Nullable
     @ManyToOne
-    @JoinColumn(name="receiver_id")
+    @JoinColumn(name = "receiver_id")
     private Account receiver;
 
     @Enumerated(EnumType.ORDINAL)
     private TransactionType transactionType;
 
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
-    protected Transaction() {}
+    protected Transaction() {
+    }
 
-    public Transaction(long id, String description, double amount, Account sender, Account receiver, TransactionType transactionType, LocalDate createdAt) {
+    public Transaction(long id, String description, double amount, @Nullable Account sender, @Nullable Account receiver, TransactionType transactionType, LocalDateTime createdAt) {
         this.id = id;
         this.description = description;
         this.amount = amount;
@@ -67,19 +68,21 @@ public class Transaction {
         this.amount = amount;
     }
 
+    @Nullable
     public Account getSender() {
         return sender;
     }
 
-    public void setSender(Account sender) {
+    public void setSender(@Nullable Account sender) {
         this.sender = sender;
     }
 
+    @Nullable
     public Account getReceiver() {
         return receiver;
     }
 
-    public void setReceiver(Account receiver) {
+    public void setReceiver(@Nullable Account receiver) {
         this.receiver = receiver;
     }
 
@@ -91,11 +94,11 @@ public class Transaction {
         this.transactionType = transactionType;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }
