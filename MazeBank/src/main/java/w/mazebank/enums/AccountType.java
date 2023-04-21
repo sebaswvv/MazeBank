@@ -1,12 +1,12 @@
-package W.MazeBank.enums;
+package w.mazebank.enums;
 
-public enum AccountStatus {
-    ACTIVE(0),
-    CLOSED(1);
+public enum AccountType {
+    SAVINGS(0),
+    CHECKING(1);
 
     private int value;
 
-    AccountStatus(int value) {
+    AccountType(int value) {
         this.value = value;
     }
 

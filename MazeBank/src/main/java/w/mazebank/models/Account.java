@@ -1,11 +1,10 @@
-package W.MazeBank.models;
+package w.mazebank.models;
 
-import W.MazeBank.enums.AccountStatus;
-import W.MazeBank.enums.AccountType;
+import w.mazebank.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -23,13 +22,12 @@ public class Account {
     private double balance;
 
     @ManyToOne
-    @JoinColumn(name="user_id", nullable=false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Enumerated(EnumType.ORDINAL)
-    private AccountStatus accountStatus;
+    private boolean isActive;
 
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     private double dayLimit;
 
@@ -37,23 +35,24 @@ public class Account {
 
     private double absoluteLimit;
 
-    @OneToMany(mappedBy="sender")
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Transaction> sentTransactions;
 
-    @OneToMany(mappedBy="receiver")
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Transaction> receivedTransactions;
 
-    protected Account() {}
+    protected Account() {
+    }
 
-    public Account(long id, String iban, AccountType accountType, double balance, User user, AccountStatus accountStatus, LocalDate createdAt, double dayLimit, double transactionLimit, double absoluteLimit) {
+    public Account(long id, String iban, AccountType accountType, double balance, User user, boolean isActive, LocalDateTime createdAt, double dayLimit, double transactionLimit, double absoluteLimit) {
         this.id = id;
         this.iban = iban;
         this.accountType = accountType;
         this.balance = balance;
         this.user = user;
-        this.accountStatus = accountStatus;
+        this.isActive = isActive;
         this.createdAt = createdAt;
         this.dayLimit = dayLimit;
         this.transactionLimit = transactionLimit;
@@ -100,19 +99,19 @@ public class Account {
         this.user = user;
     }
 
-    public AccountStatus getAccountStatus() {
-        return accountStatus;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setAccountStatus(AccountStatus accountStatus) {
-        this.accountStatus = accountStatus;
+    public void setIsActive(boolean accountStatus) {
+        this.isActive = accountStatus;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
