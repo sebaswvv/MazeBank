@@ -1,4 +1,4 @@
-package W.MazeBank.models;
+package w.mazebank.models;
 
 import jakarta.persistence.Entity;
 

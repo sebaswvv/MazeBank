@@ -1,4 +1,4 @@
-package W.MazeBank.enums;
+package w.mazebank.enums;
 
 public enum AccountType {
     SAVINGS(0),

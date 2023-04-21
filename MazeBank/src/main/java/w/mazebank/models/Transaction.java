@@ -1,6 +1,7 @@
-package W.MazeBank.models;
+package w.mazebank.models;
 
-import W.MazeBank.enums.TransactionType;
+import w.mazebank.enums.TransactionType;
+import w.mazebank.models.Account;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 

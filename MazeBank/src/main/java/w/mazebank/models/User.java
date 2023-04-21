@@ -1,6 +1,6 @@
-package W.MazeBank.models;
+package w.mazebank.models;
 
-import W.MazeBank.enums.RoleType;
+import w.mazebank.enums.RoleType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;

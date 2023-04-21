@@ -1,6 +1,6 @@
-package W.MazeBank.models;
+package w.mazebank.models;
 
-import W.MazeBank.enums.AccountType;
+import w.mazebank.enums.AccountType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
