@@ -39,17 +39,19 @@ public class User implements UserDetails {
     private String phoneNumber;
 
     @Enumerated(EnumType.ORDINAL)
-    private RoleType role;
+    @Builder.Default
+    private RoleType role = RoleType.CUSTOMER;
 
     private LocalDate dateOfBirth;
 
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(columnDefinition = "double default 10000")
-    private double dayLimit;
+    @Builder.Default
+    private double dayLimit = 1000;
 
-    @Column(columnDefinition = "double default 2000")
-    private double transactionLimit;
+    @Builder.Default
+    private double transactionLimit = 2000;
 
     private boolean blocked;
 
@@ -80,7 +82,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !blocked;
     }
 
     @Override

@@ -34,9 +34,19 @@ public class AuthService {
 
     public AuthenticationResponse register(RegisterRequest request) {
         //        use modelMapper to map the request to the user object
-        User user = modelMapper.map(request, User.class);
-        user.setRole(RoleType.CUSTOMER);
-        user.setCreatedAt(LocalDateTime.now());
+//        User user = modelMapper.map(request, User.class);
+
+        User user = User.builder()
+            .email(request.getEmail())
+            .bsn(request.getBsn())
+            .firstName(request.getFirstName())
+            .lastName(request.getLastName())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .phoneNumber(request.getPhoneNumber())
+            .dateOfBirth(request.getDateOfBirth())
+            .build();
+
+        System.out.println(user);
 
         // save the user
         userRepository.save(user);
