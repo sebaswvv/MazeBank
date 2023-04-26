@@ -37,10 +37,7 @@ public class Account {
 
     private LocalDateTime createdAt;
 
-    private double dayLimit;
-
-    private double transactionLimit;
-
+    @Column(columnDefinition = "double default 500000")
     private double absoluteLimit;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)

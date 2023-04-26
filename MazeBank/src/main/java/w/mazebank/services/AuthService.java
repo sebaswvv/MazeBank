@@ -2,6 +2,7 @@ package w.mazebank.services;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,22 +19,24 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
     ModelMapper modelMapper = new ModelMapper();
 
     public AuthenticationResponse register(RegisterRequest request) {
-        //        User user1 = new User(3, "user3@example.com", 123456785, "Sebas", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), false, null);
-
         //        use modelMapper to map the request to the user object
         User user = modelMapper.map(request, User.class);
-        user.setId(3);
         user.setRole(RoleType.CUSTOMER);
         user.setCreatedAt(LocalDateTime.now());
-        System.out.println(user);
 
         // save the user
         userRepository.save(user);
