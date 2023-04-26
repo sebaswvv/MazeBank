@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
-import w.mazebank.models.responses.ResponseHandler;
+import w.mazebank.utils.ResponseHandler;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.services.UserServiceJpa;
 
-import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -30,11 +29,6 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
-        try {
-            List<UserResponse> users = userService.getAllUsers();
-            return ResponseHandler.generateResponse("Success!", HttpStatus.OK, users);
-        } catch (Exception e) {
-            return ResponseHandler.generateResponse(e.getMessage(), HttpStatus.MULTI_STATUS, null);
-        }
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 }
