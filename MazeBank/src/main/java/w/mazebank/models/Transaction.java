@@ -1,13 +1,19 @@
 package w.mazebank.models;
 
-import w.mazebank.enums.TransactionType;
-import w.mazebank.models.Account;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import w.mazebank.enums.TransactionType;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "transactions")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,75 +37,4 @@ public class Transaction {
     private TransactionType transactionType;
 
     private LocalDateTime createdAt;
-
-    protected Transaction() {
-    }
-
-    public Transaction(long id, String description, double amount, @Nullable Account sender, @Nullable Account receiver, TransactionType transactionType, LocalDateTime createdAt) {
-        this.id = id;
-        this.description = description;
-        this.amount = amount;
-        this.sender = sender;
-        this.receiver = receiver;
-        this.transactionType = transactionType;
-        this.createdAt = createdAt;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    @Nullable
-    public Account getSender() {
-        return sender;
-    }
-
-    public void setSender(@Nullable Account sender) {
-        this.sender = sender;
-    }
-
-    @Nullable
-    public Account getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(@Nullable Account receiver) {
-        this.receiver = receiver;
-    }
-
-    public TransactionType getTransactionType() {
-        return transactionType;
-    }
-
-    public void setTransactionType(TransactionType transactionType) {
-        this.transactionType = transactionType;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }
