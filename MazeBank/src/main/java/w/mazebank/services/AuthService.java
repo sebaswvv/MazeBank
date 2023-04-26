@@ -33,14 +33,10 @@ public class AuthService {
     ModelMapper modelMapper = new ModelMapper();
 
     public AuthenticationResponse register(RegisterRequest request) {
-        //        User user1 = new User(3, "user3@example.com", 123456785, "Sebas", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), false, null);
-
         //        use modelMapper to map the request to the user object
         User user = modelMapper.map(request, User.class);
-        user.setId(3);
         user.setRole(RoleType.CUSTOMER);
         user.setCreatedAt(LocalDateTime.now());
-        System.out.println(user);
 
         // save the user
         userRepository.save(user);
