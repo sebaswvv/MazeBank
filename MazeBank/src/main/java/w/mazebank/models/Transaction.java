@@ -3,6 +3,7 @@ package w.mazebank.models;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import w.mazebank.enums.TransactionType;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "transactions")
@@ -23,13 +25,13 @@ public class Transaction {
 
     private double amount;
 
-    @Nullable
     @ManyToOne
+    @Nullable
     @JoinColumn(name = "sender_id")
     private Account sender;
 
-    @Nullable
     @ManyToOne
+    @Nullable
     @JoinColumn(name = "receiver_id")
     private Account receiver;
 
