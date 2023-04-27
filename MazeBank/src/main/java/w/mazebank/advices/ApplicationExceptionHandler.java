@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.utils.ResponseHandler;
 
@@ -33,5 +34,13 @@ public class ApplicationExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         });
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
+    }
+
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UnauthorizedAccountAccessException.class)
+    public ResponseEntity<Object> handleUnauthorizedAccountAccessException(UnauthorizedAccountAccessException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Unauthorized Account Access");
     }
 }
