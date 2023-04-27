@@ -30,8 +30,10 @@ public class AccountController {
         Transaction transaction = accountServiceJpa.deposit(accountId, depositRequest.getAmount(), userDetails);
 
         // create transaction response and return it
+
+        // create transactionresponse with message: Transaction with id: {transactionId} created successfully, with the right transactionId using Builder()
         TransactionResponse transactionResponse = TransactionResponse.builder()
-            .message("Deposit successful")
+            .message("Transaction with id: " + transaction.getId() + " created successfully")
             .build();
         return ResponseEntity.ok(transactionResponse);
     }
