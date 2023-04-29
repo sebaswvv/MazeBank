@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import w.mazebank.exceptions.AccountsNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.utils.ResponseHandler;
@@ -32,8 +33,8 @@ public class UserController {
 
     // GET/users/{userId}/accounts
     @GetMapping("/{userId}/accounts")
-    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException {
-        List<UserResponse> userResponses = userService.getAccountsByUserId(userId); 
+    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountsNotFoundException {
+        List<UserResponse> userResponses = userService.getAccountsByUserId(userId);
         return ResponseEntity.ok(userResponses);
     }
 
