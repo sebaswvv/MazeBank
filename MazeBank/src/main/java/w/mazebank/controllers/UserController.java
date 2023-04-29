@@ -3,10 +3,7 @@ package w.mazebank.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.utils.ResponseHandler;
@@ -25,6 +22,19 @@ public class UserController {
     public ResponseEntity<User> getUserById(@PathVariable Long id) throws UserNotFoundException {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(user);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<User> patchUserById(@PathVariable long id) throws UserNotFoundException {
+        User user = userService.patchUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
+    // GET/users/{userId}/accounts
+    @GetMapping("/{userId}/accounts")
+    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException {
+        List<UserResponse> userResponses = userService.getAccountsByUserId(userId); 
+        return ResponseEntity.ok(userResponses);
     }
 
     @GetMapping
