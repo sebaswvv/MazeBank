@@ -2,8 +2,11 @@ package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import w.mazebank.exceptions.AccountsNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.models.Account;
 import w.mazebank.models.User;
+import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.UserRepository;
 
@@ -21,7 +24,45 @@ public class UserServiceJpa {
         if (user == null) throw new UserNotFoundException("user not found with id: " + id);
 
         // return the user
-        return userRepository.findById(id).orElse(null);
+        return user;
+    }
+
+//    // patch user by id. Too little difference with getUserById to justify a separate method??
+//    public User patchUserById(long id) throws UserNotFoundException {
+//        // get user
+//        User user = getUserById(id);
+//
+//
+//        // save user
+//        userRepository.save(user);
+//
+//        // return user
+//        return user;
+//    }
+
+    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException, AccountsNotFoundException {
+        // get user
+        User user = getUserById(userId);
+
+        // get accounts from user
+        List<Account> accounts = user.getAccounts();
+        if (accounts == null) throw new AccountsNotFoundException("accounts not found for user with id: " + userId);
+
+        // parse accounts to account responses
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            AccountResponse accountResponse = AccountResponse.builder()
+                .id(account.getId())
+                .iban(account.getIban())
+                .balance(account.getBalance())
+                .createdAt(account.getCreatedAt())
+                .build();
+            accountResponses.add(accountResponse);
+        }
+
+        // return account responses
+        return accountResponses;
+
     }
 
     public List<UserResponse> getAllUsers() {
