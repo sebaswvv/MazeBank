@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.AccountsNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
+import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.utils.ResponseHandler;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.services.UserServiceJpa;
@@ -25,17 +26,18 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<User> patchUserById(@PathVariable long id) throws UserNotFoundException {
-        User user = userService.patchUserById(id);
-        return ResponseEntity.ok(user);
-    }
+    // Even opzoeken hoe die requestBody werkt (JsonPatch)
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<User> patchUserById(@PathVariable long id) throws UserNotFoundException {
+//        User user = userService.patchUserById(id);
+//        return ResponseEntity.ok(user);
+//    }
 
     // GET/users/{userId}/accounts
     @GetMapping("/{userId}/accounts")
     public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountsNotFoundException {
-        List<UserResponse> userResponses = userService.getAccountsByUserId(userId);
-        return ResponseEntity.ok(userResponses);
+        List<AccountResponse> accountResponses = userService.getAccountsByUserId(userId);
+        return ResponseEntity.ok(accountResponses);
     }
 
     @GetMapping

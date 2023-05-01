@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import w.mazebank.exceptions.AccountsNotFoundException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.utils.ResponseHandler;
@@ -24,6 +25,14 @@ public class ApplicationExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "User Not Found");
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(AccountsNotFoundException.class)
+    public ResponseEntity<Object> handleAccountsNotFoundException(AccountsNotFoundException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "Accounts Not Found");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
