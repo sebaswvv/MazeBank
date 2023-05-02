@@ -11,7 +11,6 @@ import w.mazebank.models.requests.DepositRequest;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AccountServiceJpa;
-import w.mazebank.utils.ResponseHandler;
 
 @RestController
 @RequestMapping("/accounts")
