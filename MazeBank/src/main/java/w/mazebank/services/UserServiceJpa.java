@@ -2,7 +2,7 @@ package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import w.mazebank.exceptions.AccountsNotFoundException;
+import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
@@ -40,13 +40,13 @@ public class UserServiceJpa {
 //        return user;
 //    }
 
-    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException, AccountsNotFoundException {
+    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException, AccountNotFoundException {
         // get user
         User user = getUserById(userId);
 
         // get accounts from user
         List<Account> accounts = user.getAccounts();
-        if (accounts == null) throw new AccountsNotFoundException("accounts not found for user with id: " + userId);
+        if (accounts == null) throw new AccountNotFoundException("accounts not found for user with id: " + userId);
 
         // parse accounts to account responses
         List<AccountResponse> accountResponses = new ArrayList<>();
@@ -82,6 +82,24 @@ public class UserServiceJpa {
     }
 
     public void addUser(User user) {
+        userRepository.save(user);
+    }
+
+    public void blockUser(Long id) throws UserNotFoundException {
+        // TODO: check if request is done by employee, if not throw NotAuthException??
+
+        User user = getUserById(id);
+        user.setBlocked(true);
+
+        userRepository.save(user);
+    }
+
+    public void unblockUser(Long id) throws UserNotFoundException {
+        // TODO: check if request is done by employee, if not throw NotAuthException??
+
+        User user = getUserById(id);
+        user.setBlocked(false);
+
         userRepository.save(user);
     }
 }

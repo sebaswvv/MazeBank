@@ -1,15 +1,13 @@
 package w.mazebank.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import w.mazebank.exceptions.AccountsNotFoundException;
+import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.AccountResponse;
-import w.mazebank.utils.ResponseHandler;
-import w.mazebank.models.responses.UserResponse;
+import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.services.UserServiceJpa;
 
 import java.util.List;
@@ -35,7 +33,7 @@ public class UserController {
 
     // GET/users/{userId}/accounts
     @GetMapping("/{userId}/accounts")
-    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountsNotFoundException {
+    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountNotFoundException {
         List<AccountResponse> accountResponses = userService.getAccountsByUserId(userId);
         return ResponseEntity.ok(accountResponses);
     }
@@ -43,5 +41,17 @@ public class UserController {
     @GetMapping
     public ResponseEntity<Object> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PutMapping("/{id}/block")
+    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws UserNotFoundException {
+        userService.blockUser(id);
+        return ResponseEntity.ok(new LockedResponse(true));
+    }
+
+    @PutMapping("/{id}/unblock")
+    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws UserNotFoundException {
+        userService.unblockUser(id);
+        return ResponseEntity.ok(new LockedResponse(true));
     }
 }

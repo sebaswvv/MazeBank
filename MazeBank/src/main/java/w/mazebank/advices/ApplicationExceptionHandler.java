@@ -2,14 +2,12 @@ package w.mazebank.advices;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import w.mazebank.exceptions.AccountsNotFoundException;
+import w.mazebank.exceptions.NotFoundException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.utils.ResponseHandler;
 
 import java.util.HashMap;
@@ -20,19 +18,11 @@ public class ApplicationExceptionHandler {
 
     // handle User Not Found Exception
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "User Not Found");
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(AccountsNotFoundException.class)
-    public ResponseEntity<Object> handleAccountsNotFoundException(AccountsNotFoundException e) {
-        Map<String, String> errors = new HashMap<>();
-        errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "Accounts Not Found");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "Not Found");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
