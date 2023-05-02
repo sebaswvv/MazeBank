@@ -7,6 +7,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import w.mazebank.models.requests.RefreshRequest;
+import w.mazebank.models.responses.RefreshResponse;
 
 import java.security.Key;
 import java.util.Date;
@@ -68,5 +70,43 @@ public class JwtService {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+
+    // refresh token:
+    public RefreshResponse refreshJwtToken(RefreshRequest refreshToken) {
+        return new RefreshResponse(refreshJwtToken(new HashMap<>(), refreshToken.getRefreshToken()));
+    }
+
+    public String refreshJwtToken(Map<String, Object> extraClaims, String refreshToken) {
+        // check if token is expired
+        if (isTokenExpired(refreshToken)) return null;
+
+        // generate new refresh token
+        return Jwts
+            .builder()
+            .setClaims(extraClaims)
+            .setSubject(extractEmail(refreshToken))
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
+            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+            .compact();
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateRefreshToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        // 30 days in milliseconds
+        long validityInMilliseconds = 30L * 24L * 60L * 60L * 1000L;
+
+        return Jwts.builder()
+            .setClaims(extraClaims)
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + validityInMilliseconds))
+            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+            .compact();
     }
 }
