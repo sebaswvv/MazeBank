@@ -3,7 +3,6 @@ package w.mazebank.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import w.mazebank.controllers.AccountController;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.models.Account;
@@ -46,8 +45,6 @@ public class AccountServiceJpa {
     }
 
     public void lockAccount(Long id) throws AccountNotFoundException {
-        // TODO: check if request is done by employee, if not throw NotAuthException??
-
         Account account = getAccountById(id);
         account.setActive(true);
 
