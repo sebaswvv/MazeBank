@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.DisallowedFieldException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.services.UserServiceJpa;
@@ -25,11 +27,11 @@ public class UserController {
     }
 
     // Even opzoeken hoe die requestBody werkt (JsonPatch)
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<User> patchUserById(@PathVariable long id) throws UserNotFoundException {
-//        User user = userService.patchUserById(id);
-//        return ResponseEntity.ok(user);
-//    }
+    @PatchMapping("/{id}")
+    public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
+        User user = userService.patchUserById(id, userPatchRequest);
+        return ResponseEntity.ok(user);
+    }
 
     // GET/users/{userId}/accounts
     @GetMapping("/{userId}/accounts")

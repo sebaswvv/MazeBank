@@ -3,14 +3,18 @@ package w.mazebank.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.DisallowedFieldException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.UserRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -101,5 +105,27 @@ public class UserServiceJpa {
         user.setBlocked(false);
 
         userRepository.save(user);
+    }
+
+    public User patchUserById(long id, UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) throw new UserNotFoundException("user not found with id: " + id);
+
+        List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber", "dayLimit", "transactionLimit");
+        // check if fields are allowed
+        for (String field : userPatchRequest.getFields()) {
+            if (!allowedFields.contains(field)) throw new DisallowedFieldException("field not allowed to update: " + field);
+        }
+
+        if (userPatchRequest.getEmail() != null) user.setEmail(userPatchRequest.getEmail());
+        if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
+        if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
+        if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
+        if (userPatchRequest.getDayLimit() != 0) user.setDayLimit(userPatchRequest.getDayLimit());
+        if (userPatchRequest.getTransactionLimit() != 0) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+
+        userRepository.save(user);
+
+        return user;
     }
 }
