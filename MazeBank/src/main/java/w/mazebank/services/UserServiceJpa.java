@@ -112,6 +112,7 @@ public class UserServiceJpa {
         if (user == null) throw new UserNotFoundException("user not found with id: " + id);
 
         List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber", "dayLimit", "transactionLimit");
+
         // check if fields are allowed
         for (String field : userPatchRequest.getFields()) {
             if (!allowedFields.contains(field)) throw new DisallowedFieldException("field not allowed to update: " + field);
@@ -128,4 +129,5 @@ public class UserServiceJpa {
 
         return user;
     }
+
 }
