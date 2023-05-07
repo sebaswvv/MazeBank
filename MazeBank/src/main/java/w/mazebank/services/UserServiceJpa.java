@@ -1,6 +1,9 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -69,8 +72,11 @@ public class UserServiceJpa {
 
     }
 
-    public List<UserResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
+    public List<UserResponse> getAllUsers(int offset, int limit) {
+        // create pageable object and get page
+        Pageable pageable = PageRequest.of(offset, limit);
+        Page<User> page = userRepository.findAll(pageable);
+        List<User> users = page.getContent();
 
         // parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();
@@ -84,6 +90,7 @@ public class UserServiceJpa {
         }
         return userResponses;
     }
+
 
     public void addUser(User user) {
         userRepository.save(user);
