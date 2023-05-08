@@ -41,35 +41,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // If the Authorization header is missing or doesn't start with "Bearer ", return
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
+            if (response.getStatus() == HttpServletResponse.SC_FORBIDDEN) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"message\": \"Unauthorized\"}");
+            }
             return;
         }
 
-        // Extract the JWT from the Authorization header and get the email from the JWT
-        jwt = authHeader.substring(7);
-        email = jwtService.extractEmail(jwt);
+        try {
+            // Extract the JWT from the Authorization header and get the email from the JWT
+            jwt = authHeader.substring(7);
+            email = jwtService.extractEmail(jwt);
 
-        // If the JWT is valid, set the authentication context
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+            // If the JWT is valid, set the authentication context
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                        );
+
+                    authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
                     );
 
-                authToken.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-
-                // update the security context with the new authentication token
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    // update the security context with the new authentication token
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
-        }
 
-        // continue the filter chain
-        filterChain.doFilter(request, response);
+            // continue the filter chain
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            // If there was an error verifying the JWT, return that the jwt is invalid
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"message\": \"Unauthorized\"}");
+        }
     }
 }
