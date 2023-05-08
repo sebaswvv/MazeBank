@@ -2,13 +2,14 @@ package w.mazebank.advices;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import w.mazebank.exceptions.DisallowedFieldException;
+import w.mazebank.exceptions.NotFoundException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.utils.ResponseHandler;
 
 import java.util.HashMap;
@@ -16,14 +17,21 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
-
-    // handle User Not Found Exception
+    // handle Not Found Exception
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleNotFoundException(NotFoundException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "User Not Found");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "Not Found");
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -42,5 +50,13 @@ public class ApplicationExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Unauthorized Account Access");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleDisallowedFieldException(DisallowedFieldException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Disallowed Field");
     }
 }

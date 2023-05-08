@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import w.mazebank.models.requests.LoginRequest;
+import w.mazebank.models.requests.RefreshRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
+import w.mazebank.models.responses.RefreshResponse;
 import w.mazebank.services.AuthService;
 
 @RestController
@@ -32,5 +34,10 @@ public class AuthController {
         @RequestBody LoginRequest request
     ) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshResponse> refresh(@RequestBody RefreshRequest refreshToken) {
+        return ResponseEntity.ok(authService.refresh(refreshToken));
     }
 }

@@ -1,15 +1,16 @@
 package w.mazebank.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.*;
+import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.DisallowedFieldException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
-import w.mazebank.utils.ResponseHandler;
+import w.mazebank.models.requests.UserPatchRequest;
+import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.services.UserServiceJpa;
 
@@ -27,8 +28,39 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    // Even opzoeken hoe die requestBody werkt (JsonPatch)
+    @PatchMapping("/{id}")
+    public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
+        User user = userService.patchUserById(id, userPatchRequest);
+        return ResponseEntity.ok(user);
+    }
+
+    // GET/users/{userId}/accounts
+    @GetMapping("/{userId}/accounts")
+    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountNotFoundException {
+        List<AccountResponse> accountResponses = userService.getAccountsByUserId(userId);
+        return ResponseEntity.ok(accountResponses);
+    }
+
     @GetMapping
-    public ResponseEntity<Object> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int offset,
+                                              @RequestParam(defaultValue = "10") int limit) {
+        List<UserResponse> users = userService.getAllUsers(offset, limit);
+        return ResponseEntity.ok(users);
+    }
+
+
+    @PutMapping("/{id}/block")
+    @Secured("ROLE_EMPLOYEE")
+    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws UserNotFoundException {
+        userService.blockUser(id);
+        return ResponseEntity.ok(new LockedResponse(true));
+    }
+
+    @PutMapping("/{id}/unblock")
+    @Secured("ROLE_EMPLOYEE")
+    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws UserNotFoundException {
+        userService.unblockUser(id);
+        return ResponseEntity.ok(new LockedResponse(true));
     }
 }

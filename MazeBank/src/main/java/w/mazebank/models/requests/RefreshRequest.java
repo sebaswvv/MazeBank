@@ -1,4 +1,4 @@
-package w.mazebank.models.responses;
+package w.mazebank.models.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
-    private String authenticationToken;
+public class RefreshRequest {
     private String refreshToken;
 }
