@@ -1,10 +1,6 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -16,13 +12,12 @@ import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.UserRepository;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class UserServiceJpa {
+public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserRepository userRepository;
 
@@ -73,12 +68,14 @@ public class UserServiceJpa {
 
     }
 
-    public List<UserResponse> getAllUsers(int offset, int limit, String sort) {
-        // create sort and pageable object
-        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
-        Page<User> page = userRepository.findAll(pageable);
-        List<User> users = page.getContent();
+    public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
+//        // create sort and pageable object
+//        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), search);
+//        Pageable pageable = PageRequest.of(offset, limit, sortObject);
+//        Page<User> page = userRepository.findAll(pageable);
+//        List<User> users = page.getContent();
+
+        List<User> users = findAllByPaginationAndSort(offset, limit, sort, search, userRepository);
 
         // parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();
