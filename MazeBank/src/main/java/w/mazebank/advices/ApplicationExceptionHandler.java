@@ -1,13 +1,17 @@
 package w.mazebank.advices;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import w.mazebank.exceptions.DisallowedFieldException;
+import w.mazebank.exceptions.BadRequestException;
 import w.mazebank.exceptions.NotFoundException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.utils.ResponseHandler;
@@ -42,6 +46,28 @@ public class ApplicationExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         });
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
+    }
+
+    // handle invalid types and enums
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Object> handleJsonErrors(HttpMessageNotReadableException e) {
+        Map<String, String> errors = new HashMap<>();
+        MismatchedInputException cause = (MismatchedInputException) e.getCause();
+        if (e.getCause() instanceof InvalidFormatException &&
+            cause.getTargetType().getPackageName().contains("enums")) {
+            errors.put(cause.getPath().get(0).getFieldName(), "Invalid enum value");
+        } else {
+            errors.put(cause.getPath().get(0).getFieldName(), "Invalid type provided");
+        }
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
+    }
+
+    // handle bad request errors
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleInvalidArgument(BadRequestException e) {
+        return ResponseHandler.generateErrorResponse(null, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
