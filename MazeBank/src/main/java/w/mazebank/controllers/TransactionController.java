@@ -2,6 +2,7 @@ package w.mazebank.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import w.mazebank.models.requests.RefreshRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
 import w.mazebank.models.responses.RefreshResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AuthService;
 import w.mazebank.services.TransactionServiceJpa;
 
@@ -25,12 +27,17 @@ public class TransactionController {
     @Autowired
     private TransactionServiceJpa transactionServiceJpa;
 
+
+
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> getUserById(@PathVariable Long id, @AuthenticationPrincipal User user)
+    public ResponseEntity<TransactionResponse> getUserById(@PathVariable Long id, @AuthenticationPrincipal User user)
         throws TransactionNotFoundException {
-        Transaction transaction = transactionServiceJpa.getTransactionAndValidate(id, user);
-        return ResponseEntity.ok(transaction);
+        TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, user);
+
+
+        return ResponseEntity.ok(transactionResponse);
     }
+
 
 
 }

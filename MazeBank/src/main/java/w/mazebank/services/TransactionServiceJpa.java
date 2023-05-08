@@ -1,6 +1,7 @@
 package w.mazebank.services;
 
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.RoleType;
@@ -12,6 +13,7 @@ import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
 
@@ -23,14 +25,25 @@ public class TransactionServiceJpa {
     @Autowired
     private AccountRepository accountRepository;
 
-    public Transaction getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
+    private final ModelMapper mapper = new ModelMapper();
+
+
+    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
         // get transaction by id
         Transaction transaction = getTransactionById(id);
 
         // check if the user is allowed to access the transaction
         validateTransactionParticipant(user, transaction);
 
-        return transaction;
+        // moddelmapper configuration because the fields dont match
+        mapper.typeMap(Transaction.class, TransactionResponse.class)
+            .addMappings(mapper -> {
+                mapper.map(src -> src.getSender().getIban(), TransactionResponse::setSender);
+                mapper.map(src -> src.getReceiver().getIban(), TransactionResponse::setReceiver);
+            });
+
+        // map the transaction to a transaction response
+        return mapper.map(transaction, TransactionResponse.class);
     }
 
     public Transaction getTransactionById(Long id) throws TransactionNotFoundException {

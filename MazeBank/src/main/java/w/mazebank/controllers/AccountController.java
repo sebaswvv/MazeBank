@@ -19,7 +19,7 @@ import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.requests.DepositRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
-import w.mazebank.models.responses.TransactionResponse;
+import w.mazebank.models.responses.DepositWithdrawResponse;
 import w.mazebank.services.AccountServiceJpa;
 
 @RestController
@@ -58,7 +58,7 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<TransactionResponse> deposit(
+    public ResponseEntity<DepositWithdrawResponse> deposit(
         @PathVariable("accountId") Long accountId,
         @RequestBody DepositRequest depositRequest,
         @AuthenticationPrincipal User user
@@ -68,10 +68,10 @@ public class AccountController {
         Transaction transaction = accountServiceJpa.deposit(accountId, depositRequest.getAmount(), user);
 
         // create transaction response and return it
-        TransactionResponse transactionResponse = TransactionResponse.builder()
+        DepositWithdrawResponse depositWithdrawResponse = DepositWithdrawResponse.builder()
             .message("Deposit successful")
             .build();
-        return ResponseEntity.ok(transactionResponse);
+        return ResponseEntity.ok(depositWithdrawResponse);
     }
 
     @PutMapping("/{id}/lock")
