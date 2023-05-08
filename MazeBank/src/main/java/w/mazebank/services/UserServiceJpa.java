@@ -1,9 +1,6 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -72,13 +69,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
-//        // create sort and pageable object
-//        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), search);
-//        Pageable pageable = PageRequest.of(offset, limit, sortObject);
-//        Page<User> page = userRepository.findAll(pageable);
-//        List<User> users = page.getContent();
-
-        List<User> users = findAllByPaginationAndSort(offset, limit, sort, search, userRepository);
+        List<User> users = findAllPaginationAndSort(offset, limit, sort, search, userRepository);
 
         // parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();

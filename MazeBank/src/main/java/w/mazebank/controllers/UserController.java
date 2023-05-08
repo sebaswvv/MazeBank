@@ -48,7 +48,7 @@ public class UserController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(defaultValue = "id") String search)
+        @RequestParam(required = false) String search)
     {
         List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search);
         return ResponseEntity.ok(users);
