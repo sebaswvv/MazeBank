@@ -33,8 +33,6 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> getUserById(@PathVariable Long id, @AuthenticationPrincipal User user)
         throws TransactionNotFoundException {
         TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, user);
-
-
         return ResponseEntity.ok(transactionResponse);
     }
 
