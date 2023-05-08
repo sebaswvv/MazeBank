@@ -47,13 +47,15 @@ public class UserServiceJpa {
 //        return user;
 //    }
 
-    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException, AccountNotFoundException {
+    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException {
         // get user
         User user = getUserById(userId);
 
         // get accounts from user
         List<Account> accounts = user.getAccounts();
-        if (accounts == null) throw new AccountNotFoundException("accounts not found for user with id: " + userId);
+        if (accounts == null) {
+            return new ArrayList<>();
+        }
 
         // parse accounts to account responses
         List<AccountResponse> accountResponses = new ArrayList<>();
@@ -69,7 +71,6 @@ public class UserServiceJpa {
 
         // return account responses
         return accountResponses;
-
     }
 
     public List<UserResponse> getAllUsers(int offset, int limit) {
