@@ -43,9 +43,13 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int offset,
-                                              @RequestParam(defaultValue = "10") int limit) {
-        List<UserResponse> users = userService.getAllUsers(offset, limit);
+    @Secured("ROLE_EMPLOYEE")
+    public ResponseEntity<List<UserResponse>> getAllUsers(
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "asc") String sort)
+    {
+        List<UserResponse> users = userService.getAllUsers(offset, limit, sort);
         return ResponseEntity.ok(users);
     }
 

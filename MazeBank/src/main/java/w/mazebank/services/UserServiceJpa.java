@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -72,9 +73,10 @@ public class UserServiceJpa {
 
     }
 
-    public List<UserResponse> getAllUsers(int offset, int limit) {
-        // create pageable object and get page
-        Pageable pageable = PageRequest.of(offset, limit);
+    public List<UserResponse> getAllUsers(int offset, int limit, String sort) {
+        // create sort and pageable object
+        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
+        Pageable pageable = PageRequest.of(offset, limit, sortObject);
         Page<User> page = userRepository.findAll(pageable);
         List<User> users = page.getContent();
 
