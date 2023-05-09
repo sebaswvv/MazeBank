@@ -1,9 +1,6 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -15,13 +12,12 @@ import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.UserRepository;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class UserServiceJpa {
+public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserRepository userRepository;
 
@@ -62,6 +58,7 @@ public class UserServiceJpa {
         for (Account account : accounts) {
             AccountResponse accountResponse = AccountResponse.builder()
                 .id(account.getId())
+                .accountType(account.getAccountType().getValue())
                 .iban(account.getIban())
                 .balance(account.getBalance())
                 .createdAt(account.getCreatedAt())
@@ -73,11 +70,8 @@ public class UserServiceJpa {
         return accountResponses;
     }
 
-    public List<UserResponse> getAllUsers(int offset, int limit) {
-        // create pageable object and get page
-        Pageable pageable = PageRequest.of(offset, limit);
-        Page<User> page = userRepository.findAll(pageable);
-        List<User> users = page.getContent();
+    public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
+        List<User> users = findAllPaginationAndSort(offset, limit, sort, search, userRepository);
 
         // parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();
@@ -130,8 +124,8 @@ public class UserServiceJpa {
         if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
         if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
-        if (userPatchRequest.getDayLimit() != 0) user.setDayLimit(userPatchRequest.getDayLimit());
-        if (userPatchRequest.getTransactionLimit() != 0) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if (userPatchRequest.getDayLimit() != null) user.setDayLimit(userPatchRequest.getDayLimit());
+        if (userPatchRequest.getTransactionLimit() != null) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
 
         userRepository.save(user);
 
