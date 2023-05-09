@@ -11,6 +11,8 @@ import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.TransactionRequest;
+import w.mazebank.models.responses.DepositWithdrawResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
@@ -89,5 +91,11 @@ public class TransactionServiceJpa {
         transactionRepository.save(transaction);
 
         return transaction;
+    }
+
+    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User user) {
+        // check user role:
+        System.out.println(user);
+        return new DepositWithdrawResponse("test");
     }
 }

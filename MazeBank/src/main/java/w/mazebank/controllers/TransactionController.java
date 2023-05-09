@@ -14,7 +14,9 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RefreshRequest;
 import w.mazebank.models.requests.RegisterRequest;
+import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
+import w.mazebank.models.responses.DepositWithdrawResponse;
 import w.mazebank.models.responses.RefreshResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AuthService;
@@ -32,5 +34,11 @@ public class TransactionController {
         throws TransactionNotFoundException {
         TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, user);
         return ResponseEntity.ok(transactionResponse);
+    }
+
+    @PostMapping
+    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user) {
+        DepositWithdrawResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
+        return ResponseEntity.ok(response);
     }
 }
