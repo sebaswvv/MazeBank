@@ -20,7 +20,10 @@ import w.mazebank.models.requests.DepositRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.DepositWithdrawResponse;
+import w.mazebank.models.responses.UserResponse;
 import w.mazebank.services.AccountServiceJpa;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/accounts")
@@ -29,6 +32,18 @@ public class AccountController {
     private AccountServiceJpa accountServiceJpa;
 
     private final ModelMapper mapper = new ModelMapper();
+
+    @GetMapping
+    @Secured("ROLE_EMPLOYEE")
+    public ResponseEntity<Object> getAllAccounts(
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "asc") String sort,
+        @RequestParam(required = false) String search
+    ){
+    List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
+        return ResponseEntity.ok(accounts);
+    }
 
     @GetMapping("/{accountId}")
     @Secured("ROLE_EMPLOYEE")

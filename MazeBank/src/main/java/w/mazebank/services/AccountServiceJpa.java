@@ -16,12 +16,15 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
+import w.mazebank.repositories.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AccountServiceJpa {
+public class AccountServiceJpa extends BaseServiceJpa{
     @Autowired
     private AccountRepository accountRepository;
 
@@ -31,11 +34,40 @@ public class AccountServiceJpa {
     @Autowired
     private UserServiceJpa userServiceJpa;
 
+
     private final ModelMapper mapper = new ModelMapper();
 
     public void addAccount(Account account) {
         accountRepository.save(account);
     }
+
+    public List<AccountResponse> getAllAccounts(int offset, int limit, String sort, String search) {
+        List<Account> accounts = findAllPaginationAndSort(offset, limit, sort, search, accountRepository);
+
+        // parse users to user responses
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            AccountResponse accountResponse = AccountResponse.builder()
+                .id(account.getId())
+                .accountType(account.getAccountType().getValue())
+                .iban(account.getIban())
+                // get user response
+                .user(UserResponse.builder()
+                    .id(account.getUser().getId())
+                    .firstName(account.getUser().getFirstName())
+                    .lastName(account.getUser().getLastName())
+                    .build())
+                .balance(account.getBalance())
+                .absoluteLimit(account.getAbsoluteLimit())
+                .active(account.isActive())
+                .createdAt(account.getCreatedAt())
+                .build();
+            accountResponses.add(accountResponse);
+        }
+
+        return accountResponses;
+    }
+
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
         Account account = accountRepository.findById(id).orElse(null);
