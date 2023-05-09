@@ -93,9 +93,7 @@ public class TransactionServiceJpa {
         return transaction;
     }
 
-    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User user) {
-        // check user role:
-        System.out.println(user);
+    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming) {
         return new DepositWithdrawResponse("test");
     }
 }
