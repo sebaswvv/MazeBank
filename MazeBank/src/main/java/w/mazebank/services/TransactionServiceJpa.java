@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.TransactionNotFoundException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
@@ -64,14 +62,16 @@ public class TransactionServiceJpa {
         throw new UnauthorizedTransactionAccessException("User with id: " + user.getId() + " is not authorized to access transaction with id: " + transaction.getId());
     }
 
-
+    private Account getBankAccount() {
+        return accountRepository.findAll().get(0);
+    }
 
     public void transferMoney(Transaction transaction) {
         transactionRepository.save(transaction);
     }
 
     @Transactional
-    public Transaction deposit(Account account, double amount) {
+    public Transaction deposit(Account account, double amount, User userPerforming) {
         // update account balance
         account.setBalance(account.getBalance() + amount);
         accountRepository.save(account);
@@ -80,9 +80,10 @@ public class TransactionServiceJpa {
         Transaction transaction = Transaction.builder()
             .amount(amount)
             .transactionType(TransactionType.DEPOSIT)
-            .sender(null)
+            .userPerforming(userPerforming)
+            .sender(getBankAccount())
             .receiver(account)
-            .createdAt(java.time.LocalDateTime.now())
+            .timestamp(java.time.LocalDateTime.now())
             .build();
 
         transactionRepository.save(transaction);

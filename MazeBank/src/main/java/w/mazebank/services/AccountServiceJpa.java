@@ -101,7 +101,7 @@ public class AccountServiceJpa {
         Account account = getAccountAndValidate(accountId, userDetails);
 
         // use transaction service to deposit money
-        return transactionServiceJpa.deposit(account, amount);
+        return transactionServiceJpa.deposit(account, amount, userDetails);
     }
 
     private void validateAccountOwner(User user, Account account) {

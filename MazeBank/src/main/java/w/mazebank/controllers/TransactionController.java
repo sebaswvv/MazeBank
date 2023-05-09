@@ -27,15 +27,10 @@ public class TransactionController {
     @Autowired
     private TransactionServiceJpa transactionServiceJpa;
 
-
-
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getUserById(@PathVariable Long id, @AuthenticationPrincipal User user)
         throws TransactionNotFoundException {
         TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, user);
         return ResponseEntity.ok(transactionResponse);
     }
-
-
-
 }
