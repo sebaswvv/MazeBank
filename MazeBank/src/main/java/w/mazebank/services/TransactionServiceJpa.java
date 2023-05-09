@@ -3,9 +3,12 @@ package w.mazebank.services;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
+import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
 import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
 import w.mazebank.models.Account;
@@ -25,8 +28,11 @@ public class TransactionServiceJpa {
     @Autowired
     private AccountRepository accountRepository;
 
-    private final ModelMapper mapper = new ModelMapper();
+    @Autowired
+    @Lazy
+    private AccountServiceJpa accountServiceJpa;
 
+    private final ModelMapper mapper = new ModelMapper();
 
     public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
         // get transaction by id
@@ -93,7 +99,36 @@ public class TransactionServiceJpa {
         return transaction;
     }
 
-    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming) {
+    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming) throws TransactionFailedException {
+        // get sender and receiver accounts
+        Account sender = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
+        Account receiver = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
+
+        // check if, after sending the money, the sending account doenst exceed its abosulte limit. In short the account has enough money to send the amount
+        if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit()) {
+            throw new TransactionFailedException("Sender would exceed its absolute limit after sending this amount");
+        }
+
+        // One cannot directly transfer from a savings account to an account that is not of the same customer
+        if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId())) {
+                throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
+        }
+
+        // One cannot directly transfer to a savings account from an account that is not of the same customer.
+        if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId())) {
+                throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
+        }
+
+        // check if daylimit/transactionlimit are not exceeded (voor day limit mischien de transactions van vandaag ophalen en dan de som van de amounts nemen, dan wel de transacties tussen savings en current niet meenemen)
+        // check if the userPermoforming is an employee or owns the account from which the money is being sent
+        // check if the senders account is not blocked
+        // check if the receiver account is not blocked
+
+        // if all checks pass, lower the balance of the sender account and increase the balance of the receiver account
+        // create a new transaction and save it to the database
+        // make sure that this is all @Transactional
+        // return the transaction to the response
         return new DepositWithdrawResponse("test");
     }
+
 }

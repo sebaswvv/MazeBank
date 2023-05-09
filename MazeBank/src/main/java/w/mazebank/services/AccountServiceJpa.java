@@ -43,6 +43,10 @@ public class AccountServiceJpa {
         return account;
     }
 
+    public Account getAccountByIban(String iban) {
+        return accountRepository.findByIban(iban);
+    }
+
     public Account getAccountAndValidate(Long id, User user) throws AccountNotFoundException {
         Account account = getAccountById(id);
         validateAccountOwner(user, account);

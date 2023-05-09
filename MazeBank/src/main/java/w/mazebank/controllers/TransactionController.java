@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Transaction;
@@ -37,7 +38,7 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user) {
+    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user) throws TransactionFailedException {
         DepositWithdrawResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
         return ResponseEntity.ok(response);
     }

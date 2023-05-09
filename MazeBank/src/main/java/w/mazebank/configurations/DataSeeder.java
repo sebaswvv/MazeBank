@@ -52,7 +52,7 @@ public class DataSeeder implements ApplicationRunner {
 
         // Create some sample accounts for user1
         Account bankAccount = new Account(1, "NL01MAZE0000000001", AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
-        Account account1 = new Account(2, "NL01MAZE0000000002", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), 0, null, null);
+        Account account1 = new Account(2, "NL01MAZE0000000002", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
         Account account2 = new Account(3, "NL01MAZE0000000003", AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
 
         accountService.addAccount(bankAccount);
