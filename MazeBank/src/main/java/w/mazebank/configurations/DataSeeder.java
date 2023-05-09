@@ -41,10 +41,12 @@ public class DataSeeder implements ApplicationRunner {
         User user1 = new User(1, "user1@example.com", 123456789, "John", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 1000, 100, false, null);
         User user2 = new User(2, "user2@example.com", 987654321, "Jane", "Smith", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
         User user3 = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+        User user4 = new User(4, "user4@example.com", 456123759, "Tim", "Brad", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
 
         userService.addUser(user1);
         userService.addUser(user2);
         userService.addUser(user3);
+        userService.addUser(user4);
 
         // Create some sample accounts for user1
         Account account1 = new Account(1, "NL01MAZE0000000001", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), 1000.0, null, null);
