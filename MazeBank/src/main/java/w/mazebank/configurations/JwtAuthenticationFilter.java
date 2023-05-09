@@ -40,7 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // If the Authorization header is missing or doesn't start with "Bearer ", return
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            // if request was made from /auth/**, continue the filter chain
+            if (request.getRequestURI().startsWith("/auth/")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            respondUnauthorized(response);
             return;
         }
 
@@ -74,10 +79,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             // If there was an error verifying the JWT, return that the jwt is invalid
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"message\": \"Unauthorized\"}");
+            respondUnauthorized(response);
         }
+    }
+
+    private void respondUnauthorized(HttpServletResponse response) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"message\": \"Unauthorized\"}");
     }
 }
