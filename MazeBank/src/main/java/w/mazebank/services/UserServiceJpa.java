@@ -122,8 +122,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
         if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
-        if (userPatchRequest.getDayLimit() != 0) user.setDayLimit(userPatchRequest.getDayLimit());
-        if (userPatchRequest.getTransactionLimit() != 0) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if (userPatchRequest.getDayLimit() != null) user.setDayLimit(userPatchRequest.getDayLimit());
+        if (userPatchRequest.getTransactionLimit() != null) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
 
         userRepository.save(user);
 

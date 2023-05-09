@@ -28,9 +28,9 @@ public class UserPatchRequest {
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number should be 10 digits")
     private String phoneNumber;
 
-    private int dayLimit;
+    private Double dayLimit;
 
-    private int transactionLimit;
+    private Double transactionLimit;
 
     public String[] getFields() {
         return new String[]{"email", "firstName", "lastName", "phoneNumber", "dayLimit", "transactionLimit"};
