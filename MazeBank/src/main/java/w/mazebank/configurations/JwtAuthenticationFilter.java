@@ -40,11 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // If the Authorization header is missing or doesn't start with "Bearer ", return
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // if request was made from /auth/**, continue the filter chain
-            if (request.getRequestURI().startsWith("/auth/")) {
+            // if request was made from /auth/** OR /h2, continue the filter chain
+            if (request.getRequestURI().startsWith("/auth/") || request.getRequestURI().startsWith("/h2")){
                 filterChain.doFilter(request, response);
                 return;
             }
+
             respondUnauthorized(response);
             return;
         }
