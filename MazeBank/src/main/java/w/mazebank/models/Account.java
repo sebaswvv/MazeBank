@@ -40,7 +40,7 @@ public class Account {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(columnDefinition = "double default 500000")
+    @Column(columnDefinition = "double default 0")
     private double absoluteLimit;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
