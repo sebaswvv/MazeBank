@@ -6,10 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.AccountCreationLimitReachedException;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
@@ -134,6 +131,23 @@ public class AccountServiceJpa extends BaseServiceJpa{
 
         // use transaction service to deposit money
         return transactionServiceJpa.deposit(account, amount);
+    }
+
+    public void withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+        // get account from database and validate owner
+        Account account = getAccountAndValidate(accountId, userDetails);
+
+        verifySufficientFunds(amount, account);
+
+        // use transaction service to withdraw money
+        transactionServiceJpa.withdraw(account, amount);
+    }
+
+    private static void verifySufficientFunds(double amount, Account account) {
+        // check if account has enough money
+        if (account.getBalance() < amount) {
+            throw new InsufficientFundsException("Not enough funds in account");
+        }
     }
 
     private void validateAccountOwner(User user, Account account) {
