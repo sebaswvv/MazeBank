@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.TransactionNotFoundException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
@@ -88,5 +86,23 @@ public class TransactionServiceJpa {
         transactionRepository.save(transaction);
 
         return transaction;
+    }
+
+    @Transactional
+    public void withdraw(Account account, double amount){
+        // update account balance
+        account.setBalance(account.getBalance() - amount);
+        accountRepository.save(account);
+
+        // create transaction of type withdraw and save it
+        Transaction transaction = Transaction.builder()
+            .amount(amount)
+            .transactionType(TransactionType.WITHDRAWAL)
+            .sender(account)
+            .receiver(null)
+            .createdAt(java.time.LocalDateTime.now())
+            .build();
+
+        transactionRepository.save(transaction);
     }
 }

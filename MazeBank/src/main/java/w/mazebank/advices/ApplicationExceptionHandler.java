@@ -90,4 +90,12 @@ public class ApplicationExceptionHandler {
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Disallowed Field");
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<Object> handleInsufficientFundsException(InsufficientFundsException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Insufficient Funds");
+    }
 }

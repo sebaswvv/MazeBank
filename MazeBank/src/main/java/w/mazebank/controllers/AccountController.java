@@ -12,14 +12,13 @@ import w.mazebank.exceptions.AccountCreationLimitReachedException;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
-import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
-import w.mazebank.models.requests.DepositRequest;
+import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
-import w.mazebank.models.responses.DepositWithdrawResponse;
+import w.mazebank.models.responses.AtmResponse;
 import w.mazebank.services.AccountServiceJpa;
 
 @RestController
@@ -58,18 +57,30 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<DepositWithdrawResponse> deposit(
+    public ResponseEntity<AtmResponse> deposit(
         @PathVariable("accountId") Long accountId,
-        @RequestBody DepositRequest depositRequest,
+        @RequestBody AtmRequest atmRequest,
         @AuthenticationPrincipal User user
     ) throws AccountNotFoundException {
 
         // create deposit transaction
-        Transaction transaction = accountServiceJpa.deposit(accountId, depositRequest.getAmount(), user);
+        accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user);
 
         // create transaction response and return it
-        DepositWithdrawResponse depositWithdrawResponse = DepositWithdrawResponse.builder()
+        AtmResponse depositWithdrawResponse = AtmResponse.builder()
             .message("Deposit successful")
+            .build();
+        return ResponseEntity.ok(depositWithdrawResponse);
+    }
+
+    @PostMapping("/{accountId}/withdraw")
+    public ResponseEntity<AtmResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
+        // create withdraw transaction
+        accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user);
+
+        // create transaction response and return it
+        AtmResponse depositWithdrawResponse = AtmResponse.builder()
+            .message("Withdraw successful")
             .build();
         return ResponseEntity.ok(depositWithdrawResponse);
     }
