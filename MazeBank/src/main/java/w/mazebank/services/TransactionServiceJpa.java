@@ -135,7 +135,7 @@ public class TransactionServiceJpa {
         throws TransactionFailedException {
         // check if, after sending the money, the sending account doesn't exceed its absolute limit.
         if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
-            throw new TransactionFailedException("Sender would exceed its absolute limit after sending this amount");
+            throw new TransactionFailedException("Sender would exceed it's absolute limit after sending this amount");
 
         // One cannot directly transfer from a savings account to an account that is not of the same customer
         if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
