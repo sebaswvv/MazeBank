@@ -29,9 +29,9 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<AtmResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
+    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
         throws TransactionFailedException {
-        AtmResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
+        TransactionResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
         return ResponseEntity.ok(response);
     }
 }

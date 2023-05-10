@@ -102,7 +102,7 @@ public class TransactionServiceJpa {
     }
 
     @Transactional
-    public AtmResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
+    public TransactionResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
@@ -111,7 +111,8 @@ public class TransactionServiceJpa {
 
         // perform the transaction
         long transactionId = performTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
-        return new AtmResponse("Transaction with id: " + transactionId + " was successful");
+        return new TransactionResponse(transactionId, transactionRequest.getAmount()
+            ,transactionRequest.getDescription(), senderAccount.getIban(), receiverAccount.getIban());
     }
 
     private long performTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) {
