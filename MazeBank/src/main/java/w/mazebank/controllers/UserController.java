@@ -55,14 +55,14 @@ public class UserController {
     }
 
 
-    @PutMapping("/{id}/enable")
+    @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws UserNotFoundException {
         userService.blockUser(id);
         return ResponseEntity.ok(new LockedResponse(true));
     }
 
-    @PutMapping("/{id}/disable")
+    @PutMapping("/{id}/enable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws UserNotFoundException {
         userService.unblockUser(id);
