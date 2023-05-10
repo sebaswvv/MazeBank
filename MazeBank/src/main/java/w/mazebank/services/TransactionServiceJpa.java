@@ -120,7 +120,8 @@ public class TransactionServiceJpa {
         }
 
         // check if daylimit/transactionlimit are not exceeded (voor day limit mischien de transactions van vandaag ophalen en dan de som van de amounts nemen, dan wel de transacties tussen savings en current niet meenemen)
-        getTotalAmountOfTransactionsTodayByAccount(sender);
+        double amount =  transactionRepository.getTotalAmountOfTransactionForToday(sender);
+        System.out.println(amount);
 
         // check if the userPermoforming is an employee or owns the account from which the money is being sent
         // check if the senders account is not blocked
@@ -132,12 +133,4 @@ public class TransactionServiceJpa {
         // return the transaction to the response
         return new DepositWithdrawResponse("test");
     }
-
-    private double getTotalAmountOfTransactionsTodayByAccount(Account account) {
-        // double amount =  transactionRepository.getTotalAmountOfTransactionForToday(account);
-        // System.out.println(amount);
-        System.out.println(transactionRepository.getTotalAmountOfTransactionForToday(account));
-        return 0;
-    }
-
 }

@@ -47,8 +47,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            logger.warn("JWT not present or does not start with Bearer");
-
             respondUnauthorized(response);
             return;
         }
