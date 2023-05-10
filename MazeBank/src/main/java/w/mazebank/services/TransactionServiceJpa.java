@@ -133,6 +133,10 @@ public class TransactionServiceJpa {
 
     private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming)
         throws TransactionFailedException {
+        // check if the sender and receiver are not the same
+        if (sender.getId() == receiver.getId())
+            throw new TransactionFailedException("Sender and receiver cannot be the same");
+
         // check if, after sending the money, the sending account doesn't exceed its absolute limit.
         if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
             throw new TransactionFailedException("Sender would exceed it's absolute limit after sending this amount");
