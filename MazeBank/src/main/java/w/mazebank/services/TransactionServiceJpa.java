@@ -15,7 +15,7 @@ import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.TransactionRequest;
-import w.mazebank.models.responses.DepositWithdrawResponse;
+import w.mazebank.models.responses.AtmResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
@@ -102,7 +102,7 @@ public class TransactionServiceJpa {
     }
 
     @Transactional
-    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
+    public AtmResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
@@ -121,7 +121,7 @@ public class TransactionServiceJpa {
 
         // perform the transaction
         long transactionId = performTransaction(transaction, senderAccount, receiverAccount);
-        return new DepositWithdrawResponse("Transaction with id: " + transactionId + " was successful");
+        return new AtmResponse("Transaction with id: " + transactionId + " was successful");
     }
 
     private long performTransaction(Transaction transaction, Account sender, Account receiver) {
@@ -185,7 +185,7 @@ public class TransactionServiceJpa {
             .transactionType(TransactionType.WITHDRAWAL)
             .sender(account)
             .receiver(null)
-            .createdAt(java.time.LocalDateTime.now())
+            .timestamp(java.time.LocalDateTime.now())
             .build();
 
         transactionRepository.save(transaction);

@@ -10,6 +10,7 @@ import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.TransactionRequest;
+import w.mazebank.models.responses.AtmResponse;
 import w.mazebank.models.responses.DepositWithdrawResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.TransactionServiceJpa;
@@ -29,9 +30,9 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
+    public ResponseEntity<AtmResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
         throws TransactionFailedException {
-        DepositWithdrawResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
+        AtmResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
         return ResponseEntity.ok(response);
     }
 }
