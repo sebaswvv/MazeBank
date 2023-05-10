@@ -81,26 +81,7 @@ public class TransactionServiceJpa {
         transactionRepository.save(transaction);
     }
 
-    @Transactional
-    public Transaction deposit(Account account, double amount, User userPerforming) {
-        // update account balance
-        account.setBalance(account.getBalance() + amount);
-        accountRepository.save(account);
 
-        // create transaction of type deposit and save it
-        Transaction transaction = Transaction.builder()
-            .amount(amount)
-            .transactionType(TransactionType.DEPOSIT)
-            .userPerforming(userPerforming)
-            .sender(getBankAccount())
-            .receiver(account)
-            .timestamp(java.time.LocalDateTime.now())
-            .build();
-
-        transactionRepository.save(transaction);
-
-        return transaction;
-    }
 
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
@@ -111,12 +92,20 @@ public class TransactionServiceJpa {
         validateTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
 
         // perform the transaction
-        long transactionId = performTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
-        return new TransactionResponse(transactionId, transactionRequest.getAmount()
-            ,transactionRequest.getDescription(), senderAccount.getIban(), receiverAccount.getIban());
+        Transaction transaction = performTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
+
+        return new TransactionResponse(
+            transaction.getId(),
+            transaction.getAmount(),
+            transaction.getDescription(),
+            senderAccount.getIban(),
+            receiverAccount.getIban(),
+            userPerforming.getId(),
+            LocalDateTime.now(),
+            transaction.getTransactionType().toString());
     }
 
-    private long performTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) {
+    private Transaction performTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) {
         // update account balance sender
         sender.setBalance(sender.getBalance() - transactionRequest.getAmount());
         accountRepository.save(sender);
@@ -135,7 +124,7 @@ public class TransactionServiceJpa {
             .timestamp(LocalDateTime.now())
             .build();
 
-        return transactionRepository.save(transaction).getId();
+        return transactionRepository.save(transaction);
     }
 
     private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming)
@@ -214,20 +203,30 @@ public class TransactionServiceJpa {
         return totalAmountOfTransactionForToday + amount > dayLimit;
     }
 
-    public void withdraw(Account account, double amount){
-        // update account balance
-        account.setBalance(account.getBalance() - amount);
+    @Transactional
+    public Transaction atmAction(Account account, double amount, TransactionType transactionType, User userPerforming){
+
+        // update account balance depending on transaction type
+        if(transactionType == TransactionType.WITHDRAWAL)
+            account.setBalance(account.getBalance() - amount);
+        else if(transactionType == TransactionType.DEPOSIT)
+            account.setBalance(account.getBalance() + amount);
+
+        // save account's new balance
         accountRepository.save(account);
 
-        // create transaction of type withdraw and save it
+        // create transaction of type deposit and save it
         Transaction transaction = Transaction.builder()
             .amount(amount)
-            .transactionType(TransactionType.WITHDRAWAL)
-            .sender(account)
-            .receiver(null)
+            .transactionType(TransactionType.DEPOSIT)
+            .userPerforming(userPerforming)
+            .sender(getBankAccount())
+            .receiver(account)
             .timestamp(java.time.LocalDateTime.now())
             .build();
 
-        transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
+
+
 }

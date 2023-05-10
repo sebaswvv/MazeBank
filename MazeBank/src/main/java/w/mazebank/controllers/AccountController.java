@@ -12,6 +12,7 @@ import w.mazebank.exceptions.AccountCreationLimitReachedException;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
@@ -19,6 +20,7 @@ import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.AtmResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AccountServiceJpa;
 
 import java.util.List;
@@ -71,34 +73,15 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<AtmResponse> deposit(
-        @PathVariable("accountId") Long accountId,
-        @RequestBody AtmRequest atmRequest,
-        @AuthenticationPrincipal User user
-    ) throws AccountNotFoundException {
-
-        // create deposit transaction
-        accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user);
-
-        // create transaction response and return it
-        AtmResponse depositWithdrawResponse = AtmResponse.builder()
-            .message("Deposit successful")
-            .build();
-        return ResponseEntity.ok(depositWithdrawResponse);
+    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
+        return ResponseEntity.ok(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
-  
+
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<AtmResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
-        // create withdraw transaction
-        accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user);
-
-        // create transaction response and return it
-        AtmResponse depositWithdrawResponse = AtmResponse.builder()
-            .message("Withdraw successful")
-            .build();
-        return ResponseEntity.ok(depositWithdrawResponse);
+    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
+        return ResponseEntity.ok(accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user));
     }
-  
+
     @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException {

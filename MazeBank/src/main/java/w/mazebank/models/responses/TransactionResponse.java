@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,4 +19,7 @@ public class TransactionResponse {
     private String description;
     private String sender;
     private String receiver;
+    private Long userPerforming;
+    private LocalDateTime timestamp;
+    private String type;
 }
