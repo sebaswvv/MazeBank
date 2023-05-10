@@ -247,10 +247,12 @@ public class TransactionServiceJpa {
     }
 
     private boolean dayLimitExceeded(Account sender, double amount) {
-        double totalAmountOfTransactionForToday =  transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
+        // save in Double object for the NULL checking
+        Double totalAmountOfTransactionForToday =  transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
+        double currentTotal = totalAmountOfTransactionForToday != null ? totalAmountOfTransactionForToday : 0.0;
 
         // check if the day limit is exceeded
         double dayLimit = sender.getUser().getDayLimit();
-        return totalAmountOfTransactionForToday + amount > dayLimit;
+        return currentTotal + amount > dayLimit;
     }
 }
