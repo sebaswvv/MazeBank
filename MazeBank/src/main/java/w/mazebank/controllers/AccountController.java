@@ -8,9 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import w.mazebank.exceptions.AccountCreationLimitReachedException;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
@@ -73,12 +71,12 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
+    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.ok(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
 
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
+    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.ok(accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user));
     }
 

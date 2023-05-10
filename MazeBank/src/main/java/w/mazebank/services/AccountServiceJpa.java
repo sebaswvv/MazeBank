@@ -131,47 +131,27 @@ public class AccountServiceJpa extends BaseServiceJpa{
         return mapper.map(updatedAccount, AccountResponse.class);
     }
 
-    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
 
         // use transaction service to deposit money
-        Transaction deposit = transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
-
-        return  TransactionResponse.builder()
-            .id(deposit.getId())
-            .amount(deposit.getAmount())
-            .description(deposit.getDescription())
-            .sender(deposit.getSender().getIban())
-            .receiver(deposit.getReceiver().getIban())
-            .userPerforming(userDetails.getId())
-            .timestamp(deposit.getTimestamp())
-            .type(deposit.getTransactionType().name())
-            .build();
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
     }
 
-    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+
+
+    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
 
+
+
         // CHECKS:
-        // check if account has enough money
-        // check if daily limit has been reached
-        // check if it is a current account
+        // check if it is a checking account
 
         // use transaction service to withdraw money
-        Transaction withdrawal = transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
-
-        return TransactionResponse.builder()
-            .id(withdrawal.getId())
-            .amount(withdrawal.getAmount())
-            .description(withdrawal.getDescription())
-            .sender(withdrawal.getSender().getIban())
-            .receiver(withdrawal.getReceiver().getIban())
-            .userPerforming(userDetails.getId())
-            .timestamp(withdrawal.getTimestamp())
-            .type(withdrawal.getTransactionType().name())
-            .build();
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
     }
 
     private static void verifySufficientFunds(double amount, Account account) {

@@ -11,7 +11,6 @@ import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.TransactionRequest;
-import w.mazebank.models.responses.AtmResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.TransactionServiceJpa;
 
