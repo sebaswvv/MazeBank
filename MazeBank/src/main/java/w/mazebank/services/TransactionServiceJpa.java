@@ -109,24 +109,29 @@ public class TransactionServiceJpa {
 
         validateTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
 
-        // create the transaction
-        Transaction transaction = Transaction.builder()
-            .amount(transactionRequest.getAmount())
-            .transactionType(TransactionType.TRANSFER)
-            .userPerforming(senderAccount.getUser())
-            .sender(senderAccount)
-            .receiver(receiverAccount)
-            .timestamp(LocalDateTime.now())
-            .build();
-
         // perform the transaction
-        long transactionId = performTransaction(transaction, senderAccount, receiverAccount);
+        long transactionId = performTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
         return new AtmResponse("Transaction with id: " + transactionId + " was successful");
     }
 
-    private long performTransaction(Transaction transaction, Account sender, Account receiver) {
-        accountRepository.lowerAmount(sender.getId(), transaction.getAmount());
-        accountRepository.raiseAmount(receiver.getId(), transaction.getAmount());
+    private long performTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) {
+        // update account balance sender
+        sender.setBalance(sender.getBalance() - transactionRequest.getAmount());
+        accountRepository.save(sender);
+
+        // update balance receiver
+        receiver.setBalance(receiver.getBalance() + transactionRequest.getAmount());
+        accountRepository.save(receiver);
+
+        // save transaction
+        Transaction transaction = Transaction.builder()
+            .amount(transactionRequest.getAmount())
+            .transactionType(TransactionType.TRANSFER)
+            .userPerforming(userPerforming)
+            .sender(sender)
+            .receiver(receiver)
+            .timestamp(LocalDateTime.now())
+            .build();
 
         return transactionRepository.save(transaction).getId();
     }

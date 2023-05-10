@@ -10,12 +10,4 @@ import w.mazebank.models.Account;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
     Account findByIban(String iban);
-
-    @Modifying
-    @Query("UPDATE Account a SET a.balance = a.balance - :amount WHERE a.id = :accountId")
-    void lowerAmount(@Param("accountId") long accountId, @Param("amount") double amount);
-
-    @Modifying
-    @Query("UPDATE Account a SET a.balance = a.balance + :amount WHERE a.id = :accountId")
-    void raiseAmount(@Param("accountId") long accountId, @Param("amount") double amount);
 }
