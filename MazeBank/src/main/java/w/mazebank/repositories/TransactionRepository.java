@@ -2,6 +2,7 @@ package w.mazebank.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import w.mazebank.models.Transaction;
 
@@ -14,8 +15,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         "JOIN s.user u1 " +
         "JOIN r.user u2 " +
         "WHERE CAST(t.timestamp AS DATE) = CURRENT_DATE() " +
-        "  AND s.id = ?1 " +
+        "  AND s.id = :senderId " +
         "  AND u1.id <> u2.id")
-    Double getTotalAmountOfTransactionForToday(Long senderId);
-
+    Double getTotalAmountOfTransactionForToday(@Param("senderId") Long senderId);
 }

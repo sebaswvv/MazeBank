@@ -20,6 +20,8 @@ import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
 
+import java.time.LocalDateTime;
+
 @Service
 public class TransactionServiceJpa {
     @Autowired
@@ -99,43 +101,76 @@ public class TransactionServiceJpa {
         return transaction;
     }
 
+    @Transactional
     public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming) throws TransactionFailedException {
-        // get sender and receiver accounts
-        Account sender = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
-        Account receiver = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
+        Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
+        Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
-        // check if, after sending the money, the sending account doenst exceed its abosulte limit. In short the account has enough money to send the amount
-        if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit()) {
-            throw new TransactionFailedException("Sender would exceed its absolute limit after sending this amount");
-        }
+        validateTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
 
-        // One cannot directly transfer from a savings account to an account that is not of the same customer
-        if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId())) {
-                throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
-        }
+        Transaction transaction = Transaction.builder()
+            .amount(transactionRequest.getAmount())
+            .transactionType(TransactionType.TRANSFER)
+            .userPerforming(senderAccount.getUser())
+            .sender(senderAccount)
+            .receiver(receiverAccount)
+            .timestamp(LocalDateTime.now())
+            .build();
 
-        // One cannot directly transfer to a savings account from an account that is not of the same customer.
-        if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId())) {
-                throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
-        }
-
-        // check if daylimit are not exceeded (voor day limit mischien de transactions van vandaag ophalen en dan de som van de amounts nemen, dan wel de transacties tussen savings en current niet meenemen)
-        dayLimitNotExceeded(sender, transactionRequest.getAmount());
-        // check transactionlimit is not exceeded
-        // check if the userPermoforming is an employee or owns the account from which the money is being sent
-        // check if the senders account is not blocked
-        // check if the receiver account is not blocked
-
-        // if all checks pass, lower the balance of the sender account and increase the balance of the receiver account
-        // create a new transaction and save it to the database
-        // make sure that this is all @Transactional
+        long transactionId = performTransaction(transaction, senderAccount, receiverAccount);
         // return the transaction to the response
-        return new DepositWithdrawResponse("test");
+        return new DepositWithdrawResponse("Transaction successful with id: " + transactionId);
     }
 
-    private boolean dayLimitNotExceeded(Account sender, double amount) {
+    private long performTransaction(Transaction transaction, Account sender, Account receiver) {
+        accountRepository.lowerAmount(sender.getId(), transaction.getAmount());
+        accountRepository.raiseAmount(receiver.getId(), transaction.getAmount());
+
+        // create a new transaction and save it to the database
+        return transactionRepository.save(transaction).getId();
+    }
+
+    private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) throws TransactionFailedException {
+        // check if, after sending the money, the sending account doesn't exceed its absolute limit.
+        // In short the account has enough money to send the amount
+        if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
+            throw new TransactionFailedException("Sender would exceed its absolute limit after sending this amount");
+
+        // One cannot directly transfer from a savings account to an account that is not of the same customer
+        if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
+            throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
+
+        // One cannot directly transfer to a savings account from an account that is not of the same customer.
+        if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
+            throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
+
+
+        // check if day limit are not exceeded
+        if (dayLimitExceeded(sender, transactionRequest.getAmount()))
+            throw new TransactionFailedException("Day limit exceeded");
+
+        // check transaction limit is not exceeded
+        if (transactionRequest.getAmount() > sender.getUser().getTransactionLimit())
+            throw new TransactionFailedException("Transaction limit exceeded");
+
+        // check if the user is an employee or owns the account from which the money is being sent
+        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != sender.getUser().getId())
+            throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
+
+        // check if the senders account is not blocked
+        if (!sender.isActive())
+            throw new TransactionFailedException("Sender account is blocked");
+
+        // check if the receiver account is not blocked
+        if (!receiver.isActive())
+            throw new TransactionFailedException("Receiver account is blocked");
+    }
+
+    private boolean dayLimitExceeded(Account sender, double amount) {
         double totalAmountOfTransactionForToday =  transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
-        System.out.println(totalAmountOfTransactionForToday);
-        return false;
+
+        // check if the day limit is exceeded
+        double dayLimit = sender.getUser().getDayLimit();
+        return totalAmountOfTransactionForToday + amount > dayLimit;
     }
 }
