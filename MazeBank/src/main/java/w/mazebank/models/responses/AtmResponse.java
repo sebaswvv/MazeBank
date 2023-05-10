@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DepositWithdrawResponse {
+public class AtmResponse {
     private String message;
 }
