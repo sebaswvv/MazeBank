@@ -3,6 +3,7 @@ package w.mazebank.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
@@ -37,8 +38,8 @@ public class UserController {
 
     // GET/users/{userId}/accounts
     @GetMapping("/{userId}/accounts")
-    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId) throws UserNotFoundException, AccountNotFoundException {
-        List<AccountResponse> accountResponses = userService.getAccountsByUserId(userId);
+    public ResponseEntity<Object> getAccountsByUserId(@PathVariable Long userId, @AuthenticationPrincipal User user) throws UserNotFoundException, AccountNotFoundException {
+        List<AccountResponse> accountResponses = userService.getAccountsByUserId(userId, user);
         return ResponseEntity.ok(accountResponses);
     }
 
