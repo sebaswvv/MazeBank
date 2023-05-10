@@ -8,10 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
-import w.mazebank.models.requests.RefreshRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
-import w.mazebank.models.responses.RefreshResponse;
 import w.mazebank.repositories.UserRepository;
 
 @Service
@@ -29,10 +27,6 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public RefreshResponse refresh(RefreshRequest refreshToken) {
-        return jwtService.refreshJwtToken(refreshToken);
-    }
-
     public AuthenticationResponse register(RegisterRequest request) {
         User user = User.builder()
             .email(request.getEmail())
@@ -49,12 +43,10 @@ public class AuthService {
 
         // generate a token
         String jwt = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
 
         // return the token
         return AuthenticationResponse.builder()
             .authenticationToken(jwt)
-            .refreshToken(refreshToken)
             .build();
     }
 
@@ -72,10 +64,8 @@ public class AuthService {
 
         // generate a token and return response
         String jwt = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
         return AuthenticationResponse.builder()
             .authenticationToken(jwt)
-            .refreshToken(refreshToken)
             .build();
     }
 }

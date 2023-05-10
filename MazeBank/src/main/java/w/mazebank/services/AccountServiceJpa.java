@@ -57,7 +57,7 @@ public class AccountServiceJpa extends BaseServiceJpa{
                 .balance(account.getBalance())
                 .absoluteLimit(account.getAbsoluteLimit())
                 .active(account.isActive())
-                .createdAt(account.getCreatedAt())
+                .timestamp(account.getCreatedAt())
                 .build();
             accountResponses.add(accountResponse);
         }
@@ -70,6 +70,10 @@ public class AccountServiceJpa extends BaseServiceJpa{
         Account account = accountRepository.findById(id).orElse(null);
         if (account == null) throw new AccountNotFoundException("Account with id: " + id + " not found");
         return account;
+    }
+
+    public Account getAccountByIban(String iban) {
+        return accountRepository.findByIban(iban);
     }
 
     public Account getAccountAndValidate(Long id, User user) throws AccountNotFoundException {
@@ -130,7 +134,7 @@ public class AccountServiceJpa extends BaseServiceJpa{
         Account account = getAccountAndValidate(accountId, userDetails);
 
         // use transaction service to deposit money
-        return transactionServiceJpa.deposit(account, amount);
+        return transactionServiceJpa.deposit(account, amount, userDetails);
     }
 
     public void withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException {

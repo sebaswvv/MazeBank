@@ -1,5 +1,6 @@
 package w.mazebank.configurations;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import w.mazebank.services.JwtService;
 
 import java.io.IOException;
+import io.jsonwebtoken.security.SignatureException;
 
 @Component
 @RequiredArgsConstructor
@@ -78,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // continue the filter chain
             filterChain.doFilter(request, response);
-        } catch (Exception e) {
+        } catch (SignatureException | ExpiredJwtException e) {
             // If there was an error verifying the JWT, return that the jwt is invalid
             respondUnauthorized(response);
         }

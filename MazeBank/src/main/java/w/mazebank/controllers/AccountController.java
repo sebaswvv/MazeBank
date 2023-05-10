@@ -86,7 +86,7 @@ public class AccountController {
             .build();
         return ResponseEntity.ok(depositWithdrawResponse);
     }
-
+  
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<AtmResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException {
         // create withdraw transaction
@@ -98,15 +98,15 @@ public class AccountController {
             .build();
         return ResponseEntity.ok(depositWithdrawResponse);
     }
-
-    @PutMapping("/{id}/lock")
+  
+    @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException {
         accountServiceJpa.lockAccount(id);
         return ResponseEntity.ok(new LockedResponse(true));
     }
 
-    @PutMapping("/{id}/unlock")
+    @PutMapping("/{id}/enable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException {
         accountServiceJpa.unlockAccount(id);
