@@ -41,7 +41,7 @@ public class TransactionServiceJpa {
         Transaction transaction = getTransactionById(id);
 
         // check if the user is allowed to access the transaction
-        validateTransactionParticipant(user, transaction);
+        checkIfUserIsTransactionParticipant(user, transaction);
 
         // moddelmapper configuration because the fields dont match
         mapper.typeMap(Transaction.class, TransactionResponse.class)
@@ -54,40 +54,11 @@ public class TransactionServiceJpa {
         return mapper.map(transaction, TransactionResponse.class);
     }
 
-    public Transaction getTransactionById(Long id) throws TransactionNotFoundException {
-        Transaction transaction = transactionRepository.findById(id).orElse(null);
-        if (transaction == null) throw new TransactionNotFoundException("Transaction with id: " + id + " not found");
-        return transaction;
-    }
-
-    private void validateTransactionParticipant(User user, Transaction transaction) {
-        // allow if user is of type employee
-        if(user.getRole() == RoleType.EMPLOYEE) return;
-
-        // if user is sender or receiver of transaction, allow
-        if(transaction.getSender().getUser().getId() == user.getId()
-            || transaction.getReceiver().getUser().getId() == user.getId()) return;
-
-        // else throw exception
-        throw new UnauthorizedTransactionAccessException("User with id: " + user.getId() + " is not authorized to access transaction with id: " + transaction.getId());
-    }
-
-    private Account getBankAccount() {
-        return accountRepository.findAll().get(0);
-    }
-
-    public void saveTransaction(Transaction transaction) {
-        transactionRepository.save(transaction);
-    }
-
-
-
     @Transactional
-    public TransactionResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
+    public TransactionResponse postTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException, InsufficientFundsException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
-
 
         // update account balance sender and receiver
         senderAccount.setBalance(senderAccount.getBalance() - transactionRequest.getAmount());
@@ -108,11 +79,37 @@ public class TransactionServiceJpa {
 
         validateRegularTransaction(transaction);
 
-
         return performTransaction(transaction);
     }
 
+    private Transaction getTransactionById(Long id) throws TransactionNotFoundException {
+        Transaction transaction = transactionRepository.findById(id).orElse(null);
+        if (transaction == null) throw new TransactionNotFoundException("Transaction with id: " + id + " not found");
+        return transaction;
+    }
 
+    private void checkIfUserIsTransactionParticipant(User user, Transaction transaction) {
+        // allow if user is of type employee
+        if(user.getRole() == RoleType.EMPLOYEE) return;
+
+        // if user is sender or receiver of transaction, allow
+        if(transaction.getSender().getUser().getId() == user.getId()
+            || transaction.getReceiver().getUser().getId() == user.getId()) return;
+
+        // else throw exception
+        throw new UnauthorizedTransactionAccessException("User with id: " + user.getId() + " is not authorized to access transaction with id: " + transaction.getId());
+    }
+
+    // return the bankaccount of the Bank
+    private Account getBankAccount() {
+        return accountRepository.findAll().get(0);
+    }
+
+    public void saveTransaction(Transaction transaction) {
+        transactionRepository.save(transaction);
+    }
+
+    // add transaction to the dataabase
     private TransactionResponse performTransaction(Transaction transaction){
         // save transaction to the db
         transactionRepository.save(transaction);
@@ -129,6 +126,7 @@ public class TransactionServiceJpa {
             transaction.getTransactionType().toString());
     }
 
+    // method for both deposit and withdrawal
     @Transactional
     public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException {
 

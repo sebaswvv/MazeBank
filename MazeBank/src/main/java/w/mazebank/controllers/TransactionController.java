@@ -31,7 +31,7 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
         throws TransactionFailedException, InsufficientFundsException {
-        TransactionResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
+        TransactionResponse response = transactionServiceJpa.postTransaction(transactionRequest, user);
         return ResponseEntity.ok(response);
     }
 }
