@@ -57,7 +57,7 @@ public class AccountServiceJpa extends BaseServiceJpa{
                 .balance(account.getBalance())
                 .absoluteLimit(account.getAbsoluteLimit())
                 .active(account.isActive())
-                .createdAt(account.getCreatedAt())
+                .timestamp(account.getCreatedAt())
                 .build();
             accountResponses.add(accountResponse);
         }
