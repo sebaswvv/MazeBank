@@ -67,7 +67,10 @@ public class DataSeeder implements ApplicationRunner {
         accountService.addAccount(account4);
 
         // Perform some transactions between the accounts
-        transactionService.transferMoney(new Transaction(1, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, LocalDateTime.now()));
-        transactionService.transferMoney(new Transaction(2, "Transfer from account2 to account4", 2000.0, user1, account2, account4, TransactionType.TRANSFER, LocalDateTime.now()));
+        transactionService.saveTransaction(new Transaction(1, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, LocalDateTime.now()));
+        transactionService.saveTransaction(new Transaction(2, "Transfer from account2 to account4", 2000.0, user1, account2, account4, TransactionType.TRANSFER, LocalDateTime.now()));
+
+        // perform transaction between account 1 and 2
+        transactionService.saveTransaction(new Transaction(3, "Transfer from same user", 500.0, user1, account1, account2, TransactionType.TRANSFER, LocalDateTime.now()));
     }
 }

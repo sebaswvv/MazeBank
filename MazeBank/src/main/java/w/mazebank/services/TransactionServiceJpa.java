@@ -74,7 +74,7 @@ public class TransactionServiceJpa {
         return accountRepository.findAll().get(0);
     }
 
-    public void transferMoney(Transaction transaction) {
+    public void saveTransaction(Transaction transaction) {
         transactionRepository.save(transaction);
     }
 
@@ -119,10 +119,9 @@ public class TransactionServiceJpa {
                 throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
         }
 
-        // check if daylimit/transactionlimit are not exceeded (voor day limit mischien de transactions van vandaag ophalen en dan de som van de amounts nemen, dan wel de transacties tussen savings en current niet meenemen)
-        double amount =  transactionRepository.getTotalAmountOfTransactionForToday(sender);
-        System.out.println(amount);
-
+        // check if daylimit are not exceeded (voor day limit mischien de transactions van vandaag ophalen en dan de som van de amounts nemen, dan wel de transacties tussen savings en current niet meenemen)
+        dayLimitNotExceeded(sender, transactionRequest.getAmount());
+        // check transactionlimit is not exceeded
         // check if the userPermoforming is an employee or owns the account from which the money is being sent
         // check if the senders account is not blocked
         // check if the receiver account is not blocked
@@ -132,5 +131,11 @@ public class TransactionServiceJpa {
         // make sure that this is all @Transactional
         // return the transaction to the response
         return new DepositWithdrawResponse("test");
+    }
+
+    private boolean dayLimitNotExceeded(Account sender, double amount) {
+        double totalAmountOfTransactionForToday =  transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
+        System.out.println(totalAmountOfTransactionForToday);
+        return false;
     }
 }
