@@ -173,4 +173,21 @@ public class TransactionServiceJpa {
         double dayLimit = sender.getUser().getDayLimit();
         return totalAmountOfTransactionForToday + amount > dayLimit;
     }
+
+    public void withdraw(Account account, double amount){
+        // update account balance
+        account.setBalance(account.getBalance() - amount);
+        accountRepository.save(account);
+
+        // create transaction of type withdraw and save it
+        Transaction transaction = Transaction.builder()
+            .amount(amount)
+            .transactionType(TransactionType.WITHDRAWAL)
+            .sender(account)
+            .receiver(null)
+            .createdAt(java.time.LocalDateTime.now())
+            .build();
+
+        transactionRepository.save(transaction);
+    }
 }
