@@ -102,12 +102,14 @@ public class TransactionServiceJpa {
     }
 
     @Transactional
-    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming) throws TransactionFailedException {
+    public DepositWithdrawResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
+        throws TransactionFailedException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
         validateTransaction(transactionRequest, senderAccount, receiverAccount, userPerforming);
 
+        // create the transaction
         Transaction transaction = Transaction.builder()
             .amount(transactionRequest.getAmount())
             .transactionType(TransactionType.TRANSFER)
@@ -117,22 +119,21 @@ public class TransactionServiceJpa {
             .timestamp(LocalDateTime.now())
             .build();
 
+        // perform the transaction
         long transactionId = performTransaction(transaction, senderAccount, receiverAccount);
-        // return the transaction to the response
-        return new DepositWithdrawResponse("Transaction successful with id: " + transactionId);
+        return new DepositWithdrawResponse("Transaction with id: " + transactionId + " was successful");
     }
 
     private long performTransaction(Transaction transaction, Account sender, Account receiver) {
         accountRepository.lowerAmount(sender.getId(), transaction.getAmount());
         accountRepository.raiseAmount(receiver.getId(), transaction.getAmount());
 
-        // create a new transaction and save it to the database
         return transactionRepository.save(transaction).getId();
     }
 
-    private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming) throws TransactionFailedException {
+    private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming)
+        throws TransactionFailedException {
         // check if, after sending the money, the sending account doesn't exceed its absolute limit.
-        // In short the account has enough money to send the amount
         if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
             throw new TransactionFailedException("Sender would exceed its absolute limit after sending this amount");
 
@@ -143,7 +144,6 @@ public class TransactionServiceJpa {
         // One cannot directly transfer to a savings account from an account that is not of the same customer.
         if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
             throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
-
 
         // check if day limit are not exceeded
         if (dayLimitExceeded(sender, transactionRequest.getAmount()))

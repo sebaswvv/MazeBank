@@ -29,7 +29,8 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user) throws TransactionFailedException {
+    public ResponseEntity<DepositWithdrawResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
+        throws TransactionFailedException {
         DepositWithdrawResponse response = transactionServiceJpa.createTransaction(transactionRequest, user);
         return ResponseEntity.ok(response);
     }
