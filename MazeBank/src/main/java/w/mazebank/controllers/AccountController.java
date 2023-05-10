@@ -74,14 +74,14 @@ public class AccountController {
         return ResponseEntity.ok(depositWithdrawResponse);
     }
 
-    @PutMapping("/{id}/lock")
+    @PutMapping("/{id}/enable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException {
         accountServiceJpa.lockAccount(id);
         return ResponseEntity.ok(new LockedResponse(true));
     }
 
-    @PutMapping("/{id}/unlock")
+    @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException {
         accountServiceJpa.unlockAccount(id);
