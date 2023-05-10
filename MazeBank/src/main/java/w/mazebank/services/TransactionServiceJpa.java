@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
+import w.mazebank.exceptions.InsufficientFundsException;
 import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
 import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
@@ -103,7 +104,7 @@ public class TransactionServiceJpa {
 
     @Transactional
     public TransactionResponse createTransaction(TransactionRequest transactionRequest, User userPerforming)
-        throws TransactionFailedException {
+        throws TransactionFailedException, InsufficientFundsException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
@@ -138,35 +139,31 @@ public class TransactionServiceJpa {
     }
 
     private void validateTransaction(TransactionRequest transactionRequest, Account sender, Account receiver, User userPerforming)
-        throws TransactionFailedException {
+        throws TransactionFailedException, InsufficientFundsException {
         // check if the sender and receiver are not the same
-        if (sender.getId() == receiver.getId())
-            throw new TransactionFailedException("Sender and receiver cannot be the same");
+        checkIfSenderAndReceiverAreNotTheSame(sender, receiver);
 
         // check if, after sending the money, the sending account doesn't exceed its absolute limit.
-        if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
-            throw new TransactionFailedException("Sender would exceed it's absolute limit after sending this amount");
+        validateSufficientFunds(transactionRequest, sender);
 
         // One cannot directly transfer from a savings account to an account that is not of the same customer
-        if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
-            throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
-
         // One cannot directly transfer to a savings account from an account that is not of the same customer.
-        if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
-            throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
+        savingsAccountCheckSend(sender, receiver);
 
         // check if day limit are not exceeded
-        if (dayLimitExceeded(sender, transactionRequest.getAmount()))
-            throw new TransactionFailedException("Day limit exceeded");
+        checkDayLimitExceeded(transactionRequest, sender);
 
         // check transaction limit is not exceeded
-        if (transactionRequest.getAmount() > sender.getUser().getTransactionLimit())
-            throw new TransactionFailedException("Transaction limit exceeded");
+        checkIfTransactionLimitIsExceeded(transactionRequest, sender);
 
         // check if the user is an employee or owns the account from which the money is being sent
-        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != sender.getUser().getId())
-            throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
+        checkUser(sender, userPerforming);
 
+        // check if the sender and receiver are not blocked
+        checkIfAnAccountIsBlocked(sender, receiver);
+    }
+
+    private void checkIfAnAccountIsBlocked(Account sender, Account receiver) throws TransactionFailedException {
         // check if the senders account is not blocked
         if (!sender.isActive())
             throw new TransactionFailedException("Sender account is blocked");
@@ -174,6 +171,39 @@ public class TransactionServiceJpa {
         // check if the receiver account is not blocked
         if (!receiver.isActive())
             throw new TransactionFailedException("Receiver account is blocked");
+    }
+
+    private void checkUser(Account sender, User userPerforming) throws TransactionFailedException {
+        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != sender.getUser().getId())
+            throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
+    }
+
+    private void checkIfTransactionLimitIsExceeded(TransactionRequest transactionRequest, Account sender) throws TransactionFailedException {
+        if (transactionRequest.getAmount() > sender.getUser().getTransactionLimit())
+            throw new TransactionFailedException("Transaction limit exceeded");
+    }
+
+    private void checkDayLimitExceeded(TransactionRequest transactionRequest, Account sender) throws TransactionFailedException {
+        if (dayLimitExceeded(sender, transactionRequest.getAmount()))
+            throw new TransactionFailedException("Day limit exceeded");
+    }
+
+    private void savingsAccountCheckSend(Account sender, Account receiver) throws TransactionFailedException {
+        if (sender.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
+            throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
+
+        if (receiver.getAccountType() == AccountType.SAVINGS && (sender.getUser().getId() != receiver.getUser().getId()))
+            throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
+    }
+
+    private void validateSufficientFunds(TransactionRequest transactionRequest, Account sender) throws InsufficientFundsException {
+        if (sender.getBalance() - transactionRequest.getAmount() < sender.getAbsoluteLimit())
+            throw new InsufficientFundsException("Sender would exceed it's absolute limit after sending this amount");
+    }
+
+    private void checkIfSenderAndReceiverAreNotTheSame(Account sender, Account receiver) throws TransactionFailedException {
+        if (sender.getId() == receiver.getId())
+            throw new TransactionFailedException("Sender and receiver cannot be the same");
     }
 
     private boolean dayLimitExceeded(Account sender, double amount) {
