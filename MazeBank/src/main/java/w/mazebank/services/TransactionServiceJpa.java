@@ -154,8 +154,7 @@ public class TransactionServiceJpa {
             .build();
 
         // validate transaction
-        if(transaction.getTransactionType() == TransactionType.DEPOSIT) validateDepositTransaction(transaction);
-        else if(transaction.getTransactionType() == TransactionType.WITHDRAWAL) validateWithdrawalTransaction(transaction);
+        validateAtmTransaction(transaction);
 
         return performTransaction(transaction);
     }
@@ -181,13 +180,14 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
     }
 
-    private void validateDepositTransaction(Transaction transaction) throws TransactionFailedException {
-        validateAtmTransaction(transaction);
-    }
-
-    private void validateWithdrawalTransaction(Transaction transaction) throws TransactionFailedException {
-        validateAtmTransaction(transaction);
-    }
+    // DEZE NOG EVEN LATEN STAAN VOOR ALS ER NIEUWE VALIDATIES MOETEN WORDEN TOEGEVOEGD
+    // private void validateDepositTransaction(Transaction transaction) throws TransactionFailedException {
+    //     validateAtmTransaction(transaction);
+    // }
+    //
+    // private void validateWithdrawalTransaction(Transaction transaction) throws TransactionFailedException {
+    //     validateAtmTransaction(transaction);
+    // }
 
 
     private void validateRegularTransaction(Transaction transaction)
