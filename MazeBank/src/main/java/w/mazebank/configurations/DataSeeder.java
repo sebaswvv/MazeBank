@@ -44,6 +44,7 @@ public class DataSeeder implements ApplicationRunner {
         User user3 = new User(4, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
         User user4 = new User(5, "user4@example.com", 456123759, "Tim", "Brad", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
 
+
         userService.addUser(bank);
         userService.addUser(user1);
         userService.addUser(user2);
