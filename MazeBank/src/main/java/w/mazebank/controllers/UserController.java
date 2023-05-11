@@ -7,11 +7,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.DisallowedFieldException;
+import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
+import w.mazebank.models.responses.UserDeletedResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.services.UserServiceJpa;
 
@@ -34,6 +36,13 @@ public class UserController {
     public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
         User user = userService.patchUserById(id, userPatchRequest);
         return ResponseEntity.ok(user);
+    }
+
+    @DeleteMapping("/{id}")
+    @Secured("ROLE_EMPLOYEE")
+    public ResponseEntity<UserDeletedResponse> deleteUserById(@PathVariable Long id) throws UserHasAccountsException, UserNotFoundException {
+        userService.deleteUserById(id);
+        return ResponseEntity.ok(new UserDeletedResponse("User with id: " + id + " was deleted successfully"));
     }
 
     // GET/users/{userId}/accounts

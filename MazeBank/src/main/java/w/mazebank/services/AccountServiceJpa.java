@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
+import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
@@ -13,6 +14,7 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.UserRepository;
@@ -76,8 +78,8 @@ public class AccountServiceJpa extends BaseServiceJpa{
         return accountRepository.findByIban(iban);
     }
 
-    public Account getAccountAndValidate(Long id, User user) throws AccountNotFoundException {
-        Account account = getAccountById(id);
+    public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
+        Account account = getAccountById(accountId);
         validateAccountOwner(user, account);
         return account;
     }
@@ -129,22 +131,27 @@ public class AccountServiceJpa extends BaseServiceJpa{
         return mapper.map(updatedAccount, AccountResponse.class);
     }
 
-    public Transaction deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
 
         // use transaction service to deposit money
-        return transactionServiceJpa.deposit(account, amount, userDetails);
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
     }
 
-    public void withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+
+
+    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
 
-        verifySufficientFunds(amount, account);
+
+
+        // CHECKS:
+        // check if it is a checking account
 
         // use transaction service to withdraw money
-        transactionServiceJpa.withdraw(account, amount);
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
     }
 
     private static void verifySufficientFunds(double amount, Account account) {
@@ -155,6 +162,10 @@ public class AccountServiceJpa extends BaseServiceJpa{
     }
 
     private void validateAccountOwner(User user, Account account) {
+
+        System.out.println(user.getId());
+        System.out.println(account.getUser().getId());
+
         // check if current user is the same as account owner or if current user is an employee
         if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
             throw new UnauthorizedAccountAccessException("You are not authorized to access this account");

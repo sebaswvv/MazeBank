@@ -3,10 +3,7 @@ package w.mazebank.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.DisallowedFieldException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
@@ -140,4 +137,14 @@ public class UserServiceJpa extends BaseServiceJpa {
         return user;
     }
 
+    public void deleteUserById(Long id)
+        throws UserNotFoundException, UserHasAccountsException {
+        User user = getUserById(id);
+
+        // if user has accounts, cannot delete user
+        if (!user.getAccounts().isEmpty())
+            throw new UserHasAccountsException("user has accounts, cannot delete user");
+
+        userRepository.delete(user);
+    }
 }

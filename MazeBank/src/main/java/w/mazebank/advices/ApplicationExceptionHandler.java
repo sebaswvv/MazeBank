@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -98,12 +99,28 @@ public class ApplicationExceptionHandler {
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Transaction Failed");
     }
-  
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<Object> handleInsufficientFundsException(InsufficientFundsException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Insufficient Funds");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserHasAccountsException.class)
+    public ResponseEntity<Object> handleUserHasAccountsException(UserHasAccountsException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Has Accounts");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Username Not Found");
     }
 }
