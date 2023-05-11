@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
@@ -26,6 +27,12 @@ public class AuthService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    public boolean checkIfUserIsBlocked(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.isBlocked();
+    }
 
     public AuthenticationResponse register(RegisterRequest request) {
         User user = User.builder()
@@ -51,6 +58,11 @@ public class AuthService {
     }
 
     public AuthenticationResponse login(LoginRequest request) {
+        // check if user is blocked
+        if (checkIfUserIsBlocked(request.getEmail())) {
+            throw new UnauthorizedAccountAccessException("User is blocked");
+        }
+
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getEmail(),

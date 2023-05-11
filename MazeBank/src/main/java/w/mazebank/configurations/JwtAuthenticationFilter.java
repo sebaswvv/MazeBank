@@ -1,6 +1,7 @@
 package w.mazebank.configurations;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import w.mazebank.services.AuthService;
 import w.mazebank.services.JwtService;
 
 import java.io.IOException;
@@ -28,6 +31,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtService jwtService;
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    @Lazy
+    private AuthService authService;
 
     @Override
     protected void doFilterInternal(
@@ -48,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            respondUnauthorized(response);
+            respondUnauthorized(response, "Unauthorized");
             return;
         }
 
@@ -56,6 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Extract the JWT from the Authorization header and get the email from the JWT
             jwt = authHeader.substring(7);
             email = jwtService.extractEmail(jwt);
+
+            // If the user is blocked, return that the jwt is invalid
+            if (authService.checkIfUserIsBlocked(email)) {
+                respondUnauthorized(response, "User is blocked");
+                return;
+            }
 
             // If the JWT is valid, set the authentication context
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -80,16 +93,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // continue the filter chain
             filterChain.doFilter(request, response);
-        } catch (SignatureException | ExpiredJwtException e) {
+        } catch (SignatureException | ExpiredJwtException | MalformedJwtException e) {
             // If there was an error verifying the JWT, return that the jwt is invalid
-            respondUnauthorized(response);
+            respondUnauthorized(response, "Unauthorized");
         }
     }
 
-    private void respondUnauthorized(HttpServletResponse response) throws IOException {
+    private void respondUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"message\": \"Unauthorized\"}");
+        response.getWriter().write("{\"message\": \"" + message + "\"}");
     }
 }
