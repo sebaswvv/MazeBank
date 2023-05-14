@@ -6,16 +6,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransactionResponse {
-
     private Long id;
     private double amount;
     private String description;
     private String sender;
     private String receiver;
+    private Long userPerforming;
+    private LocalDateTime timestamp;
+    private String type;
 }

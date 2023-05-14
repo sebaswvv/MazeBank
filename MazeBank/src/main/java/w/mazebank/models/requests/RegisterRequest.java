@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.xml.transform.Source;
 import java.time.LocalDate;
 
 @Data
@@ -35,6 +36,5 @@ public class RegisterRequest {
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number should be 10 digits")
     private String phoneNumber;
 
-    
     private LocalDate dateOfBirth;
 }

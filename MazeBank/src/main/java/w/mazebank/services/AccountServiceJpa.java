@@ -6,22 +6,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.AccountCreationLimitReachedException;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.enums.TransactionType;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.TransactionResponse;
+import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
+import w.mazebank.repositories.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AccountServiceJpa {
+public class AccountServiceJpa extends BaseServiceJpa{
     @Autowired
     private AccountRepository accountRepository;
 
@@ -31,11 +33,40 @@ public class AccountServiceJpa {
     @Autowired
     private UserServiceJpa userServiceJpa;
 
+
     private final ModelMapper mapper = new ModelMapper();
 
     public void addAccount(Account account) {
         accountRepository.save(account);
     }
+
+    public List<AccountResponse> getAllAccounts(int offset, int limit, String sort, String search) {
+        List<Account> accounts = findAllPaginationAndSort(offset, limit, sort, search, accountRepository);
+
+        // parse users to user responses
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            AccountResponse accountResponse = AccountResponse.builder()
+                .id(account.getId())
+                .accountType(account.getAccountType().getValue())
+                .iban(account.getIban())
+                // get user response
+                .user(UserResponse.builder()
+                    .id(account.getUser().getId())
+                    .firstName(account.getUser().getFirstName())
+                    .lastName(account.getUser().getLastName())
+                    .build())
+                .balance(account.getBalance())
+                .absoluteLimit(account.getAbsoluteLimit())
+                .active(account.isActive())
+                .timestamp(account.getCreatedAt())
+                .build();
+            accountResponses.add(accountResponse);
+        }
+
+        return accountResponses;
+    }
+
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
         Account account = accountRepository.findById(id).orElse(null);
@@ -43,8 +74,12 @@ public class AccountServiceJpa {
         return account;
     }
 
-    public Account getAccountAndValidate(Long id, User user) throws AccountNotFoundException {
-        Account account = getAccountById(id);
+    public Account getAccountByIban(String iban) {
+        return accountRepository.findByIban(iban);
+    }
+
+    public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
+        Account account = getAccountById(accountId);
         validateAccountOwner(user, account);
         return account;
     }
@@ -96,15 +131,41 @@ public class AccountServiceJpa {
         return mapper.map(updatedAccount, AccountResponse.class);
     }
 
-    public Transaction deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException {
+    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
 
         // use transaction service to deposit money
-        return transactionServiceJpa.deposit(account, amount);
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
+    }
+
+
+
+    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        // get account from database and validate owner
+        Account account = getAccountAndValidate(accountId, userDetails);
+
+
+
+        // CHECKS:
+        // check if it is a checking account
+
+        // use transaction service to withdraw money
+        return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
+    }
+
+    private static void verifySufficientFunds(double amount, Account account) {
+        // check if account has enough money
+        if (account.getBalance() < amount) {
+            throw new InsufficientFundsException("Not enough funds in account");
+        }
     }
 
     private void validateAccountOwner(User user, Account account) {
+
+        System.out.println(user.getId());
+        System.out.println(account.getUser().getId());
+
         // check if current user is the same as account owner or if current user is an employee
         if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
             throw new UnauthorizedAccountAccessException("You are not authorized to access this account");

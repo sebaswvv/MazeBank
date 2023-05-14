@@ -6,12 +6,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
-import w.mazebank.models.requests.RefreshRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
-import w.mazebank.models.responses.RefreshResponse;
 import w.mazebank.repositories.UserRepository;
 
 @Service
@@ -29,8 +28,10 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public RefreshResponse refresh(RefreshRequest refreshToken) {
-        return jwtService.refreshJwtToken(refreshToken);
+    public boolean checkIfUserIsBlocked(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.isBlocked();
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -49,16 +50,19 @@ public class AuthService {
 
         // generate a token
         String jwt = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
 
         // return the token
         return AuthenticationResponse.builder()
             .authenticationToken(jwt)
-            .refreshToken(refreshToken)
             .build();
     }
 
     public AuthenticationResponse login(LoginRequest request) {
+        // check if user is blocked
+        if (checkIfUserIsBlocked(request.getEmail())) {
+            throw new UnauthorizedAccountAccessException("User is blocked");
+        }
+
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getEmail(),
@@ -72,10 +76,8 @@ public class AuthService {
 
         // generate a token and return response
         String jwt = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
         return AuthenticationResponse.builder()
             .authenticationToken(jwt)
-            .refreshToken(refreshToken)
             .build();
     }
 }

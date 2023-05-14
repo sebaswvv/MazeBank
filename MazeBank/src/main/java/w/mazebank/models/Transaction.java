@@ -26,6 +26,10 @@ public class Transaction {
     private double amount;
 
     @ManyToOne
+    @JoinColumn(name = "user_performing_id")
+    private User userPerforming;
+
+    @ManyToOne
     @Nullable
     @JoinColumn(name = "sender_id")
     private Account sender;
@@ -38,5 +42,5 @@ public class Transaction {
     @Enumerated(EnumType.ORDINAL)
     private TransactionType transactionType;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime timestamp;
 }

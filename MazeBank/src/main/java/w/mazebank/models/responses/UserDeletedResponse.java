@@ -1,4 +1,5 @@
-package w.mazebank.models.requests;
+package w.mazebank.models.responses;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DepositRequest {
-    private double amount;
+public class UserDeletedResponse {
+    private String message;
 }

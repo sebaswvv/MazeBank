@@ -2,9 +2,8 @@ package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.DisallowedFieldException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.enums.RoleType;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
@@ -43,31 +42,37 @@ public class UserServiceJpa extends BaseServiceJpa {
 //        return user;
 //    }
 
-    public List<AccountResponse> getAccountsByUserId(Long userId) throws UserNotFoundException {
+    public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+
         // get user
         User user = getUserById(userId);
-
         // get accounts from user
         List<Account> accounts = user.getAccounts();
         if (accounts == null) {
             return new ArrayList<>();
         }
 
-        // parse accounts to account responses
-        List<AccountResponse> accountResponses = new ArrayList<>();
-        for (Account account : accounts) {
-            AccountResponse accountResponse = AccountResponse.builder()
-                .id(account.getId())
-                .accountType(account.getAccountType().getValue())
-                .iban(account.getIban())
-                .balance(account.getBalance())
-                .createdAt(account.getCreatedAt())
-                .build();
-            accountResponses.add(accountResponse);
+        // if statement to check if user is employee || right owner of the checked account
+        if (userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.getId() == userId) {
+            // parse accounts to account responses
+            List<AccountResponse> accountResponses = new ArrayList<>();
+            for (Account account : accounts) {
+                AccountResponse accountResponse = AccountResponse.builder()
+                    .id(account.getId())
+                    .accountType(account.getAccountType().getValue())
+                    .iban(account.getIban())
+                    .balance(account.getBalance())
+                    .timestamp(account.getCreatedAt())
+                    .build();
+                accountResponses.add(accountResponse);
+            }
+            // return account responses
+            return accountResponses;
+        } else {
+            // return 403 forbidden message
+            throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
         }
 
-        // return account responses
-        return accountResponses;
     }
 
     public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
@@ -132,4 +137,14 @@ public class UserServiceJpa extends BaseServiceJpa {
         return user;
     }
 
+    public void deleteUserById(Long id)
+        throws UserNotFoundException, UserHasAccountsException {
+        User user = getUserById(id);
+
+        // if user has accounts, cannot delete user
+        if (!user.getAccounts().isEmpty())
+            throw new UserHasAccountsException("user has accounts, cannot delete user");
+
+        userRepository.delete(user);
+    }
 }
