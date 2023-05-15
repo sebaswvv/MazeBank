@@ -15,13 +15,13 @@ import w.mazebank.models.User;
 import w.mazebank.services.AccountServiceJpa;
 import w.mazebank.services.TransactionServiceJpa;
 import w.mazebank.services.UserServiceJpa;
+import w.mazebank.utils.IbanGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Component
 public class DataSeeder implements ApplicationRunner {
-
     @Autowired
     private UserServiceJpa userService;
 
@@ -52,17 +52,17 @@ public class DataSeeder implements ApplicationRunner {
         userService.addUser(user4);
 
         // Create some sample accounts for user1
-        Account bankAccount = new Account(1, "NL01MAZE0000000001", AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
-        Account account1 = new Account(2, "NL01MAZE0000000002", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
-        Account account2 = new Account(3, "NL01MAZE0000000003", AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
+        Account bankAccount = new Account(1, IbanGenerator.generate(), AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
+        Account account1 = new Account(2, IbanGenerator.generate(), AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
+        Account account2 = new Account(3, IbanGenerator.generate(), AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
 
         accountService.addAccount(bankAccount);
         accountService.addAccount(account1);
         accountService.addAccount(account2);
 
         // Create some sample accounts for user2
-        Account account3 = new Account(4, "NL01MAZE0000000004", AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
-        Account account4 = new Account(5, "NL01MAZE0000000005", AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
+        Account account3 = new Account(4, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
+        Account account4 = new Account(5, IbanGenerator.generate(), AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
 
         accountService.addAccount(account3);
         accountService.addAccount(account4);

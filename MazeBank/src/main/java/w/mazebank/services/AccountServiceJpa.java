@@ -9,7 +9,6 @@ import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
-import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
@@ -17,13 +16,13 @@ import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
-import w.mazebank.repositories.UserRepository;
+import w.mazebank.utils.IbanGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class AccountServiceJpa extends BaseServiceJpa{
+public class AccountServiceJpa extends BaseServiceJpa {
     @Autowired
     private AccountRepository accountRepository;
 
@@ -88,8 +87,7 @@ public class AccountServiceJpa extends BaseServiceJpa{
         User user = userServiceJpa.getUserById(body.getUserId());
         Account account = Account.builder()
             .accountType(body.getAccountType())
-            // TODO: custom generator to generate IBAN
-            // .iban()
+            .iban(IbanGenerator.generate())
             .isActive(body.isActive())
             .user(user)
             .absoluteLimit(body.getAbsoluteLimit())
@@ -140,11 +138,9 @@ public class AccountServiceJpa extends BaseServiceJpa{
     }
 
 
-
     public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
         Account account = getAccountAndValidate(accountId, userDetails);
-
 
 
         // CHECKS:
