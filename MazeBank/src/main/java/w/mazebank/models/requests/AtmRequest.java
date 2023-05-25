@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AtmRequest {
+    // TODO: add validation
     private double amount;
 }
