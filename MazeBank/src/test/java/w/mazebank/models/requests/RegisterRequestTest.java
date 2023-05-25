@@ -1,4 +1,4 @@
-package w.mazebank.models;
+package w.mazebank.models.requests;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -6,14 +6,12 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import w.mazebank.enums.RoleType;
-import w.mazebank.models.requests.RegisterRequest;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class RegisterRequestTest {
 

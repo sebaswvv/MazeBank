@@ -10,14 +10,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
-import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.LockedResponse;
-import w.mazebank.models.responses.AtmResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AccountServiceJpa;
 
@@ -38,8 +36,8 @@ public class AccountController {
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String search
-    ){
-    List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
+    ) {
+        List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
         return ResponseEntity.ok(accounts);
     }
 
