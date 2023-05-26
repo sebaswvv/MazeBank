@@ -28,13 +28,11 @@ class RegisterRequestTest {
         // email, bsn, firstName, lastName, password, phoneNumber, dateOfBirth
         RegisterRequest user = new RegisterRequest("info@mail.nl", 123456789, "John", "Doe", "Passwoord", "0612345678", LocalDate.of(1990, 1, 1));
 
+        // Validate the user
         Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
 
-        for (ConstraintViolation<RegisterRequest> violation : violations) {
-            System.out.println(violation.getPropertyPath() + ": " + violation.getMessage());
-        }
-
+        // Check if the error message is correct
         ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
         assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
     }
