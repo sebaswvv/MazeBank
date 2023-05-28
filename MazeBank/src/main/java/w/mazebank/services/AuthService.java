@@ -80,4 +80,8 @@ public class AuthService {
             .authenticationToken(jwt)
             .build();
     }
+
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 }
