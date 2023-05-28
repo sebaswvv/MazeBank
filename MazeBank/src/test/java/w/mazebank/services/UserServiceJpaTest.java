@@ -19,6 +19,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,35 +81,44 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void deleteUserById() throws UserNotFoundException, UserHasAccountsException {
-        // create a user
+    void blockUser() throws UserNotFoundException {
+        // create regular non-blocked user
         User user = User.builder()
             .id(1L)
             .firstName("John")
             .lastName("Doe")
+            .blocked(false)
             .build();
 
-        // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
-        doNothing().when(userRepository).delete(user);
+        // mock the findById method and return blocked user
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // call the method
-        userServiceJpa.deleteUserById(1L);
+        userServiceJpa.blockUser(1L);
 
-        // verify the method was called
-        verify(userRepository, times(1)).delete(user);
+        // test results
+        assertEquals(true, user.isBlocked());
+        verify(userRepository).save(user);
     }
 
     @Test
-    void deleteUserByIdThatDoesNotExist() {
+    void blockNonExistingUser() {
         // mock the findById method and return null
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // call the method
+        // check if usernotfoundexception is thrown
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.deleteUserById(1L);
+            userServiceJpa.blockUser(1L);
         });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
+        verify(userRepository).findById(1L);
+    }
+
+    @Test
+    void addUser() {
 
         // test results
         assertEquals("user not found with id: 1", exception.getMessage());
