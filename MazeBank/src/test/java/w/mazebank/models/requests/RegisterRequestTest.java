@@ -83,7 +83,6 @@ class RegisterRequestTest {
     }
 
 
-    // TODO: uitzoeken hoe we dit kunnen testen want het is een integer
     @Test
     void bsnIsNull(){
         user.setBsn(null);
