@@ -99,6 +99,22 @@ class UserServiceJpaTest {
     }
 
     @Test
+    void blockNonExistingUser() {
+        // mock the findById method and return null
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // check if usernotfoundexception is thrown
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.blockUser(1L);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
+        verify(userRepository).findById(1L);
+    }
+
+    @Test
     void addUser() {
 
     }
