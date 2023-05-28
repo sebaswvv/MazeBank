@@ -142,7 +142,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         User user = getUserById(id);
 
         // if user has accounts, cannot delete user
-        if (!user.getAccounts().isEmpty())
+        if (user.getAccounts() != null && !user.getAccounts().isEmpty())
             throw new UserHasAccountsException("user has accounts, cannot delete user");
 
         userRepository.delete(user);

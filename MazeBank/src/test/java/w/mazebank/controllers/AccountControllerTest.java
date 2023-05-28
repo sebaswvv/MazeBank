@@ -26,6 +26,7 @@ import w.mazebank.services.UserServiceJpa;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -75,6 +76,65 @@ class AccountControllerTest {
         when(userServiceJpa.getUserById(Mockito.anyLong())).thenReturn(authUser);
 
         token = new JwtService().generateToken(authUser);
+    }
+
+    @Test
+    void getAllAccounts() throws Exception {
+        // user to add to the accounts
+        User user = User.builder()
+            .id(1)
+            .firstName("John")
+            .lastName("Doe")
+            .role(RoleType.CUSTOMER)
+            .blocked(false)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        // list of all the accounts to mock the database
+        List<AccountResponse> accounts = List.of(
+            AccountResponse.builder()
+                .id(1)
+                .accountType(AccountType.CHECKING.getValue())
+                .balance(0.0)
+                .active(true)
+                .iban("NL01INHO123456789")
+                .absoluteLimit(0.0)
+                .build(),
+            AccountResponse.builder()
+                .id(2)
+                .accountType(AccountType.SAVINGS.getValue())
+                .balance(0.0)
+                .active(true)
+                .iban("NL01INHO123456789")
+                .absoluteLimit(0.0)
+                .build()
+        );
+
+        // mock
+        when(accountService.getAllAccounts(0, 10, "ASC", "")).thenReturn(accounts);
+
+        // NOTE: ik moet in de url de offset en limit meegeven, anders krijg ik geen response body!!
+        mockMvc.perform(get("/accounts?offsete=0&limit=10&sort=ASC&search=")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].accountType").value(AccountType.CHECKING.getValue()))
+            .andExpect(jsonPath("$[0].balance").value(0.0))
+            .andExpect(jsonPath("$[0].active").value(true))
+            .andExpect(jsonPath("$[0].iban").value("NL01INHO123456789"))
+            .andExpect(jsonPath("$[0].absoluteLimit").value(0.0))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].accountType").value(AccountType.SAVINGS.getValue()))
+            .andExpect(jsonPath("$[1].balance").value(0.0))
+            .andExpect(jsonPath("$[1].active").value(true))
+            .andExpect(jsonPath("$[1].iban").value("NL01INHO123456789"))
+            .andExpect(jsonPath("$[1].absoluteLimit").value(0.0))
+            .andReturn();
     }
 
     @Test

@@ -16,65 +16,159 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class RegisterRequestTest {
 
     private Validator validator;
+    private RegisterRequest user;
 
     @BeforeEach
     void setUp() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
+
+        // create Register Request
+        user = new RegisterRequest("info@mail.nl", 123456789, "John", "Doe", "Abc123!@", "0612345678", LocalDate.of(1990, 1, 1));
     }
 
     @Test
-    void passwordHasNoNumber() {
-        // email, bsn, firstName, lastName, password, phoneNumber, dateOfBirth
-        RegisterRequest user = new RegisterRequest("info@mail.nl", 123456789, "John", "Doe", "Passwoord", "0612345678", LocalDate.of(1990, 1, 1));
+    void passwordHasNoDigit() {
+        user.setPassword("Abcccc!@");
 
-        // Validate the user
+        // Validate
         Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
+    }
 
-        // Check if the error message is correct
+    @Test
+    void passwordHasNoLowercaseLetter() {
+        user.setPassword("ABC123!@");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
+    }
+
+    @Test
+    void passwordHasNoUppercaseLetter() {
+        user.setPassword("abc123!@");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
+    }
+
+   @Test
+    void passwordIsNot8CharactersLong(){
+        user.setPassword("Abc12!@");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
+    }
+
+    @Test
+    void passwordHasNoSpecialCharacter(){
+        user.setPassword("Abc12345");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
         ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
         assertEquals("Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character", violation.getMessage());
     }
 
 
-//    @Test
-//    void passwordHasSpecialCharacter(){
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            User user = new User();
-//            user.setPassword("password");
-//            assertEquals("Password must contain at least one special character (!@#$%^&*()_+=-)", user.getPassword());
-//        });
-//
-//    }
-//
-//    @Test
-//    void passwordHasCapitalLetter(){
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            User user = new User();
-//            user.setPassword("password");
-//            assertEquals("Password must contain at least one capital letter (A-Z)", user.getPassword());
-//        });
-//
-//    }
-//
-//    @Test
-//    void passwordHasLowercaseLetter(){
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            User user = new User();
-//            user.setPassword("password");
-//            assertEquals("Password must contain at least one lowercase letter (a-z)", user.getPassword());
-//        });
-//
-//    }
-//
-//    @Test
-//    void passwordHasAtleastEightCharacters(){
-//        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-//            User user = new User();
-//            user.setPassword("password");
-//            assertEquals("Password must be at least 8 characters long", user.getPassword());
-//        });
-//
-//    }
+    @Test
+    void bsnIsNull(){
+        user.setBsn(null);
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals(1, violations.size());
+        assertEquals("BSN is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void firstnameIsBlank(){
+        user.setFirstName("");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("First name is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void firstnameIsNull(){
+        user.setFirstName(null);
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("First name is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void lastnameIsBlank(){
+        user.setLastName("");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Last name is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void lastnameIsNull(){
+        user.setLastName(null);
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Last name is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void phoneNumberIsNull(){
+        user.setPhoneNumber(null);
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Phone number is mandatory", violation.getMessage());
+    }
+
+    @Test
+    void phoneNumberContainsLetter(){
+        user.setPhoneNumber("061234567a");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Phone number should be 10 digits", violation.getMessage());
+    }
+
+    @Test
+    void phoneNumberIsLessThan10Digits(){
+        user.setPhoneNumber("061234567");
+
+        // Validate
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals("Phone number should be 10 digits", violation.getMessage());
+    }
+
 }
