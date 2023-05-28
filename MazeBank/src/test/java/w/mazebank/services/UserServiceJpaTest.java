@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.UserResponse;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceJpaTest {
@@ -74,6 +75,26 @@ class UserServiceJpaTest {
         assertEquals(2L, results.get(1).getId());
         assertEquals("Jane", results.get(1).getFirstName());
         assertEquals("Doe", results.get(1).getLastName());
+    }
+
+    @Test
+    void deleteUserById() throws UserNotFoundException, UserHasAccountsException {
+        // create a user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        doNothing().when(userRepository).delete(user);
+
+
+        // call the method
+        userServiceJpa.deleteUserById(1L);
+
+        verify(userRepository, times(1)).delete(user);
     }
 
     @Test
