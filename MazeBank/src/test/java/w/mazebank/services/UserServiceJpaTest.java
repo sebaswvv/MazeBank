@@ -6,7 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.UserRepository;
@@ -17,7 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceJpaTest {
@@ -77,11 +79,78 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void addUser() {
+    void deleteUserById() throws UserNotFoundException, UserHasAccountsException {
+        // create a user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
 
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        doNothing().when(userRepository).delete(user);
+
+        // call the method
+        userServiceJpa.deleteUserById(1L);
+
+        // verify the method was called
+        verify(userRepository, times(1)).delete(user);
     }
 
     @Test
-    void patchUserById() {
+    void deleteUserByIdThatDoesNotExist() {
+        // mock the findById method and return null
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // call the method
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.deleteUserById(1L);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
     }
+
+    @Test
+    void deleteUserByIdThatHasAccounts(){
+        // create a user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        // add an account to the user to mock the user having accounts
+        user.setAccounts(List.of(
+            Account.builder()
+                .id(1L)
+                .balance(100.0)
+                .user(user)
+                .build()
+        ));
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+
+        // call the method
+        Exception exception = assertThrows(UserHasAccountsException.class, () -> {
+            // call the method
+            userServiceJpa.deleteUserById(1L);
+        });
+
+        // test for the exception and verify the method was not called
+        assertEquals("user has accounts, cannot delete user", exception.getMessage());
+        verify(userRepository, times(0)).delete(user);
+    }
+
+    // @Test
+    // void addUser() {
+    //
+    // }
+    //
+    // @Test
+    // void patchUserById() {
+    // }
 }
