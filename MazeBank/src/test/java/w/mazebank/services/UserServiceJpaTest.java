@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,6 +75,27 @@ class UserServiceJpaTest {
         assertEquals(2L, results.get(1).getId());
         assertEquals("Jane", results.get(1).getFirstName());
         assertEquals("Doe", results.get(1).getLastName());
+    }
+
+    @Test
+    void blockUser() throws UserNotFoundException {
+        // create regular non-blocked user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .blocked(false)
+            .build();
+
+        // mock the findById method and return blocked user
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // call the method
+        userServiceJpa.blockUser(1L);
+
+        // test results
+        assertEquals(true, user.isBlocked());
+        verify(userRepository).save(user);
     }
 
     @Test
