@@ -85,12 +85,14 @@ class RegisterRequestTest {
 
     // TODO: uitzoeken hoe we dit kunnen testen want het is een integer
     @Test
-    void bsnIsNotNull(){
+    void bsnIsNull(){
+        user.setBsn(null);
+
         // Validate
-        // Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
-        // assertFalse(violations.isEmpty());
-        // ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
-        // assertEquals("BSN is mandatory", violation.getMessage());
+        Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(user);
+        ConstraintViolation<RegisterRequest> violation = violations.iterator().next();
+        assertEquals(1, violations.size());
+        assertEquals("BSN is mandatory", violation.getMessage());
     }
 
     @Test

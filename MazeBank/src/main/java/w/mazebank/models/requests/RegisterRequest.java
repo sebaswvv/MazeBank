@@ -20,7 +20,7 @@ public class RegisterRequest {
     private String email;
 
     @NotNull(message = "BSN is mandatory")
-    private int bsn;
+    private Integer bsn;
 
     @NotNull(message = "First name is mandatory")
     @NotBlank(message = "First name is mandatory")
