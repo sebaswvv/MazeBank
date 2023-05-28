@@ -117,12 +117,6 @@ class UserServiceJpaTest {
         verify(userRepository).findById(1L);
     }
 
-    @Test
-    void addUser() {
-
-        // test results
-        assertEquals("user not found with id: 1", exception.getMessage());
-    }
 
     @Test
     void deleteUserByIdThatHasAccounts(){
@@ -155,13 +149,4 @@ class UserServiceJpaTest {
         assertEquals("user has accounts, cannot delete user", exception.getMessage());
         verify(userRepository, times(0)).delete(user);
     }
-
-    // @Test
-    // void addUser() {
-    //
-    // }
-    //
-    // @Test
-    // void patchUserById() {
-    // }
 }
