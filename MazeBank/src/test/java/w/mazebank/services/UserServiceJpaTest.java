@@ -90,19 +90,34 @@ class UserServiceJpaTest {
         when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
         doNothing().when(userRepository).delete(user);
 
-
         // call the method
         userServiceJpa.deleteUserById(1L);
 
+        // verify the method was called
         verify(userRepository, times(1)).delete(user);
     }
 
     @Test
-    void addUser() {
+    void deleteUserByIdThatDoesNotExist() {
+        // mock the findById method and return null
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // call the method
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.deleteUserById(1L);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
     }
 
-    @Test
-    void patchUserById() {
-    }
+    // @Test
+    // void addUser() {
+    //
+    // }
+    //
+    // @Test
+    // void patchUserById() {
+    // }
 }
