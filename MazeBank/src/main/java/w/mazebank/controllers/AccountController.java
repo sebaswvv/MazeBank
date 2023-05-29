@@ -69,12 +69,20 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    public ResponseEntity<TransactionResponse> deposit(
+        @PathVariable("accountId") Long accountId,
+        @RequestBody AtmRequest atmRequest,
+        @AuthenticationPrincipal User user
+    ) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.ok(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
 
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    public ResponseEntity<TransactionResponse> withdraw(
+        @PathVariable Long accountId,
+        @RequestBody AtmRequest atmRequest,
+        @AuthenticationPrincipal User user
+    ) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.ok(accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user));
     }
 
@@ -90,5 +98,18 @@ public class AccountController {
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException {
         accountServiceJpa.unlockAccount(id);
         return ResponseEntity.ok(new LockedResponse(false));
+    }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<Object> getAllTransactionsByAccontId(
+        @PathVariable Long accountId,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "asc") String sort,
+        @RequestParam(required = false) String search,
+        @AuthenticationPrincipal User user
+    ) throws UserNotFoundException, AccountNotFoundException {
+        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(offset, limit, sort, search, user, accountId);
+        return ResponseEntity.ok(transactionResponses);
     }
 }

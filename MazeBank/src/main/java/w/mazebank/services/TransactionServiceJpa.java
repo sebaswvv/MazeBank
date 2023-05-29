@@ -90,10 +90,10 @@ public class TransactionServiceJpa {
 
     private void checkIfUserIsTransactionParticipant(User user, Transaction transaction) {
         // allow if user is of type employee
-        if(user.getRole() == RoleType.EMPLOYEE) return;
+        if (user.getRole() == RoleType.EMPLOYEE) return;
 
         // if user is sender or receiver of transaction, allow
-        if(transaction.getSender().getUser().getId() == user.getId()
+        if (transaction.getSender().getUser().getId() == user.getId()
             || transaction.getReceiver().getUser().getId() == user.getId()) return;
 
         // else throw exception
@@ -110,7 +110,7 @@ public class TransactionServiceJpa {
     }
 
     // add transaction to the dataabase
-    private TransactionResponse performTransaction(Transaction transaction){
+    private TransactionResponse performTransaction(Transaction transaction) {
         // save transaction to the db
         transactionRepository.save(transaction);
 
@@ -131,10 +131,9 @@ public class TransactionServiceJpa {
     public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException {
 
         // update account balance depending on transaction type
-        if(transactionType == TransactionType.WITHDRAWAL){
+        if (transactionType == TransactionType.WITHDRAWAL) {
             account.setBalance(account.getBalance() - amount);
-        }
-        else if(transactionType == TransactionType.DEPOSIT){
+        } else if (transactionType == TransactionType.DEPOSIT) {
             account.setBalance(account.getBalance() + amount);
         }
 
@@ -173,7 +172,7 @@ public class TransactionServiceJpa {
         validateTransaction(transaction);
 
         // check if receiver is a savings account
-        if(transaction.getReceiver().getAccountType() == AccountType.SAVINGS)
+        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS)
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
     }
 
@@ -200,10 +199,10 @@ public class TransactionServiceJpa {
     }
 
     private void checkIfAnAccountIsBlocked(Transaction transaction) throws TransactionFailedException {
-        if(!transaction.getSender().isActive())
+        if (!transaction.getSender().isActive())
             throw new TransactionFailedException("Sender account is blocked");
 
-        if(!transaction.getReceiver().isActive())
+        if (!transaction.getReceiver().isActive())
             throw new TransactionFailedException("Receiver account is blocked");
     }
 
@@ -211,18 +210,18 @@ public class TransactionServiceJpa {
         // get User from sender account
         User user = transaction.getSender().getUser();
 
-        if(!user.isBlocked())
+        if (!user.isBlocked())
             throw new TransactionFailedException("User is blocked");
     }
 
     private void checkUser(Transaction transaction) throws TransactionFailedException {
-        if(transaction.getUserPerforming().getRole() != RoleType.EMPLOYEE
+        if (transaction.getUserPerforming().getRole() != RoleType.EMPLOYEE
             && transaction.getUserPerforming().getId() != transaction.getSender().getUser().getId())
             throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
     }
 
     private void checkIfTransactionLimitIsExceeded(Transaction transaction) throws TransactionFailedException {
-        if(transaction.getAmount() > transaction.getSender().getUser().getTransactionLimit())
+        if (transaction.getAmount() > transaction.getSender().getUser().getTransactionLimit())
             throw new TransactionFailedException("Transaction limit exceeded");
     }
 
@@ -232,10 +231,10 @@ public class TransactionServiceJpa {
     }
 
     private void savingsAccountCheckSend(Transaction transaction) throws TransactionFailedException {
-        if(transaction.getSender().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
+        if (transaction.getSender().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
             throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
 
-        if(transaction.getReceiver().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
+        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
             throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
     }
 
@@ -247,13 +246,13 @@ public class TransactionServiceJpa {
     }
 
     private void checkIfSenderAndReceiverAreNotTheSame(Transaction transaction) throws TransactionFailedException {
-        if(transaction.getSender().getId() == transaction.getReceiver().getId())
+        if (transaction.getSender().getId() == transaction.getReceiver().getId())
             throw new TransactionFailedException("Sender and receiver cannot be the same");
     }
 
     private boolean dayLimitExceeded(Account sender, double amount) {
         // save in Double object for the NULL checking
-        Double totalAmountOfTransactionForToday =  transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
+        Double totalAmountOfTransactionForToday = transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
         double currentTotal = totalAmountOfTransactionForToday != null ? totalAmountOfTransactionForToday : 0.0;
 
         // check if the day limit is exceeded

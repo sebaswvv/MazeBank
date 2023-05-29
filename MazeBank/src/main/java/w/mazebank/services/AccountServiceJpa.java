@@ -9,6 +9,7 @@ import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
@@ -180,5 +181,24 @@ public class AccountServiceJpa extends BaseServiceJpa {
         account.setActive(false);
 
         accountRepository.save(account);
+    }
+
+    // move to transactionService or nah????
+    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, String search, User user, Long accountId) throws AccountNotFoundException {
+        Account account = getAccountAndValidate(accountId, user);
+
+        List<TransactionServiceJpa> transactions = findAllPaginationAndSort(offset, limit, sort, search, transactionServiceJpa);
+
+        // parse users to user responses
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            TransactionResponse userResponse = TransactionResponse.builder()
+                .id(transaction.getId())
+                .firstName(transaction.getFirstName())
+                .lastName(transaction.getLastName())
+                .build();
+            transactionResponses.add(userResponse);
+        }
+        return transactionResponses;
     }
 }
