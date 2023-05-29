@@ -272,14 +272,14 @@ class UserServiceJpaTest {
             .role(RoleType.CUSTOMER)
             .build();
 
-        // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
-
         //should get UnauthorizedAccountAccessException
         Exception exception = assertThrows(UnauthorizedAccountAccessException.class, () -> {
             // call the method
             userServiceJpa.getAccountsByUserId(1L, performingUser);
         });
 
+        // test results
+        assertEquals("user not allowed to access accounts of user with id: 1", exception.getMessage());
+        verify(userRepository, times(0)).findById(1L);
     }
 }

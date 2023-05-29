@@ -43,6 +43,11 @@ public class UserServiceJpa extends BaseServiceJpa {
 //    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+        // throw exception if user is not an employee and not the user performing the request
+        if(!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
+            throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
+        }
+
         // get user
         User user = getUserById(userId);
 
@@ -50,10 +55,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         List<Account> accounts = user.getAccounts();
         if (accounts == null) return new ArrayList<>();
 
-        // throw exception if user is not an employee and not the user performing the request
-        if(!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
-            throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
-        }
+
 
         // parse accounts to account responses
         List<AccountResponse> accountResponses = new ArrayList<>();
