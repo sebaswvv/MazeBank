@@ -208,7 +208,7 @@ public class TransactionServiceJpa {
         // get User from sender account
         User user = transaction.getSender().getUser();
 
-        if(!user.isBlocked())
+        if(user.isBlocked())
             throw new TransactionFailedException("User is blocked");
     }
 
