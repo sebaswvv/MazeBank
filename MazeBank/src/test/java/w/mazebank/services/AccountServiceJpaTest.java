@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
+import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.AccountResponse;
@@ -107,5 +108,34 @@ class AccountServiceJpaTest {
 
         // test results
         assertEquals(0, results.size());
+    }
+
+
+    @Test
+    void getAccountById() throws AccountNotFoundException {
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+
+        // call the method
+        Account result = accountServiceJpa.getAccountById(1L);
+
+        // test results
+        assertEquals(1L, result.getUser().getId());
+        assertEquals("John", result.getUser().getFirstName());
+        assertEquals("Doe", result.getUser().getLastName());
+    }
+
+    @Test
+    void NoAccountFoundById() {
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+        // call the method
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
+            accountServiceJpa.getAccountById(1L);
+        });
+
+        // test results
+        assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
     }
 }
