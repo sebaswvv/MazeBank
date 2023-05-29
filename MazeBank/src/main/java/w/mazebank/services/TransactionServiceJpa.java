@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.InsufficientFundsException;
-import w.mazebank.exceptions.TransactionFailedException;
-import w.mazebank.exceptions.TransactionNotFoundException;
-import w.mazebank.exceptions.UnauthorizedTransactionAccessException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
@@ -56,7 +53,7 @@ public class TransactionServiceJpa {
 
     @Transactional
     public TransactionResponse postTransaction(TransactionRequest transactionRequest, User userPerforming)
-        throws TransactionFailedException, InsufficientFundsException {
+        throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 

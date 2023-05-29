@@ -73,8 +73,10 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return account;
     }
 
-    public Account getAccountByIban(String iban) {
-        return accountRepository.findByIban(iban);
+    public Account getAccountByIban(String iban) throws AccountNotFoundException {
+        Account account = accountRepository.findByIban(iban);
+        if (account == null) throw new AccountNotFoundException("Account with iban: " + iban + " not found");
+        return account;
     }
 
     public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
