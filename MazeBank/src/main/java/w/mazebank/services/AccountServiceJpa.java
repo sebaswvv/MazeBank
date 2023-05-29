@@ -69,7 +69,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
         return accountRepository.findById(id)
-            .orElseThrow(() -> new AccountNotFoundException("account not found with id: " + id));
+            .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
     }
 
     public Account getAccountByIban(String iban) throws AccountNotFoundException {
