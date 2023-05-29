@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
@@ -253,5 +254,32 @@ class UserServiceJpaTest {
         assertEquals(2, accounts.size());
         assertEquals("NL01INHO0000000001", accounts.get(0).getIban());
         assertEquals("NL01INHO0000000002", accounts.get(1).getIban());
+    }
+
+    @Test
+    void getAccountsByUserUnauthorized() throws UserNotFoundException {
+        // create a user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        User performingUser = User.builder()
+            .id(2L)
+            .firstName("Jane")
+            .lastName("Doe")
+            .role(RoleType.CUSTOMER)
+            .build();
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+
+        //should get UnauthorizedAccountAccessException
+        Exception exception = assertThrows(UnauthorizedAccountAccessException.class, () -> {
+            // call the method
+            userServiceJpa.getAccountsByUserId(1L, performingUser);
+        });
+
     }
 }
