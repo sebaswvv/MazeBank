@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
+import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.InsufficientFundsException;
 import w.mazebank.exceptions.TransactionFailedException;
@@ -105,6 +106,51 @@ class TransactionServiceJpaTest {
             .user(users.get(0))
             .build()
         );
+        // bank account
+        accounts.add(Account.builder()
+            .id(4L)
+            .accountType(AccountType.CHECKING)
+            .balance(100000.00)
+            .iban("bank_iban")
+            .isActive(true)
+            .user(users.get(3))
+            .build()
+        );
+    }
+
+    @Test
+    void deposit() throws AccountNotFoundException, TransactionFailedException {
+        // mock the accountServiceJpa.getAccountByIban
+        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+
+        // Perform the transaction
+        TransactionResponse result = transactionServiceJpa.atmAction(accounts.get(0), 100.00, TransactionType.DEPOSIT, users.get(0));
+
+        // Assert the transaction was successful
+        assertNotNull(result);
+        assertEquals(1100.00, accounts.get(0).getBalance());
+    }
+
+    @Test
+    void withdraw() throws AccountNotFoundException, TransactionFailedException {
+        // mock the accountServiceJpa.getAccountByIban
+        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+
+        // Perform the transaction
+        TransactionResponse result = transactionServiceJpa.atmAction(accounts.get(0), 100.00, TransactionType.WITHDRAWAL, users.get(0));
+
+        // Assert the transaction was successful
+        assertNotNull(result);
+        assertEquals(900.00, accounts.get(0).getBalance());
+    }
+
+    @Test
+    void ATMActionReceiverCannotBeSavings() throws AccountNotFoundException {
+        // mock the accountServiceJpa.getAccountByIban
+        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+
+        // Create atm action, for account id 3. This is a savings account. This throw TransactionFailedException
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.atmAction(accounts.get(2), 100.00, TransactionType.DEPOSIT, users.get(0)));
     }
 
     @Test
