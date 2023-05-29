@@ -175,10 +175,10 @@ public class AccountServiceJpa extends BaseServiceJpa {
         accountRepository.save(account);
     }
 
-    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountStatusException {
+    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
 
         if (getAccountById(id).isActive()) {
-            throw new AccountStatusException("Account is already unlocked");
+            throw new AccountLockOrUnlockStatusException("Account is already unlocked");
         }
 
         Account account = getAccountById(id);

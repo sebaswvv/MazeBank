@@ -9,19 +9,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
 import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.AccountStatusException;
+import w.mazebank.exceptions.AccountLockOrUnlockStatusException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.AccountResponse;
-import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
-import w.mazebank.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceJpaTest {
@@ -142,7 +140,7 @@ class AccountServiceJpaTest {
 
     @Test
     // Happy flow
-    void unlockAccount() throws AccountNotFoundException, AccountStatusException {
+    void unlockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
@@ -154,11 +152,15 @@ class AccountServiceJpaTest {
         assertEquals("John", result.getUser().getFirstName());
         assertEquals("Doe", result.getUser().getLastName());
         assertTrue(result.isActive());
+
+       // check if repository was called
+        verify(accountRepository, times(1)).save(any(Account.class));
+
     }
 
     @Test
     // Account already unlocked
-    void unlockAccountAlreadyUnlocked() throws AccountNotFoundException, AccountStatusException {
+    void unlockAccountAlreadyUnlocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
@@ -172,7 +174,7 @@ class AccountServiceJpaTest {
         assertTrue(result.isActive());
 
         // call the method again
-        AccountStatusException exception = assertThrows(AccountStatusException.class, () -> {
+        AccountLockOrUnlockStatusException exception = assertThrows(AccountLockOrUnlockStatusException.class, () -> {
             accountServiceJpa.unlockAccount(1L);
         });
 
