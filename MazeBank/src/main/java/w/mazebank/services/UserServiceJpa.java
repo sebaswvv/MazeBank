@@ -21,12 +21,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     private UserRepository userRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
-        // get users
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) throw new UserNotFoundException("user not found with id: " + id);
-
-        // return the user
-        return user;
+        return userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
 //    // patch user by id. Too little difference with getUserById to justify a separate method??
@@ -54,8 +50,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         // get accounts from user
         List<Account> accounts = user.getAccounts();
         if (accounts == null) return new ArrayList<>();
-
-
 
         // parse accounts to account responses
         List<AccountResponse> accountResponses = new ArrayList<>();

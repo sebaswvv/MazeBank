@@ -282,4 +282,28 @@ class UserServiceJpaTest {
         assertEquals("user not allowed to access accounts of user with id: 1", exception.getMessage());
         verify(userRepository, times(0)).findById(1L);
     }
+
+    @Test
+    void getAccountsByUserIdWithNoExistingUser(){
+        // create a user
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .role(RoleType.EMPLOYEE)
+            .build();
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        //should get UserNotFoundException
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.getAccountsByUserId(1L, user);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+    }
 }
