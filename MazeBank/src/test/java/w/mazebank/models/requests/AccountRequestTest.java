@@ -39,7 +39,6 @@ class AccountRequestTest {
     @Test
     void isActiveCannotBeNull() {
         AccountRequest accountRequest = new AccountRequest();
-        accountRequest.setActive(false);
 
         // Validate
         assertFalse(validator.validate(accountRequest).isEmpty());
@@ -48,7 +47,6 @@ class AccountRequestTest {
     @Test
     void absoluteLimitCannotBeNull() {
         AccountRequest accountRequest = new AccountRequest();
-        accountRequest.setAbsoluteLimit(0);
 
         // Validate
         assertFalse(validator.validate(accountRequest).isEmpty());
