@@ -157,9 +157,21 @@ class UserServiceJpaTest {
 
     @Test
     void addUser() {
+        // create a user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
 
-        // test results
-        // assertEquals("user not found with id: 1", exception.getMessage());
+        // mock the repository
+        when(userRepository.save(user)).thenReturn(user);
+
+        // call the method
+        userServiceJpa.addUser(user);
+
+        // test
+        verify(userRepository, times(1)).save(user);
     }
 
     @Test
