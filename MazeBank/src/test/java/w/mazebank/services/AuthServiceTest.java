@@ -10,6 +10,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import w.mazebank.enums.RoleType;
+import w.mazebank.exceptions.BsnAlreadyUsedException;
+import w.mazebank.exceptions.EmailAlreadyUsedException;
+import w.mazebank.exceptions.UserNotOldEnoughException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
@@ -64,7 +67,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void register() {
+    void register() throws BsnAlreadyUsedException, UserNotOldEnoughException, EmailAlreadyUsedException {
         // mock the userRepository
         when(userRepository.save(any(User.class))).thenReturn(user);
 
@@ -85,15 +88,58 @@ class AuthServiceTest {
     @Test
     void registerButEmailIsTaken(){
         // mock the userRepository
-        when(userRepository.findByEmail(registerRequest.getEmail())).thenReturn(java.util.Optional.of(user));
+        when(userRepository.findByEmail(any(String.class))).thenReturn(java.util.Optional.of(user));
 
-
+        // call the register method
+        try {
+            authService.register(registerRequest);
+        } catch (Exception e) {
+            assertEquals("Email already in use", e.getMessage());
+        }
 
         // test results
-        // assertEquals("email is already taken", exception.getMessage());
-        // verify(userRepository).existsByEmail(registerRequest.getEmail());
-        // verify(userRepository, never()).save(any(User.class));
-        // verify(passwordEncoder, never()).encode(registerRequest.getPassword());
-        // verify(jwtService, never()).generateToken(any(User.class));
+        verify(userRepository).findByEmail(any(String.class));
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(registerRequest.getPassword());
+        verify(jwtService, never()).generateToken(any(User.class));
+    }
+
+    @Test
+    void registerButBsnIsTaken(){
+        // mock the userRepository
+        when(userRepository.findByBsn(any(Integer.class))).thenReturn(java.util.Optional.of(user));
+
+        // call the register method
+        try {
+            authService.register(registerRequest);
+        } catch (Exception e) {
+            assertEquals("BSN already in use", e.getMessage());
+        }
+
+        // test results
+        verify(userRepository).findByBsn(any(Integer.class));
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(registerRequest.getPassword());
+        verify(jwtService, never()).generateToken(any(User.class));
+    }
+
+    @Test
+    void registerButUserIsNotOldEnough(){
+        // modify the registerRequest to make the user not old enough
+        registerRequest.setDateOfBirth(LocalDate.now().minusYears(17));
+
+        // call the register method
+        try {
+            authService.register(registerRequest);
+        } catch (Exception e) {
+            assertEquals("User is not 18 years or older", e.getMessage());
+        }
+
+        // test results
+        verify(userRepository).findByBsn(any(Integer.class));
+        verify(userRepository, never()).save(any(User.class));
+        verify(passwordEncoder, never()).encode(registerRequest.getPassword());
+        verify(jwtService, never()).generateToken(any(User.class));
+
     }
 }
