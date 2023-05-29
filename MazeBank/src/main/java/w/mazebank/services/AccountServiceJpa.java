@@ -68,13 +68,14 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
-        Account account = accountRepository.findById(id).orElse(null);
-        if (account == null) throw new AccountNotFoundException("Account with id: " + id + " not found");
-        return account;
+        return accountRepository.findById(id)
+            .orElseThrow(() -> new AccountNotFoundException("account not found with id: " + id));
     }
 
-    public Account getAccountByIban(String iban) {
-        return accountRepository.findByIban(iban);
+    public Account getAccountByIban(String iban) throws AccountNotFoundException {
+        Account account = accountRepository.findByIban(iban);
+        if (account == null) throw new AccountNotFoundException("Account with iban: " + iban + " not found");
+        return account;
     }
 
     public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
@@ -168,11 +169,16 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
-    public void lockAccount(Long id) throws AccountNotFoundException {
+    public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+
+        if (!getAccountById(id).isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already locked");
+        }
         Account account = getAccountById(id);
         account.setActive(false);
 
         accountRepository.save(account);
+        return account;
     }
 
     public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
