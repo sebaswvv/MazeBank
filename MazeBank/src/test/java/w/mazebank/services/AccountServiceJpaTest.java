@@ -165,7 +165,6 @@ class AccountServiceJpaTest {
 
        // check if repository was called
         verify(accountRepository, times(1)).save(any(Account.class));
-
     }
 
     @Test
@@ -206,7 +205,7 @@ class AccountServiceJpaTest {
         // test results
         assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
     }
-  
+
     @Test
     void createAccount() throws AccountCreationLimitReachedException, UserNotFoundException {
         // Mock userServiceJpa's getUserById method
