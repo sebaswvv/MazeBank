@@ -5,11 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import w.mazebank.enums.AccountType;
+import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.InsufficientFundsException;
 import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
@@ -62,6 +62,20 @@ class TransactionServiceJpaTest {
             .lastName("Doe")
             .build()
         );
+        users.add(User.builder()
+            .id(3L)
+            .blocked(false)
+            .firstName("Jack")
+            .lastName("Doe")
+            .build());
+        users.add(User.builder()
+            .id(4L)
+            .blocked(false)
+            .role(RoleType.EMPLOYEE)
+            .firstName("Jill")
+            .lastName("Doe")
+            .build());
+
 
         // create two accounts
         accounts = new ArrayList<>();
@@ -82,6 +96,136 @@ class TransactionServiceJpaTest {
             .user(users.get(1))
             .build()
         );
+        accounts.add(Account.builder()
+            .id(3L)
+            .accountType(AccountType.SAVINGS)
+            .balance(1000.00)
+            .iban("savings_iban")
+            .isActive(true)
+            .user(users.get(0))
+            .build()
+        );
+    }
+
+    @Test
+    void userCannotBeBlocked() throws AccountNotFoundException {
+        // block user of account 1
+        users.get(0).setBlocked(true);
+
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+
+        assertEquals(0, transactionRepository.findAll().size());
+    }
+
+    @Test
+    void accountCannotBeBlocked() throws AccountNotFoundException {
+        // block account 1
+        accounts.get(0).setActive(false);
+
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+
+        assertEquals(0, transactionRepository.findAll().size());
+    }
+
+    @Test
+    void cannotSendFromSavingsToCheckingFromDifferentUsers() throws AccountNotFoundException {
+        // account 3 to account 2 should not work and throw an TransactionFailedException
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("savings_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(100.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("savings_iban")).thenReturn(accounts.get(2));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+        assertEquals(0, transactionRepository.findAll().size());
+    }
+
+    @Test
+    void senderAndReceiverCannotBeTheSame() throws AccountNotFoundException {
+        // account 1 to account 1 should not work and throw an TransactionFailedException
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("sender_iban");
+        transactionRequest.setAmount(100.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+        assertEquals(0, transactionRepository.findAll().size());
+    }
+
+    @Test
+    void dayLimitCannotBeExceeded() throws AccountNotFoundException {
+        // account 1 (sender), set day limit to 1000
+        accounts.get(0).getUser().setDayLimit(1000.00);
+
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(1001.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(InsufficientFundsException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+
+        // Assert the transaction was not successful
+        assertEquals(0, transactionRepository.findAll().size());
+    }
+
+
+    @Test
+    void transactionLimitCannotBeExceeded() throws AccountNotFoundException {
+        // account 1 (sender), set transaction limit to 1000
+        accounts.get(0).getUser().setTransactionLimit(1000.00);
+
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(1001.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+
+        // Assert the transaction was not successful
+        assertEquals(0, transactionRepository.findAll().size());
     }
 
     @Test
@@ -113,22 +257,76 @@ class TransactionServiceJpaTest {
     }
 
     @Test
-    void checkIfSenderIsValid() {
+    void insufficientFunds() throws AccountNotFoundException {
+        // set the sender's balance to 0
+        accounts.get(0).setBalance(0.00);
+
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(100.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(InsufficientFundsException.class, () -> {
+            transactionServiceJpa.postTransaction(transactionRequest, users.get(0));
+        });
+
+        // check if the transaction was not saved
+        assertEquals(0, transactionRepository.findAll().size());
     }
 
     @Test
-    void checkIfReceiverIsValid() {
+    void accountIsNotOwnedByUserPerforming() throws AccountNotFoundException {
+        // user 3 tries to send money from user 1's account
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(100.00);
+
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
+
+        // Perform the transaction
+        assertThrows(TransactionFailedException.class, () -> {
+            transactionServiceJpa.postTransaction(transactionRequest, users.get(2));
+        });
+
+        // check if the transaction was not saved
+        assertEquals(0, transactionRepository.findAll().size());
     }
 
     @Test
-    void insufficientFunds() {
-    }
+    void checkIfUserIsAuthorized() throws AccountNotFoundException, TransactionFailedException {
+        // user 4 is employee and should be authorized
+        // Create a transaction request
+        TransactionRequest transactionRequest = new TransactionRequest();
+        transactionRequest.setSenderIban("sender_iban");
+        transactionRequest.setReceiverIban("receiver_iban");
+        transactionRequest.setAmount(100.00);
 
-    @Test
-    void checkIfAccountIsOwnedByUser() {
-    }
+        // Mock the behavior of accountServiceJpa
+        when(accountServiceJpa.getAccountByIban("sender_iban")).thenReturn(accounts.get(0));
+        when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
 
-    @Test
-    void checkIfUserIsAuthorized() {
+        // Perform the transaction, should be successful
+        TransactionResponse result = transactionServiceJpa.postTransaction(transactionRequest, users.get(3));
+
+        // Assert the transaction was successful
+        assertNotNull(result);
+        assertEquals(900.00, accounts.get(0).getBalance());
+        assertEquals(2100.00, accounts.get(1).getBalance());
+        assertNotNull(result.getId());
+        assertEquals(100.00, result.getAmount());
+        assertEquals("sender_iban", result.getSender());
+        assertEquals("receiver_iban", result.getReceiver());
+        assertEquals(4L, result.getUserPerforming());
+        assertNotNull(result.getTimestamp());
     }
 }

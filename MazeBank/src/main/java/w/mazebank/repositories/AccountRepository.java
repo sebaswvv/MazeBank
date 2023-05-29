@@ -5,10 +5,11 @@ package w.mazebank.repositories;
     import w.mazebank.models.Account;
 
     import java.util.List;
+    import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends BaseRepository<Account, Long> {
-    Account findByIban(String iban);
+    Optional<Account> findByIban(String iban);
 
     @Override
     @Query("SELECT a FROM Account a WHERE a.iban LIKE %?1%")
