@@ -21,12 +21,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     private UserRepository userRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
-        // get users
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) throw new UserNotFoundException("user not found with id: " + id);
-
-        // return the user
-        return user;
+        return userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
 //    // patch user by id. Too little difference with getUserById to justify a separate method??
@@ -43,35 +39,32 @@ public class UserServiceJpa extends BaseServiceJpa {
 //    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+        // throw exception if user is not an employee and not the user performing the request
+        if(!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
+            throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
+        }
 
         // get user
         User user = getUserById(userId);
+
         // get accounts from user
         List<Account> accounts = user.getAccounts();
-        if (accounts == null) {
-            return new ArrayList<>();
-        }
+        if (accounts == null) return new ArrayList<>();
 
-        // if statement to check if user is employee || right owner of the checked account
-        if (userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.getId() == userId) {
-            // parse accounts to account responses
-            List<AccountResponse> accountResponses = new ArrayList<>();
-            for (Account account : accounts) {
-                AccountResponse accountResponse = AccountResponse.builder()
-                    .id(account.getId())
-                    .accountType(account.getAccountType().getValue())
-                    .iban(account.getIban())
-                    .balance(account.getBalance())
-                    .timestamp(account.getCreatedAt())
-                    .build();
-                accountResponses.add(accountResponse);
-            }
-            // return account responses
-            return accountResponses;
-        } else {
-            // return 403 forbidden message
-            throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
+        // parse accounts to account responses
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            AccountResponse accountResponse = AccountResponse.builder()
+                .id(account.getId())
+                .accountType(account.getAccountType().getValue())
+                .iban(account.getIban())
+                .balance(account.getBalance())
+                .timestamp(account.getCreatedAt())
+                .build();
+            accountResponses.add(accountResponse);
         }
+        // return account responses
+        return accountResponses;
 
     }
 
