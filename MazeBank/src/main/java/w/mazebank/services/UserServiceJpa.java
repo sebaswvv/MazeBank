@@ -43,35 +43,32 @@ public class UserServiceJpa extends BaseServiceJpa {
 //    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
-
         // get user
         User user = getUserById(userId);
+
         // get accounts from user
         List<Account> accounts = user.getAccounts();
-        if (accounts == null) {
-            return new ArrayList<>();
-        }
+        if (accounts == null) return new ArrayList<>();
 
-        // if statement to check if user is employee || right owner of the checked account
-        if (userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.getId() == userId) {
-            // parse accounts to account responses
-            List<AccountResponse> accountResponses = new ArrayList<>();
-            for (Account account : accounts) {
-                AccountResponse accountResponse = AccountResponse.builder()
-                    .id(account.getId())
-                    .accountType(account.getAccountType().getValue())
-                    .iban(account.getIban())
-                    .balance(account.getBalance())
-                    .timestamp(account.getCreatedAt())
-                    .build();
-                accountResponses.add(accountResponse);
-            }
-            // return account responses
-            return accountResponses;
-        } else {
-            // return 403 forbidden message
+        // throw exception if user is not an employee and not the user performing the request
+        if(!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
         }
+
+        // parse accounts to account responses
+        List<AccountResponse> accountResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            AccountResponse accountResponse = AccountResponse.builder()
+                .id(account.getId())
+                .accountType(account.getAccountType().getValue())
+                .iban(account.getIban())
+                .balance(account.getBalance())
+                .timestamp(account.getCreatedAt())
+                .build();
+            accountResponses.add(accountResponse);
+        }
+        // return account responses
+        return accountResponses;
 
     }
 
