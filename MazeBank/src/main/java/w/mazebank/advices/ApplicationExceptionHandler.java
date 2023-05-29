@@ -123,4 +123,29 @@ public class ApplicationExceptionHandler {
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Username Not Found");
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ResponseEntity<Object> handleEmailAlreadyUsedException(EmailAlreadyUsedException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Email Already Used");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(BsnAlreadyUsedException.class)
+    public ResponseEntity<Object> handleBsnAlreadyUsedException(BsnAlreadyUsedException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Bsn Already Used");
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserNotOldEnoughException.class)
+    public ResponseEntity<Object> handleUserNotOldEnoughException(UserNotOldEnoughException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Not Old Enough");
+    }
+
 }

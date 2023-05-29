@@ -6,7 +6,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import w.mazebank.exceptions.BsnAlreadyUsedException;
+import w.mazebank.exceptions.EmailAlreadyUsedException;
 import w.mazebank.exceptions.UnauthorizedAccountAccessException;
+import w.mazebank.exceptions.UserNotOldEnoughException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
@@ -34,7 +37,11 @@ public class AuthService {
         return user.isBlocked();
     }
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(RegisterRequest request) throws BsnAlreadyUsedException, UserNotOldEnoughException, EmailAlreadyUsedException {
+        // do some checks
+        checkRegisterRequest(request);
+
+        // create user
         User user = User.builder()
             .email(request.getEmail())
             .bsn(request.getBsn())
@@ -45,7 +52,7 @@ public class AuthService {
             .dateOfBirth(request.getDateOfBirth())
             .build();
 
-        // save the user
+        // save the user to the db
         userRepository.save(user);
 
         // generate a token
@@ -79,5 +86,34 @@ public class AuthService {
         return AuthenticationResponse.builder()
             .authenticationToken(jwt)
             .build();
+    }
+
+    private void checkRegisterRequest(RegisterRequest request) throws UserNotOldEnoughException, BsnAlreadyUsedException, EmailAlreadyUsedException {
+        checkIfEmailAlreadyUsed(request);
+        checkIfBsnAlreadyUsed(request);
+        checkIfUserIs18(request);
+    }
+
+    private static void checkIfUserIs18(RegisterRequest request) throws UserNotOldEnoughException {
+        // TODO: uitzoeken of deze check echt moest
+        if (request.getDateOfBirth().plusYears(18).isAfter(java.time.LocalDate.now())) {
+            throw new UserNotOldEnoughException("User is not 18 years or older");
+        }
+    }
+
+    private void checkIfBsnAlreadyUsed(RegisterRequest request) throws BsnAlreadyUsedException {
+        if (userRepository.findByBsn(request.getBsn()).isPresent()) {
+            throw new BsnAlreadyUsedException("BSN already in use");
+        }
+    }
+
+    private void checkIfEmailAlreadyUsed(RegisterRequest request) throws EmailAlreadyUsedException {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new EmailAlreadyUsedException("Email already in use");
+        }
+    }
+
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
     }
 }

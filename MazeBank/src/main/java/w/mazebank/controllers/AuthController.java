@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import w.mazebank.exceptions.BsnAlreadyUsedException;
+import w.mazebank.exceptions.EmailAlreadyUsedException;
+import w.mazebank.exceptions.UserNotOldEnoughException;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
@@ -23,7 +26,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
         @RequestBody @Valid RegisterRequest request
-    ) {
+    ) throws BsnAlreadyUsedException, UserNotOldEnoughException, EmailAlreadyUsedException {
         return ResponseEntity.ok(authService.register(request));
     }
 
