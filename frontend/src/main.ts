@@ -1,5 +1,34 @@
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createApp, markRaw } from 'vue';
+import './assets/main.css';
+import App from './App.vue';
+import router from './router';
+import type { Router } from 'vue-router';
+import { createPinia } from 'pinia';
 
-createApp(App).mount('#app')
+/* FontAwesome icons */
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+library.add(faUser);
+
+// Create app
+const app = createApp(App);
+app.use(router);
+
+// Add router to pinia
+const pinia = createPinia();
+pinia.use(({ store }) => {
+  store.router = markRaw(router);
+});
+
+// Mount app
+app.use(pinia);
+app.component('font-awesome-icon', FontAwesomeIcon);
+app.mount('#app');
+
+// declare module 'pinia' with router
+declare module 'pinia' {
+  export interface PiniaCustomProperties {
+    router: Router;
+  }
+}
