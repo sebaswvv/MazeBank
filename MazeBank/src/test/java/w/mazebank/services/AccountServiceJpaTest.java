@@ -196,4 +196,57 @@ class AccountServiceJpaTest {
         // test results
         assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
     }
+
+
+    @Test
+    // happy flow
+    void lockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+
+        // unlock the account
+        accountServiceJpa.unlockAccount(1L);
+
+        // call the method
+        Account result = accountServiceJpa.lockAccount(1L);
+
+        // test results
+        assertEquals(1L, result.getUser().getId());
+        assertEquals("John", result.getUser().getFirstName());
+        assertEquals("Doe", result.getUser().getLastName());
+        assertFalse(result.isActive());
+
+        // check if repository was called
+        verify(accountRepository, times(2)).save(any(Account.class));
+    }
+
+    @Test
+    // Account already locked
+    void lockAccountAlreadyLocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+
+        // call the method
+        AccountLockOrUnlockStatusException exception = assertThrows(AccountLockOrUnlockStatusException.class, () -> {
+            accountServiceJpa.lockAccount(1L);
+        });
+
+        // test results
+        assertEquals("Account is already locked", exception.getMessage());
+    }
+
+    @Test
+    // Account not found
+    void lockAccountNotFound() {
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+
+        // call the method
+        AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
+            accountServiceJpa.lockAccount(1L);
+        });
+
+        // test results
+        assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+    }
 }
