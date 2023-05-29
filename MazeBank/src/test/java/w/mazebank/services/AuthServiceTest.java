@@ -81,4 +81,19 @@ class AuthServiceTest {
         verify(passwordEncoder).encode(registerRequest.getPassword());
         verify(jwtService).generateToken(any(User.class));
     }
+
+    @Test
+    void registerButEmailIsTaken(){
+        // mock the userRepository
+        when(userRepository.findByEmail(registerRequest.getEmail())).thenReturn(java.util.Optional.of(user));
+
+
+
+        // test results
+        // assertEquals("email is already taken", exception.getMessage());
+        // verify(userRepository).existsByEmail(registerRequest.getEmail());
+        // verify(userRepository, never()).save(any(User.class));
+        // verify(passwordEncoder, never()).encode(registerRequest.getPassword());
+        // verify(jwtService, never()).generateToken(any(User.class));
+    }
 }
