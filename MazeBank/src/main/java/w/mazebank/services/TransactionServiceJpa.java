@@ -98,8 +98,9 @@ public class TransactionServiceJpa {
     }
 
     // return the bankaccount of the Bank
-    private Account getBankAccount() {
-        return accountRepository.findAll().get(0);
+    private Account getBankAccount() throws AccountNotFoundException {
+        //return accountRepository.findAll().get(0);
+        return accountServiceJpa.getAccountByIban("NL01MAZE0000000001");
     }
 
     public void saveTransaction(Transaction transaction) {
@@ -125,7 +126,7 @@ public class TransactionServiceJpa {
 
     // method for both deposit and withdrawal
     @Transactional
-    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException {
+    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException, AccountNotFoundException {
 
         // update account balance depending on transaction type
         if(transactionType == TransactionType.WITHDRAWAL){
