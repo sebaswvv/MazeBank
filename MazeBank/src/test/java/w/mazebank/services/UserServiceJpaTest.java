@@ -102,6 +102,27 @@ class UserServiceJpaTest {
     }
 
     @Test
+    void unblockUser() throws UserNotFoundException {
+        // create blocked user
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .blocked(true)
+            .build();
+
+        // mock the findById method and return blocked user
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // call the method
+        userServiceJpa.unblockUser(1L);
+
+        // test results
+        assertEquals(false, user.isBlocked());
+        verify(userRepository).save(user);
+    }
+
+    @Test
     void blockNonExistingUser() {
         // mock the findById method and return null
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
@@ -116,6 +137,23 @@ class UserServiceJpaTest {
         assertEquals("user not found with id: 1", exception.getMessage());
         verify(userRepository).findById(1L);
     }
+
+    @Test
+    void unblockNonExistingUser(){
+        // mock the findById method and return null
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // check if usernotfoundexception is thrown
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.unblockUser(1L);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
+        verify(userRepository).findById(1L);
+    }
+
 
     @Test
     void addUser() {
