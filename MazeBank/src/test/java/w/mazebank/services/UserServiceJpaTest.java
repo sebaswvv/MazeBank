@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
+import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
@@ -206,5 +207,51 @@ class UserServiceJpaTest {
         assertEquals("NL01INHO0000000002", accounts.get(1).getIban());
 
     }
-    
+
+    @Test
+    void getAccountsByUserIdWithEmployee() throws UserNotFoundException {
+        // create employee for performing user
+        User employee = User.builder()
+            .id(2L)
+            .firstName("Jane")
+            .lastName("Doe")
+            .role(RoleType.EMPLOYEE)
+            .build();
+
+        // create a user for the bank accounts
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        // create two accounts for the user
+        Account account1 = Account.builder()
+            .id(1L)
+            .iban("NL01INHO0000000001")
+            .balance(100.0)
+            .accountType(AccountType.CHECKING)
+            .user(user)
+            .build();
+        Account account2 = Account.builder()
+            .id(2L)
+            .balance(200.0)
+            .iban("NL01INHO0000000002")
+            .accountType(AccountType.SAVINGS)
+            .user(user)
+            .build();
+
+        user.setAccounts(List.of(account1, account2));
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+
+        // call the method
+        List<AccountResponse> accounts = userServiceJpa.getAccountsByUserId(1L, employee);
+
+        // test results
+        assertEquals(2, accounts.size());
+        assertEquals("NL01INHO0000000001", accounts.get(0).getIban());
+        assertEquals("NL01INHO0000000002", accounts.get(1).getIban());
+    }
 }
