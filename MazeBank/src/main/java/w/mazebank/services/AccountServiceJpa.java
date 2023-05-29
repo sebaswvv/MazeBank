@@ -168,17 +168,28 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
-    public void lockAccount(Long id) throws AccountNotFoundException {
-        Account account = getAccountById(id);
-        account.setActive(true);
+    public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
 
-        accountRepository.save(account);
-    }
-
-    public void unlockAccount(Long id) throws AccountNotFoundException {
+        if (!getAccountById(id).isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already locked");
+        }
         Account account = getAccountById(id);
         account.setActive(false);
 
         accountRepository.save(account);
+        return account;
+    }
+
+    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+
+        if (getAccountById(id).isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already unlocked");
+        }
+
+        Account account = getAccountById(id);
+        account.setActive(true);
+
+        accountRepository.save(account);
+        return account;
     }
 }

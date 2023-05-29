@@ -80,14 +80,14 @@ public class AccountController {
 
     @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
-    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException {
+    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         accountServiceJpa.lockAccount(id);
         return ResponseEntity.ok(new LockedResponse(true));
     }
 
     @PutMapping("/{id}/enable")
     @Secured("ROLE_EMPLOYEE")
-    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException {
+    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         accountServiceJpa.unlockAccount(id);
         return ResponseEntity.ok(new LockedResponse(false));
     }
