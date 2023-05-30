@@ -16,7 +16,9 @@ public interface AccountRepository extends BaseRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.iban LIKE %?1%")
     List<Account> findBySearchString(String search, Pageable pageable);
 
-    // create a query to select accounts by first and or lastname
     @Query("SELECT a FROM Account a WHERE a.user.firstName LIKE %:name% OR a.user.lastName LIKE %:name%")
-    List<Account> findAccountByName(@Param("name") String name);
+    List<Account> findAccountsByOneName(@Param("name") String name);
+
+    @Query("SELECT a FROM Account a WHERE a.user.firstName LIKE %:firstName% AND a.user.lastName LIKE %:lastName%")
+    List<Account> findAccountsByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName);
 }

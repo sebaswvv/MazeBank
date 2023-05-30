@@ -196,7 +196,27 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public List<IbanResponse> getAccountsByName(String name) {
-        List<Account> accounts = accountRepository.findAccountByName(name);
+        String[] names = name.split(" ");
+        return names.length == 2
+            ? getAccountsByFirstNameAndLastName(names[0], names[1])
+            : getAccountsByOneName(name);
+    }
+
+    private List<IbanResponse> getAccountsByOneName(String name) {
+        List<Account> accounts = accountRepository.findAccountsByOneName(name);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
+    }
+
+    private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
+        List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         for (Account account : accounts) {
             ibanResponses.add(IbanResponse.builder()
