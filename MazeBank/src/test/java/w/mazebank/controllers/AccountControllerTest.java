@@ -350,7 +350,28 @@ class AccountControllerTest{
             .andExpect(jsonPath("$.balance").value(1000.0))
             .andExpect(jsonPath("$.active").value(true))
             .andExpect(jsonPath("$.absoluteLimit").value(100.0));
-        
+    }
 
+    @Test
+    void patchAccountWithNonExistingAccountWillGiveStatus404() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("absoluteLimit", 100.0);
+        AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+            .absoluteLimit(100.0)
+            .build();
+        // mock the service
+        when(accountService.updateAccount(1L, accountPatchRequest)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+
+        // call the controller
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isNotFound());
     }
 }
