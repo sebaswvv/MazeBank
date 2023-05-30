@@ -13,6 +13,7 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
@@ -192,5 +193,18 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
         accountRepository.save(account);
         return account;
+    }
+
+    public List<IbanResponse> getAccountsByName(String name) {
+        List<Account> accounts = accountRepository.findAccountByName(name);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
     }
 }
