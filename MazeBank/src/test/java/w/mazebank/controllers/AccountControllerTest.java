@@ -79,8 +79,6 @@ class AccountControllerTest {
     void setUp() throws UserNotFoundException {
         authUser = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
 
-
-
         when(userRepository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(authUser));
         when(userServiceJpa.getUserById(Mockito.anyLong())).thenReturn(authUser);
 
@@ -267,7 +265,15 @@ class AccountControllerTest {
                 .contentType("application/json")
                 .content(request.toString())
             ).andDo(print())
-            .andExpect(status().isCreated());
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.amount").value(100.0))
+            .andExpect(jsonPath("$.type").value(TransactionType.DEPOSIT.toString()))
+            .andExpect(jsonPath("$.receiver").value("NL01INHO0123456789"))
+            .andExpect(jsonPath("$.userPerforming").value(3))
+            .andExpect(jsonPath("$.timestamp").exists())
+            .andExpect(jsonPath("$.timestamp").isNotEmpty());
+
     }
 
     @Test
