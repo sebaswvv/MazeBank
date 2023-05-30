@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import HomeView from './views/HomeView.vue'
+import Navbar from './components/Navbar.vue'
+import Footer from './components/Footer.vue'
 </script>
 
 <template>
-  <HomeView />
+  <Navbar />
+  <RouterView />
+  <Footer />
 </template>
 
 <style scoped></style>
