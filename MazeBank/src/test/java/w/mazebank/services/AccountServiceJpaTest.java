@@ -8,11 +8,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
+import w.mazebank.exceptions.AccountCreationLimitReachedException;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.AccountLockOrUnlockStatusException;
+import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.repositories.AccountRepository;
 
 import java.util.ArrayList;
@@ -28,6 +32,9 @@ class AccountServiceJpaTest {
     private AccountServiceJpa accountServiceJpa;
 
     @Mock
+    private UserServiceJpa userServiceJpa;
+
+    @Mock
     private AccountRepository accountRepository;
 
     List<User> users;
@@ -41,11 +48,13 @@ class AccountServiceJpaTest {
                 .id(1L)
                 .firstName("John")
                 .lastName("Doe")
+                .accounts(new ArrayList<>())
                 .build());
         users.add(User.builder()
                 .id(2L)
                 .firstName("Jane")
                 .lastName("Doe")
+                .accounts(new ArrayList<>())
                 .build()
         );
 
@@ -54,12 +63,14 @@ class AccountServiceJpaTest {
         accounts.add(Account.builder()
                 .id(1L)
                 .accountType(AccountType.CHECKING)
+                .iban("NL01MAZE0000000002")
                 .balance(1000.00)
                 .user(users.get(0))
                 .build());
         accounts.add(Account.builder()
                 .id(2L)
                 .accountType(AccountType.SAVINGS)
+                .iban("NL01MAZE0000000003")
                 .balance(2000.00)
                 .user(users.get(1))
                 .build()
@@ -155,7 +166,6 @@ class AccountServiceJpaTest {
 
        // check if repository was called
         verify(accountRepository, times(1)).save(any(Account.class));
-
     }
 
     @Test
@@ -197,6 +207,118 @@ class AccountServiceJpaTest {
         assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
     }
 
+    @Test
+    void createAccount() throws AccountCreationLimitReachedException, UserNotFoundException {
+        // Mock userServiceJpa's getUserById method
+        when(userServiceJpa.getUserById(1L)).thenReturn(users.get(0));
+
+        // Mock the AccountRepository's save method
+        when(accountRepository.save(any(Account.class))).thenReturn(accounts.get(0));
+
+        // Create an AccountRequest object
+        AccountRequest accountRequest = AccountRequest.builder()
+            .userId(1L)
+            .accountType(AccountType.CHECKING)
+            .isActive(true)
+            .absoluteLimit(5000.00)
+            .build();
+
+        // Call the createAccount method
+        AccountResponse accountResponse = accountServiceJpa.createAccount(accountRequest);
+
+        // Verify that the UserServiceJpa's getUserById method was called once with the correct argument
+        verify(userServiceJpa, times(1)).getUserById(1L);
+
+        // Verify that the AccountRepository's save method was called once with the correct argument
+        verify(accountRepository, times(1)).save(any(Account.class));
+
+        // Test the AccountResponse object
+        assertNotNull(accountResponse);
+        assertEquals(1L, accountResponse.getId());
+        assertEquals(AccountType.CHECKING.getValue(), accountResponse.getAccountType());
+        assertEquals(1000.00, accountResponse.getBalance());
+        assertEquals(1L, accountResponse.getUser().getId());
+        assertEquals("John", accountResponse.getUser().getFirstName());
+        assertEquals("Doe", accountResponse.getUser().getLastName());
+    }
+
+    @Test
+    void userAlreadyHasTwoAccount() throws UserNotFoundException {
+        // Give the user two accounts
+        accounts.add(Account.builder()
+            .id(1L)
+            .user(users.get(0))
+            .accountType(AccountType.CHECKING)
+            .isActive(true)
+            .absoluteLimit(5000.00)
+            .balance(1000.00)
+            .build());
+
+        accounts.add(Account.builder()
+            .id(2L)
+            .user(users.get(0))
+            .accountType(AccountType.SAVINGS)
+            .isActive(true)
+            .absoluteLimit(5000.00)
+            .balance(1000.00)
+            .build());
+
+        // Set the accounts to user 0
+        users.get(0).setAccounts(accounts);
+
+        // Mock userServiceJpa's getUserById method
+        when(userServiceJpa.getUserById(1L)).thenReturn(users.get(0));
+
+        // Create an AccountRequest object
+        AccountRequest accountRequest = AccountRequest.builder()
+            .userId(1L)
+            .accountType(AccountType.CHECKING)
+            .isActive(true)
+            .absoluteLimit(5000.00)
+            .build();
+
+        // Call the createAccount method
+        AccountCreationLimitReachedException exception = assertThrows(AccountCreationLimitReachedException.class, () -> {
+            accountServiceJpa.createAccount(accountRequest);
+        });
+
+        // Verify that the UserServiceJpa's getUserById method was called once with the correct argument
+        verify(userServiceJpa, times(1)).getUserById(1L);
+
+        // Verify that the AccountRepository's save method was never called
+        verify(accountRepository, never()).save(any(Account.class));
+
+        // Test the AccountResponse object
+        assertEquals("Checking account creation limit reached", exception.getMessage());
+    }
+
+    @Test
+    void userDoesNotExists() throws UserNotFoundException {
+        // Mock userServiceJpa's getUserById method, to return no user
+        when(userServiceJpa.getUserById(1L)).thenThrow(new UserNotFoundException("User with id: " + 1L + " not found"));
+
+        // Create an AccountRequest object
+        AccountRequest accountRequest = AccountRequest.builder()
+            .userId(1L)
+            .accountType(AccountType.CHECKING)
+            .isActive(true)
+            .absoluteLimit(5000.00)
+            .build();
+
+        // Call the createAccount method
+        UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
+            accountServiceJpa.createAccount(accountRequest);
+        });
+
+        // Verify that the UserServiceJpa's getUserById method was called once with the correct argument
+        verify(userServiceJpa, times(1)).getUserById(1L);
+
+        // Verify that the AccountRepository's save method was never called
+        verify(accountRepository, never()).save(any(Account.class));
+
+        // Test the AccountResponse object
+        assertEquals("User with id: " + 1L + " not found", exception.getMessage());
+    }
 
     @Test
     // happy flow
@@ -248,5 +370,49 @@ class AccountServiceJpaTest {
 
         // test results
         assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+    }
+
+    @Test
+    // happy flow
+    void getAccountsByOneName() {
+        // mock the findByName method and return a list of accounts
+        when(accountRepository.findAccountsByOneName("John")).thenReturn(accounts);
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John");
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.get(0).getIban());
+        assertEquals("NL01MAZE0000000003", result.get(1).getIban());
+        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("Doe", result.get(1).getLastName());
+    }
+
+    @Test
+    void getAccountsByFirstAndLastName() {
+        // mock the findByName method and return a list of accounts
+        when(accountRepository.findAccountsByFirstNameAndLastName("John", "Doe")).thenReturn(accounts);
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John Doe");
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.get(0).getIban());
+        assertEquals("NL01MAZE0000000003", result.get(1).getIban());
+        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("Doe", result.get(1).getLastName());
+    }
+
+
+    @Test
+    void getAccountsByNameButNoAccountsFound() {
+        // mock the findByName method and return an empty list
+        when(accountRepository.findAccountsByOneName("John")).thenReturn(new ArrayList<>());
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John");
+
+        // test results
+        assertEquals(0, result.size());
     }
 }

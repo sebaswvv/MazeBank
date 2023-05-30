@@ -13,6 +13,7 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
@@ -69,13 +70,13 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
         return accountRepository.findById(id)
-            .orElseThrow(() -> new AccountNotFoundException("account not found with id: " + id));
+            .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
     }
 
     public Account getAccountByIban(String iban) throws AccountNotFoundException {
-        Account account = accountRepository.findByIban(iban);
-        if (account == null) throw new AccountNotFoundException("Account with iban: " + iban + " not found");
-        return account;
+        System.out.println("iban: " + iban);
+        return accountRepository.findByIban(iban)
+            .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
     }
 
     public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
@@ -192,5 +193,38 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
         accountRepository.save(account);
         return account;
+    }
+
+    public List<IbanResponse> getAccountsByName(String name) {
+        String[] names = name.split(" ");
+        return names.length == 2
+            ? getAccountsByFirstNameAndLastName(names[0], names[1])
+            : getAccountsByOneName(name);
+    }
+
+    private List<IbanResponse> getAccountsByOneName(String name) {
+        List<Account> accounts = accountRepository.findAccountsByOneName(name);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
+    }
+
+    private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
+        List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
     }
 }
