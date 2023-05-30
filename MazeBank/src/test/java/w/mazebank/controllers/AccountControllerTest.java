@@ -1,7 +1,7 @@
 package w.mazebank.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
-import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.UserRepository;
@@ -257,7 +256,7 @@ class AccountControllerTest {
             .timestamp(LocalDateTime.now())
             .build();
 
-        // moch the service
+        // mock the service
         when(accountService.deposit(1L, 100.0 , authUser)).thenReturn(transactionResponse);
 
         // call the controller
@@ -269,5 +268,27 @@ class AccountControllerTest {
                 .content(request.toString())
             ).andDo(print())
             .andExpect(status().isCreated());
+    }
+
+    @Test
+    void depositWithNoExistingAccount() throws Exception {
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: "Account with id: 1 not found"
+        when(accountService.deposit(1L, 100.0 , authUser)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/deposit")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
     }
 }
