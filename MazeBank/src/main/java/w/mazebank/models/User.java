@@ -72,7 +72,6 @@ public class User implements UserDetails {
         return email;
     }
 
-    // REMOVE LATER?
     @Override
     public String getPassword() {
         return password;
