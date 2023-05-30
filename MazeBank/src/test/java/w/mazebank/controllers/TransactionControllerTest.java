@@ -192,6 +192,7 @@ class TransactionControllerTest {
             )
                 .andDo(print())
                 .andExpect(status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Transaction failed"))
                 .andReturn();
 
     }
