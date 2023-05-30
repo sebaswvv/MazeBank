@@ -33,6 +33,6 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
         TransactionResponse response = transactionServiceJpa.postTransaction(transactionRequest, user);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(201).body(response);
     }
 }
