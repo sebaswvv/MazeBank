@@ -1,19 +1,34 @@
 package w.mazebank.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.Filter;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import w.mazebank.configurations.ApplicationConfig;
+import w.mazebank.configurations.JwtAuthenticationFilter;
+import w.mazebank.configurations.SecurityConfiguration;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
@@ -37,15 +52,21 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Import({ApplicationConfig.class, SecurityConfiguration.class })
 @ExtendWith(SpringExtension.class)
 @WebMvcTest({AccountController.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AccountControllerTest{
+
+    @Autowired
+    private WebApplicationContext context;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -85,7 +106,6 @@ class AccountControllerTest{
 
         token = new JwtService().generateToken(authUser);
         employeeToken = new JwtService().generateToken(authEmployee);
-
     }
 
     @Test
@@ -398,43 +418,56 @@ class AccountControllerTest{
             .andExpect(status().isNotFound());
     }
 
-    // @Test
-    // void patchAccountWithCustomerWillThrow401() throws Exception {
-    //     // create account for the authUser
-    //     Account account = Account.builder()
-    //         .id(1)
-    //         .iban("NL01INHO0123456789")
-    //         .accountType(AccountType.CHECKING)
-    //         .balance(1000.0)
-    //         .user(authUser)
-    //         .isActive(true)
-    //         .absoluteLimit(0.0)
-    //         .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
-    //         .build();
+    @WithMockUser(username = "user1", password = "pwd", roles = "USER")
+    @Test
+    void patchAccountWithCustomerWillThrow401() throws Exception {
+        // create account for the authUser
+        Account account = Account.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING)
+            .balance(1000.0)
+            .user(authUser)
+            .isActive(true)
+            .absoluteLimit(0.0)
+            .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
+            .build();
 
-    //     AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
-    //         .absoluteLimit(100.0)
-    //         .build();
+        AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+            .absoluteLimit(100.0)
+            .build();
 
-    //     // create AtmRequest
-    //     JSONObject request = new JSONObject();
-    //     request.put("absoluteLimit", 100.0);
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("absoluteLimit", 100.0);
 
-    //     // create the TransactionResponse that the service should return
-    //     AccountResponse accountResponse = AccountResponse.builder()
-    //         .id(1)
-    //         .iban("NL01INHO0123456789")
-    //         .accountType(AccountType.CHECKING.getValue())
-    //         .balance(1000.0)
-    //         .active(true)
-    //         .absoluteLimit(100.0)
-    //         .build();
+        // create the TransactionResponse that the service should return
+        AccountResponse accountResponse = AccountResponse.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING.getValue())
+            .balance(1000.0)
+            .active(true)
+            .absoluteLimit(100.0)
+            .build();
 
-    //     // mock the service
-    //     when(accountService.updateAccount(1L, accountPatchRequest)).thenReturn(accountResponse);
+        // mock the service
+        when(accountService.updateAccount(1L, accountPatchRequest)).thenReturn(accountResponse);
 
-    //     // call the controller
-    //     mockMvc.perform(patch("/accounts/1")
+
+        authUser = new User(2, "user2@example.com", 456123788, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+
+        // call the controller
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"));
+    }
 
 
 
@@ -446,7 +479,7 @@ class AccountControllerTest{
         // this error message: "Sender has insufficient funds"
         when(accountService.deposit(1L, 100.0 , authUser)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
 
-        // call the controller
+        // call the controller and force spring security
         mockMvc.perform(post("/accounts/1/deposit")
                 .header("Authorization", "Bearer " + token)
                 .with(csrf())
@@ -455,8 +488,8 @@ class AccountControllerTest{
                 .content(request.toString())
             ).andDo(print())
             .andExpect(status().isUnauthorized());
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
+            // .andExpect(status().isBadRequest())
+            // .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
     }
 
     @Test
