@@ -1,0 +1,55 @@
+/* ONZE FONTS */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap');
+
+/* GLOBAAL EEN FONT */
+body {
+  font-family: 'Nunito Sans', sans-serif;
+}
+
+h1,
+h2,h3,h4 {
+  font-weight: 700;
+}
+
+/* FONTAWESOME ICON HOVER */
+.fa-brands:hover {
+  color: #929292;
+}
+
+/* buttons */
+.btn-primary {
+  background-color: #000;
+  border: none;
+  color: #fff !important;
+  border-radius: 100px;
+  border: 1px solid #000 !important;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff !important;
+  padding-left: 25px !important;
+  padding-right: 25px !important;
+}
+
+.btn-primary:hover {
+  color: #000 !important;
+  background-color: #fff !important;
+
+}
+
+.btn-secondary{
+  background-color: #fff;
+  border: none;
+  color: #000 !important;
+  border-radius: 100px;
+  border: 1px solid #000 !important;
+  font-size: 17px;
+  font-weight: 600;
+  color: #000 !important;
+  padding-left: 25px !important;
+  padding-right: 25px !important;
+}
+.btn-secondary:hover {
+  color: #fff !important;
+  background-color: #000 !important;
+}
+
