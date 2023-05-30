@@ -8,8 +8,9 @@ import { createPinia } from 'pinia';
 /* FontAwesome icons */
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faMask } from '@fortawesome/free-solid-svg-icons';
 library.add(faUser);
+library.add(faMask);
 
 // Create app
 const app = createApp(App);
