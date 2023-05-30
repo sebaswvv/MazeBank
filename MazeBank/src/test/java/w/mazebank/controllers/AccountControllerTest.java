@@ -17,10 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.InvalidAccountTypeException;
-import w.mazebank.exceptions.TransactionFailedException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.AccountResponse;
@@ -274,6 +271,28 @@ class AccountControllerTest {
             .andExpect(jsonPath("$.timestamp").exists())
             .andExpect(jsonPath("$.timestamp").isNotEmpty());
 
+    }
+
+    @Test
+    void depositUnauthorized() throws Exception {
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: UnauthorizedAccountAccessException("You are not authorized to access this account");
+        when(accountService.deposit(1L, 100.0 , authUser)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/deposit")
+            .header("Authorization", "Bearer " + token)
+            .with(csrf())
+            .with(user(authUser))
+            .contentType("application/json")
+            .content(request.toString())
+        ).andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
 
     @Test
