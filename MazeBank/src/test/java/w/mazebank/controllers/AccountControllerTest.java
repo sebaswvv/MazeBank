@@ -80,7 +80,7 @@ class AccountControllerTest{
 
     @BeforeAll
     void setUp() throws UserNotFoundException {
-        authUser = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+        authUser = new User(2, "user2@example.com", 456123788, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
         authEmployee = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
 
 
@@ -300,8 +300,6 @@ class AccountControllerTest{
 
     @Test
     void patchAccountShouldReturn200() throws Exception {
-        //
-
         // create account for the authUser
         Account account = Account.builder()
             .id(1)
@@ -373,5 +371,51 @@ class AccountControllerTest{
                 .content(request.toString())
             ).andDo(print())
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void patchAccountWithCustomerWillThrow401() throws Exception {
+        // create account for the authUser
+        Account account = Account.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING)
+            .balance(1000.0)
+            .user(authUser)
+            .isActive(true)
+            .absoluteLimit(0.0)
+            .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
+            .build();
+
+        AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+            .absoluteLimit(100.0)
+            .build();
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("absoluteLimit", 100.0);
+
+        // create the TransactionResponse that the service should return
+        AccountResponse accountResponse = AccountResponse.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING.getValue())
+            .balance(1000.0)
+            .active(true)
+            .absoluteLimit(100.0)
+            .build();
+
+        // mock the service
+        when(accountService.updateAccount(1L, accountPatchRequest)).thenReturn(accountResponse);
+
+        // call the controller
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isUnauthorized());
     }
 }
