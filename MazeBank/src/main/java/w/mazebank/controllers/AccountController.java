@@ -15,6 +15,7 @@ import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AccountServiceJpa;
@@ -38,6 +39,14 @@ public class AccountController {
         @RequestParam(required = false) String search
     ) {
         List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/iban/{name}")
+    public ResponseEntity<Object> getAccountsByName(
+        @PathVariable String name
+    ) {
+        List<IbanResponse> accounts = accountServiceJpa.getAccountsByName(name);
         return ResponseEntity.ok(accounts);
     }
 

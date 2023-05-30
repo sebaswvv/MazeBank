@@ -16,12 +16,11 @@ import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.repositories.AccountRepository;
-import w.mazebank.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -64,12 +63,14 @@ class AccountServiceJpaTest {
         accounts.add(Account.builder()
                 .id(1L)
                 .accountType(AccountType.CHECKING)
+                .iban("NL01MAZE0000000002")
                 .balance(1000.00)
                 .user(users.get(0))
                 .build());
         accounts.add(Account.builder()
                 .id(2L)
                 .accountType(AccountType.SAVINGS)
+                .iban("NL01MAZE0000000003")
                 .balance(2000.00)
                 .user(users.get(1))
                 .build()
@@ -369,5 +370,49 @@ class AccountServiceJpaTest {
 
         // test results
         assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+    }
+
+    @Test
+    // happy flow
+    void getAccountsByOneName() {
+        // mock the findByName method and return a list of accounts
+        when(accountRepository.findAccountsByOneName("John")).thenReturn(accounts);
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John");
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.get(0).getIban());
+        assertEquals("NL01MAZE0000000003", result.get(1).getIban());
+        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("Doe", result.get(1).getLastName());
+    }
+
+    @Test
+    void getAccountsByFirstAndLastName() {
+        // mock the findByName method and return a list of accounts
+        when(accountRepository.findAccountsByFirstNameAndLastName("John", "Doe")).thenReturn(accounts);
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John Doe");
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.get(0).getIban());
+        assertEquals("NL01MAZE0000000003", result.get(1).getIban());
+        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("Doe", result.get(1).getLastName());
+    }
+
+
+    @Test
+    void getAccountsByNameButNoAccountsFound() {
+        // mock the findByName method and return an empty list
+        when(accountRepository.findAccountsByOneName("John")).thenReturn(new ArrayList<>());
+
+        // call the method
+        List<IbanResponse> result = accountServiceJpa.getAccountsByName("John");
+
+        // test results
+        assertEquals(0, result.size());
     }
 }
