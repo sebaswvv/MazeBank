@@ -20,6 +20,7 @@ import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.UserRepository;
@@ -36,8 +37,7 @@ import java.util.Optional;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @WebMvcTest({AccountController.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AccountControllerTest {
+class AccountControllerTest{
     @Autowired
     private MockMvc mockMvc;
 
@@ -69,17 +69,23 @@ class AccountControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private User authEmployee;
+
     private User authUser;
     private String token;
+    private String employeeToken;
 
     @BeforeAll
     void setUp() throws UserNotFoundException {
-        authUser = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+        authUser = new User(2, "user2@example.com", 456123788, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+        authEmployee = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
 
         when(userRepository.findByEmail(Mockito.anyString())).thenReturn(Optional.of(authUser));
         when(userServiceJpa.getUserById(Mockito.anyLong())).thenReturn(authUser);
 
         token = new JwtService().generateToken(authUser);
+        employeeToken = new JwtService().generateToken(authEmployee);
+
     }
 
     @Test
@@ -318,6 +324,120 @@ class AccountControllerTest {
     }
 
     @Test
+    void patchAccountShouldReturn200() throws Exception {
+        // create account for the authUser
+        Account account = Account.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING)
+            .balance(1000.0)
+            .user(authUser)
+            .isActive(true)
+            .absoluteLimit(0.0)
+            .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
+            .build();
+
+        AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+            .absoluteLimit(100.0)
+            .build();
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("absoluteLimit", 100.0);
+
+        // create the TransactionResponse that the service should return
+        AccountResponse accountResponse = AccountResponse.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING.getValue())
+            .balance(1000.0)
+            .active(true)
+            .absoluteLimit(100.0)
+            .build();
+
+        // mock the service
+        when(accountService.updateAccount(1L, accountPatchRequest)).thenReturn(accountResponse);
+
+        // call the controller
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.iban").value("NL01INHO0123456789"))
+            .andExpect(jsonPath("$.accountType").value(AccountType.CHECKING.getValue()))
+            .andExpect(jsonPath("$.balance").value(1000.0))
+            .andExpect(jsonPath("$.active").value(true))
+            .andExpect(jsonPath("$.absoluteLimit").value(100.0));
+    }
+
+    @Test
+    void patchAccountWithNonExistingAccountWillGiveStatus404() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("absoluteLimit", 100.0);
+        AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+            .absoluteLimit(100.0)
+            .build();
+        // mock the service
+        when(accountService.updateAccount(1L, accountPatchRequest)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+
+        // call the controller
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isNotFound());
+    }
+
+    // @Test
+    // void patchAccountWithCustomerWillThrow401() throws Exception {
+    //     // create account for the authUser
+    //     Account account = Account.builder()
+    //         .id(1)
+    //         .iban("NL01INHO0123456789")
+    //         .accountType(AccountType.CHECKING)
+    //         .balance(1000.0)
+    //         .user(authUser)
+    //         .isActive(true)
+    //         .absoluteLimit(0.0)
+    //         .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
+    //         .build();
+
+    //     AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
+    //         .absoluteLimit(100.0)
+    //         .build();
+
+    //     // create AtmRequest
+    //     JSONObject request = new JSONObject();
+    //     request.put("absoluteLimit", 100.0);
+
+    //     // create the TransactionResponse that the service should return
+    //     AccountResponse accountResponse = AccountResponse.builder()
+    //         .id(1)
+    //         .iban("NL01INHO0123456789")
+    //         .accountType(AccountType.CHECKING.getValue())
+    //         .balance(1000.0)
+    //         .active(true)
+    //         .absoluteLimit(100.0)
+    //         .build();
+
+    //     // mock the service
+    //     when(accountService.updateAccount(1L, accountPatchRequest)).thenReturn(accountResponse);
+
+    //     // call the controller
+    //     mockMvc.perform(patch("/accounts/1")
+
+
+
     void depositWithInsufficientFunds() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
@@ -334,6 +454,7 @@ class AccountControllerTest {
                 .contentType("application/json")
                 .content(request.toString())
             ).andDo(print())
+            .andExpect(status().isUnauthorized());
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
     }

@@ -2,6 +2,7 @@ package w.mazebank.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -34,7 +35,7 @@ class BaseControllerTest {
     protected MockMvc mockMvc;
 
     @MockBean
-    private PasswordEncoder passwordEncoder;
+    public PasswordEncoder passwordEncoder;
 
     @MockBean
     protected AccountServiceJpa accountService;
@@ -58,7 +59,7 @@ class BaseControllerTest {
     protected String employeeToken;
     protected String customerToken;
 
-    @BeforeAll
+    @BeforeEach
     void setUp() throws UserNotFoundException {
         authCustomer = new User(1, "user1@example.com", 123456789, "John", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
         authEmployee = new User(3, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
