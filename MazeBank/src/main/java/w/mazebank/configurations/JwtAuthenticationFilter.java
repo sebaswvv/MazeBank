@@ -47,6 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String email;
 
+        System.out.println(request);
+        System.out.println(response);
+
         // If the Authorization header is missing or doesn't start with "Bearer ", return
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
@@ -55,6 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
+
 
             respondUnauthorized(response, "Unauthorized");
             return;

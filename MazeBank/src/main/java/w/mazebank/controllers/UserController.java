@@ -11,10 +11,7 @@ import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
-import w.mazebank.models.responses.AccountResponse;
-import w.mazebank.models.responses.LockedResponse;
-import w.mazebank.models.responses.UserDeletedResponse;
-import w.mazebank.models.responses.UserResponse;
+import w.mazebank.models.responses.*;
 import w.mazebank.services.UserServiceJpa;
 
 import java.util.List;
@@ -77,5 +74,20 @@ public class UserController {
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws UserNotFoundException {
         userService.unblockUser(id);
         return ResponseEntity.ok(new LockedResponse(true));
+    }
+
+    // GET/users/{userId}/transactions
+    @GetMapping("/{userId}/transactions")
+    public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(
+        @PathVariable Long userId,
+        @AuthenticationPrincipal User user,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "asc") String sort,
+        @RequestParam(required = false) String search)
+        throws UserNotFoundException
+    {
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search);
+        return ResponseEntity.ok(transactionResponses);
     }
 }
