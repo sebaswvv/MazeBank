@@ -26,8 +26,6 @@ public class SecurityConfiguration {
         http
             .cors()// allow cors, zodat vue app kan communiceren met backend
             .and()
-            .csrf()
-            .disable()
             .authorizeHttpRequests()
             .requestMatchers(
                 new AntPathRequestMatcher("/auth/**"),
@@ -40,7 +38,10 @@ public class SecurityConfiguration {
             .and()
             .authenticationProvider(authenticationProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers().frameOptions().disable();
+            .headers().frameOptions().disable()
+            .and()
+            .csrf()
+            .disable();
         return http.build();
     }
 }
