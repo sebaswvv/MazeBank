@@ -79,7 +79,7 @@ public class AccountController {
 
     @PostMapping("/{accountId}/deposit")
     public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        return ResponseEntity.ok(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
 
     @PostMapping("/{accountId}/withdraw")

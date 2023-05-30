@@ -33,7 +33,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied1");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
