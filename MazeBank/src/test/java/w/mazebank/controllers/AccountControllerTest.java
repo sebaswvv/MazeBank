@@ -316,4 +316,46 @@ class AccountControllerTest {
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
     }
+
+    @Test
+    void depositWithInsufficientFunds() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: "Sender has insufficient funds"
+        when(accountService.deposit(1L, 100.0 , authUser)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/deposit")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
+    }
+
+    @Test
+    void depositWithDayLimitExceeded() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: "Sender has insufficient funds"
+        when(accountService.deposit(1L, 100.0 , authUser)).thenThrow(new TransactionFailedException("Day limit exceeded"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/deposit")
+                .header("Authorization", "Bearer " + token)
+                .with(csrf())
+                .with(user(authUser))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Day limit exceeded"));
+    }
 }
