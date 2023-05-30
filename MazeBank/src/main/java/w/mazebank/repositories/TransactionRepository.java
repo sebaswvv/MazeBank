@@ -25,4 +25,6 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long>
     @Override
     @Query("SELECT t FROM Transaction t WHERE t.sender.iban LIKE %?1% OR t.receiver.iban LIKE %?1%")
     List<Transaction> findBySearchString(String search, Pageable pageable);
+
+    List<Transaction> findBySenderUserIdOrReceiverUserId(Long senderId, Long receiverId, Pageable pageable);
 }

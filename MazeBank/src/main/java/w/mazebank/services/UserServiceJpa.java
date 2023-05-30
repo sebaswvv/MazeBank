@@ -1,14 +1,20 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
+import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 
 import java.util.ArrayList;
@@ -19,6 +25,9 @@ import java.util.List;
 public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
         return userRepository.findById(id)
@@ -139,5 +148,34 @@ public class UserServiceJpa extends BaseServiceJpa {
             throw new UserHasAccountsException("user has accounts, cannot delete user");
 
         userRepository.delete(user);
+    }
+
+    public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search) throws UserNotFoundException, UnauthorizedAccountAccessException {
+
+        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
+            throw new UnauthorizedAccountAccessException("user not allowed to access transactions of user with id: " + userId);
+        }
+
+        // can you make pageable with offset, limit, sort, search?
+        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
+        Pageable pageable = PageRequest.of(offset, limit, sortObject);
+
+        List<Transaction> transactions = transactionRepository.findBySenderUserIdOrReceiverUserId(userId, userId, pageable);
+
+        // make transaction into transaction response
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            TransactionResponse transactionResponse = TransactionResponse.builder()
+                .id(transaction.getId())
+                .amount(transaction.getAmount())
+                .description(transaction.getDescription())
+                .sender(transaction.getSender().getIban())
+                .receiver(transaction.getReceiver().getIban())
+                .timestamp(transaction.getTimestamp())
+                .build();
+            transactionResponses.add(transactionResponse);
+        }
+
+        return transactionResponses;
     }
 }

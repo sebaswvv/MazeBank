@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import w.mazebank.enums.TransactionType;
 
 import java.time.LocalDateTime;
 
