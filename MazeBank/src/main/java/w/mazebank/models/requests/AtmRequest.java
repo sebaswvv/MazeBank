@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class AtmRequest {
 
     @NotNull(message = "Amount is required")
-    @Min(value = 0, message = "Amount must be greater than 0")
+    // @Min(value = 0, message = "Amount must be greater than 0")
     private Double amount;
 }
