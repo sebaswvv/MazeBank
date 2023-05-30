@@ -24,6 +24,8 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors()// allow cors, zodat vue app kan communiceren met backend
+            .and()
             .csrf()
             .disable()
             .authorizeHttpRequests()
