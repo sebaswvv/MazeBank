@@ -3,14 +3,15 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0">&copy; {{ getCurrentYear }} MazeBank. All Rights Reserved.</p>
+                    <h5 class="mb-0">&copy; {{ getCurrentYear }} MazeBank. All Rights Reserved.</h5>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <ul class="list-inline mb-0">
-                        <li class="list-inline-item">
-                            <a href="/privacy-policy" class="text-dark">Privacy Policy</a>
-                        </li>
                         <li class="list-inline-item">&middot;</li>
+                        <li class="list-inline-item">
+                            <a href="/mijn-account" class="text-dark">Mijn account</a>
+                        </li>
+
                     </ul>
                 </div>
             </div>
@@ -30,6 +31,7 @@ footer {
     border-top: 1px solid #ddd;
 }
 
+/*
 footer p {
     font-size: 16px;
     font-weight: 600;
@@ -53,5 +55,5 @@ footer ul li a {
 
 footer ul li a:hover {
     color: #000;
-}
+} */
 </style>
