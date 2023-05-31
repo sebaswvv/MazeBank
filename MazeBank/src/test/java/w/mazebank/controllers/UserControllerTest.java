@@ -1,21 +1,22 @@
 package w.mazebank.controllers;
 
+import io.cucumber.java.bm.Tetapi;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.ResponseEntity;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.UnauthorizedUserAccessException;
-import w.mazebank.exceptions.UserHasAccountsException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.User;
+import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -258,5 +259,68 @@ class UserControllerTest extends BaseControllerTest {
             ).andDo(print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Access Denied"));
+    }
+
+    // get accounts by user id
+    @Test
+    void getAccountsByUserIdShouldGive200AndObject() throws Exception {
+        when(userServiceJpa.getAccountsByUserId(1L, authCustomer)).thenReturn(accountResponses);
+
+        mockMvc.perform(get("/users/1/accounts")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].accountType").value("1"))
+            .andExpect(jsonPath("$[0].iban").value("NL01MAZE0000000001"))
+            .andExpect(jsonPath("$[0].user.id").value(1))
+            .andExpect(jsonPath("$[0].user.firstName").value("John"))
+            .andExpect(jsonPath("$[0].user.lastName").value("Doe"))
+            .andExpect(jsonPath("$[0].balance").value(1000.00))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].accountType").value("1"))
+            .andExpect(jsonPath("$[1].iban").value("NL01MAZE0000000002"))
+            .andExpect(jsonPath("$[1].user.id").value(1))
+            .andExpect(jsonPath("$[1].user.firstName").value("John"))
+            .andExpect(jsonPath("$[1].user.lastName").value("Doe"))
+            .andExpect(jsonPath("$[1].balance").value(2000.00));
+    }
+
+    @Test
+    void getAccountsByUserIdShouldThrow401WhenUserIsNotEmployeeAndNotOwner() throws Exception {
+        when(userServiceJpa.getAccountsByUserId(1L, authCustomer)).thenThrow(new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: 1"));
+
+        mockMvc.perform(get("/users/1/accounts")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("user not allowed to access accounts of user with id: 1"));
+    }
+
+    @Test
+    void getAccountsByUserIdShouldGive200AndObjectIfUserIsEmployee() throws Exception {
+        when(userServiceJpa.getAccountsByUserId(1L, authEmployee)).thenReturn(accountResponses);
+
+        mockMvc.perform(get("/users/1/accounts")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].accountType").value("1"))
+            .andExpect(jsonPath("$[0].iban").value("NL01MAZE0000000001"))
+            .andExpect(jsonPath("$[0].user.id").value(1))
+            .andExpect(jsonPath("$[0].user.firstName").value("John"))
+            .andExpect(jsonPath("$[0].user.lastName").value("Doe"))
+            .andExpect(jsonPath("$[0].balance").value(1000.00))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].accountType").value("1"))
+            .andExpect(jsonPath("$[1].iban").value("NL01MAZE0000000002"))
+            .andExpect(jsonPath("$[1].user.id").value(1))
+            .andExpect(jsonPath("$[1].user.firstName").value("John"))
+            .andExpect(jsonPath("$[1].user.lastName").value("Doe"))
+            .andExpect(jsonPath("$[1].balance").value(2000.00));
     }
 }
