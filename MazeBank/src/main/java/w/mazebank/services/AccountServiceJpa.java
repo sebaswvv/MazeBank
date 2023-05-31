@@ -186,6 +186,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+
+        if(id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
         if (!getAccountById(id).isActive()) {
             throw new AccountLockOrUnlockStatusException("Account is already locked");
         }
@@ -197,6 +199,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+        if(id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
 
         if (getAccountById(id).isActive()) {
             throw new AccountLockOrUnlockStatusException("Account is already unlocked");
@@ -243,6 +246,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, User user, Long accountId) throws AccountNotFoundException {
+        if(accountId == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+
         getAccountAndValidate(accountId, user);
 
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "timestamp");
