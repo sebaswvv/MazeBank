@@ -54,9 +54,10 @@ public class UserController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String search)
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "false") boolean withoutAccounts)
     {
-        List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search);
+        List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search, withoutAccounts);
         return ResponseEntity.ok(users);
     }
 
