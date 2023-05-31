@@ -12,9 +12,6 @@ import java.time.LocalDate;
 import static org.junit.Assert.assertEquals;
 
 public class AuthStepDefinitions extends BaseStepDefinitions {
-
-    ResponseEntity<String> lastResponse;
-
     @When("the client calls endpoint {string}")
     public void clientCallsEndpoints(String endpoint) {
         // Create the request body
@@ -28,24 +25,14 @@ public class AuthStepDefinitions extends BaseStepDefinitions {
             .dateOfBirth(LocalDate.of(1990, 5, 10))
             .build();
 
-
-        // Set the request headers
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         // Create the HTTP entity with the request body and headers
-        HttpEntity<RegisterRequest> requestEntity = new HttpEntity<>(request, headers);
-
-        // Send the request
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.exchange(
+        HttpEntity<RegisterRequest> requestEntity = new HttpEntity<>(request, httpHeaders);
+        lastResponse= restTemplate.exchange(
             "http://localhost:" + port + endpoint,
-            HttpMethod.POST, // Adjust the HTTP method if necessary
+            HttpMethod.POST,
             requestEntity,
             String.class
         );
-
-        lastResponse = response;
     }
 
     @Then("response status code is {int}")

@@ -17,10 +17,6 @@ public class BaseStepDefinitions {
     @LocalServerPort
     String port;
     ResponseEntity<String> lastResponse;
-    // public static final String VALID_TOKEN_USER = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6W10sImlhdCI6MTY1MzMxMTc0NiwiZXhwIjoxNjg0ODQ3NzQ2fQ.itSjs-evCYi2P7JAKwT4DY8u5RIASTghoaeQOa33v_s";
-    // public static final String VALID_TOKEN_ADMIN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyM0BleGFtcGxlLmNvbSIsImlhdCI6MTY4NTQ3Mjc1NSwiZXhwIjoxNjg2OTQzOTg0fQ.YlQjhmjukbtIvxnmi0-44wc-ZdNupE3cLeS3jBz-r9c";
-    // public static final String EXPIRED_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6W10sImlhdCI6MTY1MzMxMTkwNSwiZXhwIjoxNjUzMzExOTA1fQ.mKFrXM15WCXVNbSFNpqYix_xsMjsH_M31hiFf-o7JXs";
-    // public static final String INVALID_TOKEN = "invalid";
 
     protected  HttpHeaders httpHeaders;
     protected   RestTemplate restTemplate;
@@ -32,6 +28,7 @@ public class BaseStepDefinitions {
     protected ObjectMapper objectMapper;
 
     public BaseStepDefinitions() {
+        lastResponse = null;
         objectMapper = new ObjectMapper();
         restTemplate = new RestTemplate();
         jwtService = new JwtService();
