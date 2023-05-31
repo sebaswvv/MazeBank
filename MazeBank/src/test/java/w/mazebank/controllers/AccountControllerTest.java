@@ -7,20 +7,21 @@ import org.springframework.security.test.context.support.WithMockUser;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.*;
+import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.InsufficientFundsException;
+import w.mazebank.exceptions.TransactionFailedException;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.IbanResponse;
-import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 class AccountControllerTest extends BaseControllerTest{
     @Test
     void withdrawUnauthorizedThrows403() throws Exception {
@@ -125,6 +127,7 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
     }
+
     @Test
     void disableAccountReturns200() throws Exception {
         mockMvc.perform(put("/accounts/1/disable")
@@ -213,7 +216,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void getAllAccountsThrows200() throws Exception {
+    void getAllAccountsReturn200() throws Exception {
         // user to add to the accounts
         User user = User.builder()
             .id(1)
@@ -248,7 +251,7 @@ class AccountControllerTest extends BaseControllerTest{
         when(accountService.getAllAccounts(0, 10, "ASC", "")).thenReturn(accounts);
 
         // NOTE: ik moet in de url de offset en limit meegeven, anders krijg ik geen response body!!
-        mockMvc.perform(get("/accounts?offsete=0&limit=10&sort=ASC&search=")
+        mockMvc.perform(get("/accounts?offset=0&limit=10&sort=ASC&search=")
                 .header("Authorization", "Bearer " + employeeToken)
                 .with(csrf())
                 .with(user(authEmployee))
@@ -268,6 +271,43 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(jsonPath("$[1].active").value(true))
             .andExpect(jsonPath("$[1].iban").value("NL01INHO123456789"))
             .andExpect(jsonPath("$[1].absoluteLimit").value(0.0))
+            .andReturn();
+    }
+
+    @Test
+    void getAllAccountsUnauthorizedShouldThrow403() throws Exception {
+        // list of all the accounts to mock the database
+        List<AccountResponse> accounts = List.of(
+            AccountResponse.builder()
+                .id(1)
+                .accountType(AccountType.CHECKING.getValue())
+                .balance(0.0)
+                .active(true)
+                .iban("NL01INHO123456789")
+                .absoluteLimit(0.0)
+                .build(),
+            AccountResponse.builder()
+                .id(2)
+                .accountType(AccountType.SAVINGS.getValue())
+                .balance(0.0)
+                .active(true)
+                .iban("NL01INHO123456789")
+                .absoluteLimit(0.0)
+                .build()
+        );
+
+        // mock
+        when(accountService.getAllAccounts(0, 10, "ASC", "")).thenReturn(accounts);
+
+        mockMvc.perform(get("/accounts?offset=0&limit=10&sort=ASC&search=")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+            )
+            .andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"))
             .andReturn();
     }
 
@@ -309,7 +349,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void getAccountByIdShouldReturnStatusOkAndObjectThrows200() throws Exception {
+    void getAccountByIdShouldReturnStatusOkAndObjectReturn200() throws Exception {
         User user = User.builder()
             .id(1)
             .firstName("John")
@@ -353,7 +393,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void depositHappyFlowThrows201() throws Exception {
+    void depositHappyFlowReturns201() throws Exception {
         // create account for the authUser
         Account account = Account.builder()
             .id(1)
@@ -382,7 +422,7 @@ class AccountControllerTest extends BaseControllerTest{
             .build();
 
         // mock the service
-        when(accountService.deposit(1L, 100.0 , authCustomer)).thenReturn(transactionResponse);
+        when(accountService.deposit(1L, 100.0, authCustomer)).thenReturn(transactionResponse);
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
@@ -400,7 +440,6 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(jsonPath("$.userPerforming").value(1))
             .andExpect(jsonPath("$.timestamp").exists())
             .andExpect(jsonPath("$.timestamp").isNotEmpty());
-
     }
 
     @Test
@@ -411,7 +450,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: UnauthorizedAccountAccessException("You are not authorized to access this account");
-        when(accountService.deposit(1L, 100.0 , authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
+        when(accountService.deposit(1L, 100.0, authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
@@ -433,7 +472,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: "Account with id: 1 not found"
-        when(accountService.deposit(1L, 100.0 , authCustomer)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+        when(accountService.deposit(1L, 100.0, authCustomer)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
@@ -613,7 +652,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: "Sender has insufficient funds"
-        when(accountService.deposit(1L, 100.0 , authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
+        when(accountService.deposit(1L, 100.0, authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
