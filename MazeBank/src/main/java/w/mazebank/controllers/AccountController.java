@@ -42,7 +42,7 @@ public class AccountController {
         return ResponseEntity.ok(accounts);
     }
 
-    @GetMapping("/iban/{name}")
+    @GetMapping("/search/{name}")
     public ResponseEntity<Object> getAccountsByName(
         @PathVariable String name
     ) {
