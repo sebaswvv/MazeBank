@@ -32,7 +32,9 @@ public class UserServiceJpa extends BaseServiceJpa {
     private TransactionRepository transactionRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
-        return userRepository.findById(id)
+        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        else
+            return userRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
