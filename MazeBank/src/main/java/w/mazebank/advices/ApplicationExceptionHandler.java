@@ -29,6 +29,14 @@ public class ApplicationExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(UnauthorizedUserAccessException.class)
+    public ResponseEntity<Object> handleUnauthorizedUserAccessException(UnauthorizedUserAccessException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized User Access");
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         Map<String, String> errors = new HashMap<>();
