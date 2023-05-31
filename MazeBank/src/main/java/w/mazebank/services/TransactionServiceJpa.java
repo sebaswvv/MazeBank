@@ -54,6 +54,12 @@ public class TransactionServiceJpa {
     @Transactional
     public TransactionResponse postTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
+
+        // deny acces if senderAccount is of the bank
+        if (transactionRequest.getSenderIban().equals(getBankAccount().getIban())) {
+            throw new UnauthorizedAccountAccessException("You are not allowed to perform transactions for the bank's bank account");
+        }
+
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
@@ -100,7 +106,7 @@ public class TransactionServiceJpa {
     // return the bankaccount of the Bank
     private Account getBankAccount() throws AccountNotFoundException {
         //return accountRepository.findAll().get(0);
-        return accountServiceJpa.getAccountByIban("NL01MAZE0000000001");
+        return accountServiceJpa.getAccountByIban("NL01INHO0000000001");
     }
 
     public void saveTransaction(Transaction transaction) {
