@@ -1,5 +1,6 @@
 package w.mazebank.cucumberglue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
@@ -28,8 +29,10 @@ public class BaseStepDefinitions {
     protected User employee;
     protected User customer;
     protected String token;
+    protected ObjectMapper objectMapper;
 
     public BaseStepDefinitions() {
+        objectMapper = new ObjectMapper();
         restTemplate = new RestTemplate();
         jwtService = new JwtService();
         httpHeaders = new HttpHeaders();
