@@ -164,6 +164,10 @@ public class UserServiceJpa extends BaseServiceJpa {
             throw new UnauthorizedAccountAccessException("user not allowed to access transactions of user with id: " + userId);
         }
 
+        // throw user not found exception if user not found
+        getUserById(userId);
+
+
         // can you make pageable with offset, limit, sort, search?
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
         Pageable pageable = PageRequest.of(offset, limit, sortObject);

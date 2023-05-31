@@ -8,13 +8,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserHasAccountsException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.enums.TransactionType;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
+import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 
 import java.util.ArrayList;
@@ -34,6 +37,12 @@ class UserServiceJpaTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @Mock
+    private TransactionServiceJpa transactionServiceJpa;
 
     @Test
     void getUserByIdThatDoesNotExist() {
@@ -307,7 +316,7 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void getAccountsByUserUnauthorized() throws UserNotFoundException {
+    void getAccountsByUserUnauthorized() throws UnauthorizedAccountAccessException {
         // create a user
         User user = User.builder()
             .id(1L)
@@ -355,5 +364,106 @@ class UserServiceJpaTest {
         // test results
         assertEquals("user not found with id: 1", exception.getMessage());
         verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void getTransactionsByUserId() throws UserNotFoundException, TransactionNotFoundException, TransactionFailedException, AccountNotFoundException {
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        // create two accounts for the user
+        Account account1 = Account.builder()
+            .id(1L)
+            .iban("NL01INHO0000000001")
+            .balance(100.0)
+            .accountType(AccountType.CHECKING)
+            .user(user)
+            .build();
+        Account account2 = Account.builder()
+            .id(2L)
+            .balance(200.0)
+            .iban("NL01INHO0000000002")
+            .accountType(AccountType.SAVINGS)
+            .user(user)
+            .build();
+
+        // create two transactions for the user
+        Transaction transaction1 = Transaction.builder()
+            .id(1L)
+            .description("test transaction 1")
+            .amount(100.0)
+            .userPerforming(user)
+            .sender(account1)
+            .receiver(account2)
+            .transactionType(TransactionType.TRANSFER)
+            .build();
+        Transaction transaction2 = Transaction.builder()
+            .id(2L)
+            .description("test transaction 2")
+            .amount(200.0)
+            .userPerforming(user)
+            .sender(account2)
+            .receiver(account1)
+            .transactionType(TransactionType.TRANSFER)
+            .build();
+
+        TransactionResponse transactionResponse1 = TransactionResponse.builder()
+            .id(1L)
+            .description("test transaction 1")
+            .amount(100.0)
+            .sender("NL01INHO0000000001")
+            .receiver("NL01INHO0000000002")
+            .build();
+
+        TransactionResponse transactionResponse2 = TransactionResponse.builder()
+            .id(2L)
+            .description("test transaction 2")
+            .amount(200.0)
+            .sender("NL01INHO0000000002")
+            .receiver("NL01INHO0000000001")
+            .build();
+
+
+        // Mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(transactionRepository.findBySenderUserIdOrReceiverUserId(1L, 1L, PageRequest.of(0, 10, Sort.by("id").ascending()))).thenReturn(List.of(transaction1, transaction2));
+
+        // Call the method
+        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(1L, user, 0, 10, "Asc", null);
+
+        // Test results
+        assertEquals(2, transactions.size());
+        assertEquals(transactionResponse1, transactions.get(0));
+        assertEquals(transactionResponse2, transactions.get(1));
+    }
+
+
+    @Test
+    void getTransactionsByUserIdWithNoExistingUser(){
+        // create a user
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .role(RoleType.EMPLOYEE)
+            .build();
+
+        // mock the repository
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        List<Transaction> transactions = new ArrayList<>();
+
+        //should get UserNotFoundException
+        Exception exception = assertThrows(UserNotFoundException.class, () -> {
+            // call the method
+            userServiceJpa.getTransactionsByUserId(1L, user, 0, 10, "Asc", null);
+        });
+
+        // test results
+        assertEquals("user not found with id: 1", exception.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+
     }
 }
