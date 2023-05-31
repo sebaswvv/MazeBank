@@ -95,6 +95,43 @@ class UserServiceJpaTest {
     }
 
     @Test
+    void getAllUsersThatHaveNoAccounts() {
+        List<User> users = new ArrayList<>();
+        users.add(User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .build());
+        users.add(User.builder()
+            .id(2L)
+            .firstName("Jane")
+            .lastName("Doe")
+            .build()
+        );
+
+        Sort sortObject = Sort.by(Sort.Direction.fromString("asc"), "id");
+        Pageable pageable = PageRequest.of(0, 10, sortObject);
+        Page<User> usersPage = new PageImpl<>(users);
+
+        // mock the findAll method and return users in a page
+        when(userRepository.findAll(pageable)).thenReturn(usersPage);
+
+        // call the method
+        List<UserResponse> results = userServiceJpa.getAllUsers(0, 10, "asc", "", true);
+
+        // test results
+        assertEquals(2, results.size());
+
+        assertEquals(1L, results.get(0).getId());
+        assertEquals("John", results.get(0).getFirstName());
+        assertEquals("Doe", results.get(0).getLastName());
+
+        assertEquals(2L, results.get(1).getId());
+        assertEquals("Jane", results.get(1).getFirstName());
+        assertEquals("Doe", results.get(1).getLastName());
+    }
+
+    @Test
     void blockUser() throws UserNotFoundException {
         // create regular non-blocked user
         User user = User.builder()
