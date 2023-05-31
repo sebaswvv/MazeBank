@@ -5,10 +5,12 @@ import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 
@@ -261,6 +263,102 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.message").value("Access Denied"));
     }
 
+    // patch user by id
+    @Test
+    void patchUserByIdShouldReturn200IfUserWasUpdated() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        User patchedUser = new User();
+        patchedUser.setFirstName("Jane");
+        patchedUser.setLastName("Doe");
+        patchedUser.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer)).thenReturn(patchedUser);
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.firstName").value("Jane"))
+            .andExpect(jsonPath("$.lastName").value("Doe"))
+            .andExpect(jsonPath("$.dayLimit").value(500.00));
+    }
+
+    @Test
+    void patchUserByIdShouldReturn404IfUserIsNotFound() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer))
+            .thenThrow(new UserNotFoundException("User not found with id: " + 1));
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("User not found with id: 1"));
+    }
+
+    @Test
+    void patchUserByIdShouldReturn403IfUserIsNotEmployeeAndNotUserPerforming() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(2L, userPatchRequest, authCustomer))
+            .thenThrow(new UnauthorizedUserAccessException("Access Denied"));
+
+        mockMvc.perform(patch("/users/2")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"));
+    }
+
+    // user can be patched if user is employee
+    @Test
+    void patchUserByIdShouldReturn200IfUserIsEmployee() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        User patchedUser = new User();
+        patchedUser.setFirstName("Jane");
+        patchedUser.setLastName("Doe");
+        patchedUser.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authEmployee)).thenReturn(patchedUser);
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.firstName").value("Jane"))
+            .andExpect(jsonPath("$.lastName").value("Doe"))
+            .andExpect(jsonPath("$.dayLimit").value(500.00));
+    }
+  
     // get accounts by user id
     @Test
     void getAccountsByUserIdShouldGive200AndObject() throws Exception {
