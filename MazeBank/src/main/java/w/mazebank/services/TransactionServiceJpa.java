@@ -33,9 +33,14 @@ public class TransactionServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
+    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException, AccountNotFoundException {
         // get transaction by id
         Transaction transaction = getTransactionById(id);
+
+        // if the transaction sender is the bank then throw error
+        if (transaction.getSender().getIban().equals("NL01INHO0000000001")) {
+            throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
+        }
 
         // check if the user is allowed to access the transaction
         checkIfUserIsTransactionParticipant(user, transaction);
@@ -54,6 +59,12 @@ public class TransactionServiceJpa {
     @Transactional
     public TransactionResponse postTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
+
+        // deny acces if senderAccount is of the bank
+        if (transactionRequest.getSenderIban().equals("NL01INHO0000000001")) {
+            throw new UnauthorizedAccountAccessException("You are not allowed to perform transactions for the bank's bank account");
+        }
+
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
@@ -100,7 +111,7 @@ public class TransactionServiceJpa {
     // return the bankaccount of the Bank
     private Account getBankAccount() throws AccountNotFoundException {
         //return accountRepository.findAll().get(0);
-        return accountServiceJpa.getAccountByIban("NL01MAZE0000000001");
+        return accountServiceJpa.getAccountByIban("NL01INHO0000000001");
     }
 
     public void saveTransaction(Transaction transaction) {

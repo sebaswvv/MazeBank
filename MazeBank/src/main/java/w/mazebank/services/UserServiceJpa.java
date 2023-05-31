@@ -32,7 +32,9 @@ public class UserServiceJpa extends BaseServiceJpa {
     private TransactionRepository transactionRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
-        return userRepository.findById(id)
+        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        else
+            return userRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
@@ -90,6 +92,9 @@ public class UserServiceJpa extends BaseServiceJpa {
         List<User> users = findAllPaginationAndSort(offset, limit, sort, search, userRepository);
 
         List<User> filteredUsers = new ArrayList<>(users);
+
+        // remove the user account of the bank
+        filteredUsers.removeIf(user -> user.getId() == 1L);
 
         // If withoutAccounts is true, remove users that have accounts
         if (withoutAccounts) {

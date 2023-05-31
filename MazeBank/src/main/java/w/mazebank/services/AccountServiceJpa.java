@@ -53,6 +53,10 @@ public class AccountServiceJpa extends BaseServiceJpa {
         // parse users to user responses
         List<AccountResponse> accountResponses = new ArrayList<>();
         for (Account account : accounts) {
+
+            // if account is bankaccount, skip
+            if (account.getIban().equals("NL01INHO0000000001")) continue;
+
             AccountResponse accountResponse = AccountResponse.builder()
                 .id(account.getId())
                 .accountType(account.getAccountType().getValue())
@@ -81,7 +85,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public Account getAccountByIban(String iban) throws AccountNotFoundException {
-        System.out.println("iban: " + iban);
         return accountRepository.findByIban(iban)
             .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
     }
@@ -125,6 +128,11 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
         Account account = getAccountById(id);
+
+        // if the account is a bank account, throw exception
+        if (account.getIban().equals("NL01INHO0000000001"))
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+
         if (body.getAbsoluteLimit() != null) {
             account.setAbsoluteLimit(body.getAbsoluteLimit());
         }

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
@@ -48,25 +49,25 @@ class UserServiceJpaTest {
     @Test
     void getUserByIdThatDoesNotExist() {
         // mock the findById method and return null
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.getUserById(1L);
+            userServiceJpa.getUserById(2L);
         });
-        assertEquals("user not found with id: 1", exception.getMessage());
+        assertEquals("user not found with id: 2", exception.getMessage());
     }
 
     @Test
     void getAllUsers() {
         List<User> users = new ArrayList<>();
         users.add(User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .build());
         users.add(User.builder()
-            .id(2L)
+            .id(3L)
             .firstName("Jane")
             .lastName("Doe")
             .build()
@@ -85,11 +86,11 @@ class UserServiceJpaTest {
         // test results
         assertEquals(2, results.size());
 
-        assertEquals(1L, results.get(0).getId());
+        assertEquals(2L, results.get(0).getId());
         assertEquals("John", results.get(0).getFirstName());
         assertEquals("Doe", results.get(0).getLastName());
 
-        assertEquals(2L, results.get(1).getId());
+        assertEquals(3L, results.get(1).getId());
         assertEquals("Jane", results.get(1).getFirstName());
         assertEquals("Doe", results.get(1).getLastName());
     }
@@ -120,32 +121,28 @@ class UserServiceJpaTest {
         List<UserResponse> results = userServiceJpa.getAllUsers(0, 10, "asc", "", true);
 
         // test results
-        assertEquals(2, results.size());
+        assertEquals(1, results.size());
 
-        assertEquals(1L, results.get(0).getId());
-        assertEquals("John", results.get(0).getFirstName());
+        assertEquals(2L, results.get(0).getId());
+        assertEquals("Jane", results.get(0).getFirstName());
         assertEquals("Doe", results.get(0).getLastName());
-
-        assertEquals(2L, results.get(1).getId());
-        assertEquals("Jane", results.get(1).getFirstName());
-        assertEquals("Doe", results.get(1).getLastName());
     }
 
     @Test
     void blockUser() throws UserNotFoundException {
         // create regular non-blocked user
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .blocked(false)
             .build();
 
         // mock the findById method and return blocked user
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
 
         // call the method
-        userServiceJpa.blockUser(1L);
+        userServiceJpa.blockUser(2L);
 
         // test results
         assertEquals(true, user.isBlocked());
@@ -156,17 +153,17 @@ class UserServiceJpaTest {
     void unblockUser() throws UserNotFoundException {
         // create blocked user
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .blocked(true)
             .build();
 
         // mock the findById method and return blocked user
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
 
         // call the method
-        userServiceJpa.unblockUser(1L);
+        userServiceJpa.unblockUser(2L);
 
         // test results
         assertEquals(false, user.isBlocked());
@@ -176,33 +173,33 @@ class UserServiceJpaTest {
     @Test
     void blockNonExistingUser() {
         // mock the findById method and return null
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
         // check if usernotfoundexception is thrown
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.blockUser(1L);
+            userServiceJpa.blockUser(2L);
         });
 
         // test results
-        assertEquals("user not found with id: 1", exception.getMessage());
-        verify(userRepository).findById(1L);
+        assertEquals("user not found with id: 2", exception.getMessage());
+        verify(userRepository).findById(2L);
     }
 
     @Test
     void unblockNonExistingUser(){
         // mock the findById method and return null
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
         // check if usernotfoundexception is thrown
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.unblockUser(1L);
+            userServiceJpa.unblockUser(2L);
         });
 
         // test results
-        assertEquals("user not found with id: 1", exception.getMessage());
-        verify(userRepository).findById(1L);
+        assertEquals("user not found with id: 2", exception.getMessage());
+        verify(userRepository).findById(2L);
     }
 
 
@@ -229,7 +226,7 @@ class UserServiceJpaTest {
     void deleteUserByIdThatHasAccounts(){
         // create a user
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .build();
@@ -237,19 +234,19 @@ class UserServiceJpaTest {
         // add an account to the user to mock the user having accounts
         user.setAccounts(List.of(
             Account.builder()
-                .id(1L)
+                .id(2L)
                 .balance(100.0)
                 .user(user)
                 .build()
         ));
 
         // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
 
         // call the method
         Exception exception = assertThrows(UserHasAccountsException.class, () -> {
             // call the method
-            userServiceJpa.deleteUserById(1L);
+            userServiceJpa.deleteUserById(2L);
         });
 
         // test for the exception and verify the method was not called
@@ -270,23 +267,23 @@ class UserServiceJpaTest {
     void getAccountsByUserIdWithAccountOwner() throws UserNotFoundException {
         // create a user
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .build();
 
         // create two accounts for the user
         Account account1 = Account.builder()
-            .id(1L)
-            .iban("NL01INHO0000000001")
+            .id(2L)
+            .iban("NL01INHO0000000002")
             .balance(100.0)
             .accountType(AccountType.CHECKING)
             .user(user)
             .build();
         Account account2 = Account.builder()
-            .id(2L)
+            .id(3L)
             .balance(200.0)
-            .iban("NL01INHO0000000002")
+            .iban("NL01INHO0000000003")
             .accountType(AccountType.SAVINGS)
             .user(user)
             .build();
@@ -294,15 +291,15 @@ class UserServiceJpaTest {
         user.setAccounts(List.of(account1, account2));
 
         // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
 
         // call the method
-        List<AccountResponse> accounts = userServiceJpa.getAccountsByUserId(1L, user);
+        List<AccountResponse> accounts = userServiceJpa.getAccountsByUserId(2L, user);
 
         // test results
         assertEquals(2, accounts.size());
-        assertEquals("NL01INHO0000000001", accounts.get(0).getIban());
-        assertEquals("NL01INHO0000000002", accounts.get(1).getIban());
+        assertEquals("NL01INHO0000000002", accounts.get(0).getIban());
+        assertEquals("NL01INHO0000000003", accounts.get(1).getIban());
 
     }
 
@@ -310,7 +307,7 @@ class UserServiceJpaTest {
     void getAccountsByUserIdWithEmployee() throws UserNotFoundException {
         // create employee for performing user
         User employee = User.builder()
-            .id(2L)
+            .id(3L)
             .firstName("Jane")
             .lastName("Doe")
             .role(RoleType.EMPLOYEE)
@@ -318,7 +315,7 @@ class UserServiceJpaTest {
 
         // create a user for the bank accounts
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .build();
@@ -326,7 +323,7 @@ class UserServiceJpaTest {
         // create two accounts for the user
         Account account1 = Account.builder()
             .id(1L)
-            .iban("NL01INHO0000000001")
+            .iban("NL01INHO0000000002")
             .balance(100.0)
             .accountType(AccountType.CHECKING)
             .user(user)
@@ -334,7 +331,7 @@ class UserServiceJpaTest {
         Account account2 = Account.builder()
             .id(2L)
             .balance(200.0)
-            .iban("NL01INHO0000000002")
+            .iban("NL01INHO0000000003")
             .accountType(AccountType.SAVINGS)
             .user(user)
             .build();
@@ -342,15 +339,15 @@ class UserServiceJpaTest {
         user.setAccounts(List.of(account1, account2));
 
         // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
 
         // call the method
-        List<AccountResponse> accounts = userServiceJpa.getAccountsByUserId(1L, employee);
+        List<AccountResponse> accounts = userServiceJpa.getAccountsByUserId(2L, employee);
 
         // test results
         assertEquals(2, accounts.size());
-        assertEquals("NL01INHO0000000001", accounts.get(0).getIban());
-        assertEquals("NL01INHO0000000002", accounts.get(1).getIban());
+        assertEquals("NL01INHO0000000002", accounts.get(0).getIban());
+        assertEquals("NL01INHO0000000003", accounts.get(1).getIban());
     }
 
     @Test
@@ -384,30 +381,30 @@ class UserServiceJpaTest {
     void getAccountsByUserIdWithNoExistingUser(){
         // create a user
         User user = User.builder()
-            .id(2L)
+            .id(3L)
             .firstName("John")
             .lastName("Doe")
             .role(RoleType.EMPLOYEE)
             .build();
 
         // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
         //should get UserNotFoundException
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.getAccountsByUserId(1L, user);
+            userServiceJpa.getAccountsByUserId(2L, user);
         });
 
         // test results
-        assertEquals("user not found with id: 1", exception.getMessage());
-        verify(userRepository, times(1)).findById(1L);
+        assertEquals("user not found with id: 2", exception.getMessage());
+        verify(userRepository, times(1)).findById(2L);
     }
 
     @Test
     void getTransactionsByUserId() throws UserNotFoundException, TransactionNotFoundException, TransactionFailedException, AccountNotFoundException {
         User user = User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .build();
@@ -415,7 +412,7 @@ class UserServiceJpaTest {
         // create two accounts for the user
         Account account1 = Account.builder()
             .id(1L)
-            .iban("NL01INHO0000000001")
+            .iban("NL01INHO0000000002")
             .balance(100.0)
             .accountType(AccountType.CHECKING)
             .user(user)
@@ -423,7 +420,7 @@ class UserServiceJpaTest {
         Account account2 = Account.builder()
             .id(2L)
             .balance(200.0)
-            .iban("NL01INHO0000000002")
+            .iban("NL01INHO0000000003")
             .accountType(AccountType.SAVINGS)
             .user(user)
             .build();
@@ -455,8 +452,8 @@ class UserServiceJpaTest {
             .description("test transaction 1")
             .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0).toString())
             .amount(100.0)
-            .sender("NL01INHO0000000001")
-            .receiver("NL01INHO0000000002")
+            .sender("NL01INHO0000000002")
+            .receiver("NL01INHO0000000003")
             .build();
 
         TransactionResponse transactionResponse2 = TransactionResponse.builder()
@@ -464,17 +461,17 @@ class UserServiceJpaTest {
             .description("test transaction 2")
             .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0).toString())
             .amount(200.0)
-            .sender("NL01INHO0000000002")
-            .receiver("NL01INHO0000000001")
+            .sender("NL01INHO0000000003")
+            .receiver("NL01INHO0000000002")
             .build();
 
 
         // Mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
-        when(transactionRepository.findBySenderUserIdOrReceiverUserId(1L, 1L, PageRequest.of(0, 10, Sort.by("id").ascending()))).thenReturn(List.of(transaction1, transaction2));
+        when(userRepository.findById(Mockito.any())).thenReturn(Optional.ofNullable(user));
+        when(transactionRepository.findBySenderUserIdOrReceiverUserId(2L, 2L, PageRequest.of(0, 10, Sort.by("id").ascending()))).thenReturn(List.of(transaction1, transaction2));
 
         // Call the method
-        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(1L, user, 0, 10, "Asc", null);
+        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null);
 
         // Test results
         assertEquals(2, transactions.size());
@@ -494,18 +491,18 @@ class UserServiceJpaTest {
             .build();
 
         // mock the repository
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
         List<Transaction> transactions = new ArrayList<>();
 
         //should get UserNotFoundException
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.getTransactionsByUserId(1L, user, 0, 10, "Asc", null);
+            userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null);
         });
 
         // test results
-        assertEquals("user not found with id: 1", exception.getMessage());
-        verify(userRepository, times(1)).findById(1L);
+        assertEquals("user not found with id: 2", exception.getMessage());
+        verify(userRepository, times(1)).findById(2L);
 
     }
 }
