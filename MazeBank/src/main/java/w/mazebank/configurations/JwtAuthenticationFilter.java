@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.services.AuthService;
 import w.mazebank.services.JwtService;
 
@@ -96,7 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // continue the filter chain
             filterChain.doFilter(request, response);
-        } catch (SignatureException | ExpiredJwtException | MalformedJwtException e) {
+        } catch (SignatureException | ExpiredJwtException | MalformedJwtException | UserNotFoundException e) {
             // If there was an error verifying the JWT, return that the jwt is invalid
             respondUnauthorized(response, "Unauthorized");
         }

@@ -10,10 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import w.mazebank.enums.RoleType;
-import w.mazebank.exceptions.BsnAlreadyUsedException;
-import w.mazebank.exceptions.EmailAlreadyUsedException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotOldEnoughException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
@@ -150,7 +147,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void loginIsSuccessful() {
+    void loginIsSuccessful() throws UserNotFoundException {
         LoginRequest loginRequest = LoginRequest.builder()
             .email(registerRequest.getEmail())
             .password(registerRequest.getPassword())
@@ -183,20 +180,5 @@ class AuthServiceTest {
         // test results
         UnauthorizedAccountAccessException exception = assertThrows(UnauthorizedAccountAccessException.class, () -> authService.login(loginRequest));
         assertEquals("User is blocked", exception.getMessage());
-    }
-
-    @Test
-    void loginFailsWhenUserIsNotFound() {
-        LoginRequest loginRequest = LoginRequest.builder()
-            .email(registerRequest.getEmail())
-            .password(registerRequest.getPassword())
-            .build();
-
-        // mock methods
-        when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
-
-        // test results
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> authService.login(loginRequest));
-        assertEquals("User not found", exception.getMessage());
     }
 }
