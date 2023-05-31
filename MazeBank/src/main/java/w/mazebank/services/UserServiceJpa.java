@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
@@ -12,6 +13,7 @@ import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.BalanceResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.TransactionRepository;
@@ -194,5 +196,26 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
 
         return transactionResponses;
+    }
+
+    public BalanceResponse getBalanceByUserId(Long userId, User userPerforming) throws UserNotFoundException {
+        // check if userId is from a user that is a existing user
+        // and validate if the performing user has the rights to access the user
+        User user = getUserByIdAndValidate(userId, userPerforming);
+        BalanceResponse balanceResponse = new BalanceResponse();
+        balanceResponse.setUserId(userId);
+
+        // calculate total balance and set checking and savings balance if account exists
+        for (Account account : user.getAccounts()) {
+            if (account.getAccountType() == AccountType.CHECKING) {
+                balanceResponse.setCheckingBalance(account.getBalance());
+            } else if (account.getAccountType() == AccountType.SAVINGS) {
+                balanceResponse.setSavingsBalance(account.getBalance());
+            }
+            // add balance to total balance
+            balanceResponse.setTotalBalance(balanceResponse.getTotalBalance() + account.getBalance());
+        }
+
+        return balanceResponse;
     }
 }

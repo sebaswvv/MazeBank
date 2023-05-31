@@ -90,4 +90,32 @@ public class UsersStepDefinitions extends BaseStepDefinitions{
         Object dayLimit = JsonPath.read(lastResponse.getBody(), "$.dayLimit");
         assertEquals(expectedDayLimit, dayLimit);
     }
+
+    @When("I call the users endpoint {string} with a get request")
+    public void iCallTheUsersEndpointWithAGetRequest(String endpoint) {
+        httpHeaders.clear();
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + endpoint,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
+    }
+
+    @Then("the result is a user with a total balance of {double}, a savings balance of {double}, and a checking balance of {double}")
+    public void theResultIsAUserWithATotalBalanceOfASavingsBalanceOfAndACheckingBalanceOf(double totalBalance, double savingsBalance, double checkingBalance) throws JsonProcessingException {
+        assert lastResponse.getBody() != null;
+        Object total = JsonPath.read(lastResponse.getBody(), "$.totalBalance");
+        Object savings = JsonPath.read(lastResponse.getBody(), "$.savingsBalance");
+        Object checking = JsonPath.read(lastResponse.getBody(), "$.checkingBalance");
+        assertEquals(totalBalance, total);
+        assertEquals(savingsBalance, savings);
+        assertEquals(checkingBalance, checking);
+    }
 }
