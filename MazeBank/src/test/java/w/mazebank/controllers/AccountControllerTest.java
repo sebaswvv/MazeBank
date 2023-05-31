@@ -20,6 +20,7 @@ import w.mazebank.models.responses.TransactionResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -685,5 +686,41 @@ class AccountControllerTest extends BaseControllerTest{
             ).andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("Day limit exceeded"));
+    }
+
+    // get all transactions by account id
+    @Test
+    void getAllTransactionsByAccountId() throws Exception {
+        // create the TransactionResponse that the service should return
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        transactionResponses.add(TransactionResponse.builder()
+            .id(1L)
+            .amount(100.0)
+            .timestamp(LocalDateTime.of(2023, 1, 1, 0, 0, 0).toString())
+            .build());
+        transactionResponses.add(TransactionResponse.builder()
+            .id(2L)
+            .amount(200.0)
+            .timestamp(LocalDateTime.of(2023, 1, 1, 0, 0, 0).toString())
+            .build());
+
+
+        // mock the service
+        when(accountService.getTransactionsFromAccount(0, 10, "desc", authCustomer, 1L )).thenReturn(transactionResponses);
+
+        // call the controller
+        mockMvc.perform(get("/accounts/1/transactions")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].amount").value(100.0))
+            .andExpect(jsonPath("$[0].timestamp").value(LocalDateTime.of(2023, 1, 1, 0, 0, 0).toString()))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].amount").value(200.0))
+            .andExpect(jsonPath("$[1].timestamp").value(LocalDateTime.of(2023, 1, 1, 0, 0, 0).toString()));
     }
 }
