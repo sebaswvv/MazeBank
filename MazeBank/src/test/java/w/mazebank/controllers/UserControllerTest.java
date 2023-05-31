@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UnauthorizedUserAccessException;
+import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.UserResponse;
@@ -19,8 +20,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -205,6 +205,54 @@ class UserControllerTest extends BaseControllerTest {
     @Test
     void enableUserShouldReturn403WhenUserPerformingIsNotACustomer() throws Exception {
         mockMvc.perform(put("/users/1/enable")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"));
+    }
+
+    // delete user by id
+    @Test
+    void deleteUserByIdShouldGive200IfUserWasDeleteByEmployee() throws Exception {
+        mockMvc.perform(delete("/users/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.message").value("User with id: 1 was deleted successfully"));
+    }
+
+    @Test
+    void deleteUserByIdShouldThrow404IfUserIsNotFound() throws Exception {
+        doThrow(new UserNotFoundException("User not found with id: " + 1))
+            .when(userServiceJpa).deleteUserById(1L);
+
+        mockMvc.perform(delete("/users/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("User not found with id: 1"));
+    }
+
+    @Test
+    void canDeleteUserIfUserHasAccounts() throws Exception {
+        doThrow(new UserHasAccountsException("user has accounts, cannot delete user"))
+            .when(userServiceJpa).deleteUserById(1L);
+
+        mockMvc.perform(delete("/users/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("user has accounts, cannot delete user"));
+    }
+
+    @Test
+    void deleteUserByIdCannotBeDoneByCustomer() throws Exception {
+        mockMvc.perform(delete("/users/1")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(user(authCustomer))
             ).andDo(print())
