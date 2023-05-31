@@ -86,12 +86,19 @@ public class UserServiceJpa extends BaseServiceJpa {
         return accountResponses;
     }
 
-    public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
+    public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search, boolean withoutAccounts) {
         List<User> users = findAllPaginationAndSort(offset, limit, sort, search, userRepository);
 
-        // parse users to user responses
+        List<User> filteredUsers = new ArrayList<>(users);
+
+        // If withoutAccounts is true, remove users that have accounts
+        if (withoutAccounts) {
+            filteredUsers.removeIf(user -> user.getAccounts() != null && !user.getAccounts().isEmpty());
+        }
+
+        // Parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();
-        for (User user : users) {
+        for (User user : filteredUsers) {
             UserResponse userResponse = UserResponse.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
@@ -99,6 +106,7 @@ public class UserServiceJpa extends BaseServiceJpa {
                 .build();
             userResponses.add(userResponse);
         }
+
         return userResponses;
     }
 
