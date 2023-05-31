@@ -30,7 +30,77 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AccountControllerTest extends BaseControllerTest {
+class AccountControllerTest extends BaseControllerTest{
+    @Test
+    void withdrawUnauthorizedThrows403() throws Exception {
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: UnauthorizedAccountAccessException("You are not authorized to access this account");
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/withdraw")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Unauthorized"));
+    }
+    @Test
+    void withdrawReturns201() throws Exception {
+        // create account for the authUser
+        Account account = Account.builder()
+            .id(1)
+            .iban("NL01INHO0123456789")
+            .accountType(AccountType.CHECKING)
+            .balance(1000.0)
+            .user(authCustomer)
+            .isActive(true)
+            .absoluteLimit(0.0)
+            .createdAt(LocalDateTime.of(2023, 1, 1, 0, 0, 0))
+            .build();
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // create the TransactionResponse that the service should return
+        TransactionResponse transactionResponse = TransactionResponse.builder()
+            .id(1L)
+            .amount(100.0)
+            .type(TransactionType.WITHDRAWAL.toString())
+            .sender(null)
+            .receiver(account.getIban())
+            .userPerforming(authCustomer.getId())
+            .timestamp(LocalDateTime.now().toString())
+            .build();
+
+        // mock the service
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenReturn(transactionResponse);
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/withdraw")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.amount").value(100.0))
+            .andExpect(jsonPath("$.type").value(TransactionType.WITHDRAWAL.toString()))
+            .andExpect(jsonPath("$.receiver").value("NL01INHO0123456789"))
+            .andExpect(jsonPath("$.userPerforming").value(1))
+            .andExpect(jsonPath("$.timestamp").exists())
+            .andExpect(jsonPath("$.timestamp").isNotEmpty());
+    }
 
     @Test
     void disableAccountsWithNonExistingAccountReturns404() throws Exception {
@@ -373,7 +443,7 @@ class AccountControllerTest extends BaseControllerTest {
     }
 
     @Test
-    void depositUnauthorizedThrows401() throws Exception {
+    void depositUnauthorizedThrows403() throws Exception {
 
         // create AtmRequest
         JSONObject request = new JSONObject();
@@ -384,13 +454,13 @@ class AccountControllerTest extends BaseControllerTest {
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
-                .header("Authorization", "Bearer " + customerToken)
-                .with(csrf())
-                .with(user(authCustomer))
-                .contentType("application/json")
-                .content(request.toString())
-            ).andDo(print())
-            .andExpect(status().isUnauthorized())
+            .header("Authorization", "Bearer " + customerToken)
+            .with(csrf())
+            .with(user(authCustomer))
+            .contentType("application/json")
+            .content(request.toString())
+        ).andDo(print())
+            .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
 
@@ -555,16 +625,16 @@ class AccountControllerTest extends BaseControllerTest {
 
 
     @Test
-    void depositWithInsufficientFundsThrows400() throws Exception {
+    void withdrawWithInsufficientFundsThrows400() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
         request.put("amount", 100.0);
 
         // this error message: "Sender has insufficient funds"
-        when(accountService.deposit(1L, 100.0, authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
 
         // call the controller and force spring security
-        mockMvc.perform(post("/accounts/1/deposit")
+        mockMvc.perform(post("/accounts/1/withdraw")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(csrf())
                 .with(user(authCustomer))
@@ -586,6 +656,27 @@ class AccountControllerTest extends BaseControllerTest {
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Day limit exceeded"));
+    }
+
+    @Test
+    void withdrawWithDayLimitExceededThrows400() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: "Sender has insufficient funds"
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/withdraw")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(csrf())
                 .with(user(authCustomer))
