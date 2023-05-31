@@ -51,7 +51,6 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}")
-    @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<AccountResponse> getAccountById(
         @PathVariable Long accountId,
         @AuthenticationPrincipal User user
