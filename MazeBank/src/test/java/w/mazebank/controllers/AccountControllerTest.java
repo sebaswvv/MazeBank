@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.web.util.NestedServletException;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
@@ -18,6 +19,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -388,8 +391,19 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(jsonPath("$.message").value("Access Denied"));
     }
 
+    @Test
+    void patchAccountButBodyIsEmptyThrows400() throws Exception {
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType("application/json")
+            ).andDo(print())
+            .andExpect(status().isBadRequest());
+    }
 
 
+    @Test
     void depositWithInsufficientFunds() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
