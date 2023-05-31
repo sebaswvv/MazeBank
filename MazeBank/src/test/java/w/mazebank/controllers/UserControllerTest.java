@@ -1,11 +1,18 @@
 package w.mazebank.controllers;
 
 import io.jsonwebtoken.security.SignatureException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UnauthorizedUserAccessException;
 import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.models.User;
+import w.mazebank.models.responses.UserResponse;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -15,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class UserControllerTest extends BaseControllerTest {
+    // get user by id
     @Test
     void getUserByIdShouldReturnStatus200OkAndObject() throws Exception {
         when(userServiceJpa.getUserByIdAndValidate(Mockito.anyLong(), Mockito.any())).thenReturn(authCustomer);
@@ -86,5 +94,66 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.role").value(RoleType.CUSTOMER.toString()))
             .andExpect(jsonPath("$.blocked").value(false))
             .andExpect(jsonPath("$.createdAt").exists());
+    }
+
+
+    // get all users
+    // secured by employee
+    @Test
+    void getAllUsersShouldReturnStatus200OkAndObject() throws Exception {
+        // parse users to user
+        when(userServiceJpa.getAllUsers(0, 10, "asc", null)).thenReturn(userResponses);
+
+        mockMvc.perform(get("/users")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].firstName").value("John"))
+            .andExpect(jsonPath("$[0].lastName").value("Doe"))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].firstName").value("Jane"))
+            .andExpect(jsonPath("$[1].lastName").value("Doe"));
+    }
+
+    @Test
+    void getAllUsersShouldReturnStatus200OkAndObjectWithLimit() throws Exception {
+        // parse users to user
+        when(userServiceJpa.getAllUsers(0, 1, "asc", null)).thenReturn(userResponses.subList(0, 1));
+
+        mockMvc.perform(get("/users?limit=1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authEmployee))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].firstName").value("John"))
+            .andExpect(jsonPath("$[0].lastName").value("Doe"));
+    }
+
+    // 401, wrong JWT
+    @Test
+    void getAllUsersShouldReturnStatus401IfUnauthorized() throws Exception {
+        when(jwtService.extractEmail(Mockito.anyString())).thenReturn("user1@example.com");
+        when(jwtService.isTokenValid(Mockito.anyString(), Mockito.any())).thenThrow(new SignatureException("Unauthorized"));
+
+        mockMvc.perform(get("/users")
+                .header("Authorization", "Bearer invalid-token")
+            ).andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.message").value("Unauthorized"));
+    }
+
+    @Test
+    void getAllUsersShouldReturnStatus403IfForbidden() throws Exception {
+        when(userServiceJpa.getAllUsers(0, 10, "asc", null)).thenReturn(userResponses);
+
+        mockMvc.perform(get("/users")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"));
     }
 }
