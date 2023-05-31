@@ -23,8 +23,8 @@ public class UserController {
     private UserServiceJpa userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) throws UserNotFoundException {
-        User user = userService.getUserById(id);
+    public ResponseEntity<User> getUserById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException {
+        User user = userService.getUserByIdController(id, userPerforming);
         return ResponseEntity.ok(user);
     }
 
