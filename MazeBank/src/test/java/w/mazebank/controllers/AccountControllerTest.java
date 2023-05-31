@@ -242,7 +242,7 @@ class AccountControllerTest extends BaseControllerTest{
             .sender(null)
             .receiver(account.getIban())
             .userPerforming(authCustomer.getId())
-            .timestamp(LocalDateTime.now())
+            .timestamp(LocalDateTime.now().toString())
             .build();
 
         // mock the service

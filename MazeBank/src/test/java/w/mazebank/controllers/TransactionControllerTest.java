@@ -70,7 +70,7 @@ class TransactionControllerTest extends BaseControllerTest {
             .sender("NL01INHO0000000002")
             .receiver("NL01INHO0000000003")
             .type(TransactionType.TRANSFER.toString())
-            .timestamp(LocalDateTime.now())
+            .timestamp(LocalDateTime.now().toString())
             .build();
     }
 
