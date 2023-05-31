@@ -18,12 +18,15 @@ import w.mazebank.configurations.SecurityConfiguration;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
+import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 import w.mazebank.services.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -70,6 +73,7 @@ class BaseControllerTest {
     protected User authCustomer;
     protected String employeeToken;
     protected String customerToken;
+    protected List<UserResponse> userResponses;
 
     @BeforeEach
     void setUp() throws UserNotFoundException {
@@ -81,5 +85,9 @@ class BaseControllerTest {
 
         customerToken = new JwtService().generateToken(authCustomer);
         employeeToken = new JwtService().generateToken(authEmployee);
+
+        userResponses = new ArrayList<>();
+        userResponses.add(new UserResponse(1L, "John", "Doe"));
+        userResponses.add(new UserResponse(2L, "Jane", "Doe"));
     }
 }
