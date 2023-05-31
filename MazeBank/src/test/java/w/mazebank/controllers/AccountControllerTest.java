@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -28,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AccountControllerTest extends BaseControllerTest{
 
     @Test
-    void getAllAccounts() throws Exception {
+    void getAllAccountsThrows200() throws Exception {
         // user to add to the accounts
         User user = User.builder()
             .id(1)
@@ -124,7 +126,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void getAccountByIdShouldReturnStatusOkAndObject() throws Exception {
+    void getAccountByIdShouldReturnStatusOkAndObjectThrows200() throws Exception {
         User user = User.builder()
             .id(1)
             .firstName("John")
@@ -168,7 +170,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void depositHappyFlow() throws Exception {
+    void depositHappyFlowThrows201() throws Exception {
         // create account for the authUser
         Account account = Account.builder()
             .id(1)
@@ -219,7 +221,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void depositUnauthorized() throws Exception {
+    void depositUnauthorizedThrows401() throws Exception {
 
         // create AtmRequest
         JSONObject request = new JSONObject();
@@ -241,7 +243,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void depositWithNoExistingAccount() throws Exception {
+    void depositWithNoExistingAccountThrows404() throws Exception {
 
         // create AtmRequest
         JSONObject request = new JSONObject();
@@ -388,9 +390,20 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(jsonPath("$.message").value("Access Denied"));
     }
 
+    @Test
+    void patchAccountButBodyIsEmptyThrows400() throws Exception {
+        mockMvc.perform(patch("/accounts/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType("application/json")
+            ).andDo(print())
+            .andExpect(status().isBadRequest());
+    }
 
 
-    void depositWithInsufficientFunds() throws Exception {
+    @Test
+    void depositWithInsufficientFundsThrows400() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
         request.put("amount", 100.0);
@@ -406,13 +419,12 @@ class AccountControllerTest extends BaseControllerTest{
                 .contentType("application/json")
                 .content(request.toString())
             ).andDo(print())
-            .andExpect(status().isUnauthorized());
-            // .andExpect(status().isBadRequest())
-            // .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Sender has insufficient funds"));
     }
 
     @Test
-    void depositWithDayLimitExceeded() throws Exception {
+    void depositWithDayLimitExceededThrows400() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
         request.put("amount", 100.0);
