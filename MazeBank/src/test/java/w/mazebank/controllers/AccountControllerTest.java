@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -28,6 +29,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 class AccountControllerTest extends BaseControllerTest{
+
+    @Test
+    void disableAccountsWithNonExistingAccountReturns404() throws Exception {
+        when(accountService.lockAccount(1L)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
+    }
+
+    @Test
+    void enableAccountsWithNonExistingAccountReturns404() throws Exception {
+        when(accountService.unlockAccount(1L)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
+    }
     @Test
     void disableAccountReturns200() throws Exception {
         mockMvc.perform(put("/accounts/1/disable")
