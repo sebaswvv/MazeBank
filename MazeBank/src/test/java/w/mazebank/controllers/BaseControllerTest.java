@@ -19,6 +19,7 @@ import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
@@ -76,6 +77,7 @@ class BaseControllerTest {
     protected String customerToken;
     protected List<UserResponse> userResponses;
     protected List<AccountResponse> accountResponses;
+    protected List<TransactionResponse> transactionResponses;
 
     @BeforeEach
     void setUp() throws UserNotFoundException {
@@ -95,5 +97,9 @@ class BaseControllerTest {
         accountResponses = new ArrayList<>();
         accountResponses.add(new AccountResponse(1L, 1, "NL01MAZE0000000001", userResponses.get(0), 1000, null, null, LocalDateTime.now()));
         accountResponses.add(new AccountResponse(2L, 1, "NL01MAZE0000000002", userResponses.get(0), 2000, null, null, LocalDateTime.now()));
+
+        transactionResponses = new ArrayList<>();
+        transactionResponses.add(new TransactionResponse(1L, 100, "", "NL01MAZE0000000001", "NL01MAZE0000000002", 1L, LocalDateTime.now().toString(), "deposit"));
+        transactionResponses.add(new TransactionResponse(2L, 500, "", "NL01MAZE0000000002", "NL01MAZE0000000001", 1L, LocalDateTime.now().toString(), "deposit"));
     }
 }

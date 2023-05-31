@@ -358,7 +358,7 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.lastName").value("Doe"))
             .andExpect(jsonPath("$.dayLimit").value(500.00));
     }
-  
+
     // get accounts by user id
     @Test
     void getAccountsByUserIdShouldGive200AndObject() throws Exception {
@@ -420,5 +420,52 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$[1].user.firstName").value("John"))
             .andExpect(jsonPath("$[1].user.lastName").value("Doe"))
             .andExpect(jsonPath("$[1].balance").value(2000.00));
+    }
+
+    // get transactions by user id
+    @Test
+    void getTransactionsByUserIdShouldGive200AndObject() throws Exception {
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenReturn(transactionResponses);
+
+        mockMvc.perform(get("/users/1/transactions")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].amount").value(100.00))
+            .andExpect(jsonPath("$[0].sender").value("NL01MAZE0000000001"))
+            .andExpect(jsonPath("$[0].receiver").value("NL01MAZE0000000002"))
+            .andExpect(jsonPath("$[0].userPerforming").value("1"))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].amount").value(500.00))
+            .andExpect(jsonPath("$[1].sender").value("NL01MAZE0000000002"))
+            .andExpect(jsonPath("$[1].receiver").value("NL01MAZE0000000001"))
+            .andExpect(jsonPath("$[1].userPerforming").value("1"));
+    }
+
+    @Test
+    void getTransactionsByUserIdShouldThrow401WhenUserIsNotEmployeeAndNotOwner() throws Exception {
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenThrow(new UnauthorizedTransactionAccessException("user not allowed to access transactions of user with id: 1"));
+
+        mockMvc.perform(get("/users/1/transactions")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("user not allowed to access transactions of user with id: 1"));
+    }
+    
+    @Test
+    void getTransactionsByUserIdShouldGive200AndEmptyArray() throws Exception {
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenReturn(new ArrayList<>());
+
+        mockMvc.perform(get("/users/1/transactions")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
     }
 }
