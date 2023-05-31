@@ -8,8 +8,7 @@ import w.mazebank.repositories.BaseRepository;
 import java.util.List;
 
 public class BaseServiceJpa {
-
-    public <T> List<T> findAllPaginationAndSort(int offset, int limit, String sort, String search, BaseRepository<T,?> repository) {
+    public <T> List<T> findAllPaginationAndSort(int offset, int limit, String sort, String search, BaseRepository<T, ?> repository) {
         // create sort and pageable object
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
         Pageable pageable = PageRequest.of(offset, limit, sortObject);
@@ -20,7 +19,7 @@ public class BaseServiceJpa {
         if (search != null && !search.isEmpty()) {
             results = repository.findBySearchString(search, pageable);
         } else {
-            results =  repository.findAll(pageable).getContent();
+            results = repository.findAll(pageable).getContent();
         }
 
         // return results

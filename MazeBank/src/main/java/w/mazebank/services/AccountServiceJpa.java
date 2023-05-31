@@ -3,12 +3,16 @@ package w.mazebank.services;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
 import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
@@ -17,6 +21,7 @@ import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
+import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.utils.IbanGenerator;
 
 import java.util.ArrayList;
@@ -33,6 +38,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserServiceJpa userServiceJpa;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     private final ModelMapper mapper = new ModelMapper();
 
@@ -226,5 +233,30 @@ public class AccountServiceJpa extends BaseServiceJpa {
                 .build());
         }
         return ibanResponses;
+    }
+
+    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, User user, Long accountId) throws AccountNotFoundException {
+        getAccountAndValidate(accountId, user);
+
+        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "timestamp");
+        Pageable pageable = PageRequest.of(offset, limit, sortObject);
+
+        List<Transaction> transactions = transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
+
+        // parse transactions to transaction responses
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            TransactionResponse response = TransactionResponse.builder()
+                .id(transaction.getId())
+                .amount(transaction.getAmount())
+                .description(transaction.getDescription())
+                .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
+                .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
+                .type(transaction.getTransactionType().name())
+                .timestamp(transaction.getTimestamp().toString())
+                .build();
+            transactionResponses.add(response);
+        }
+        return transactionResponses;
     }
 }

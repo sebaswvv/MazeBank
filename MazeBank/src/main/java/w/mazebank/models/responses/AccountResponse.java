@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import w.mazebank.enums.AccountType;
-import w.mazebank.enums.RoleType;
 
 import java.time.LocalDateTime;
 

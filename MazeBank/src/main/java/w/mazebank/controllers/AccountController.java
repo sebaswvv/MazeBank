@@ -99,4 +99,16 @@ public class AccountController {
         accountServiceJpa.unlockAccount(id);
         return ResponseEntity.ok(new LockedResponse(false));
     }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<Object> getAllTransactionsByAccontId(
+        @PathVariable Long accountId,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "desc") String sort,
+        @AuthenticationPrincipal User user
+    ) throws AccountNotFoundException {
+        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(offset, limit, sort, user, accountId);
+        return ResponseEntity.ok(transactionResponses);
+    }
 }
