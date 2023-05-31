@@ -106,11 +106,10 @@ public class AccountController {
         @PathVariable Long accountId,
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
-        @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "desc") String sort,
         @AuthenticationPrincipal User user
-    ) throws UserNotFoundException, AccountNotFoundException {
-        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(offset, limit, sort, search, user, accountId);
+    ) throws AccountNotFoundException {
+        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(offset, limit, sort, user, accountId);
         return ResponseEntity.ok(transactionResponses);
     }
 }

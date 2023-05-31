@@ -25,22 +25,4 @@ public class BaseServiceJpa {
         // return results
         return results;
     }
-
-    public <T> List<T> findAllPaginationAndSort(int offset, int limit, String sortByProperty, String sort, String search, BaseRepository<T, ?> repository) {
-        // create sort and pageable object
-        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), sortByProperty);
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
-
-        List<T> results;
-
-        // if search string is not empty or null
-        if (search != null && !search.isEmpty()) {
-            results = repository.findBySearchString(search, pageable);
-        } else {
-            results = repository.findAll(pageable).getContent();
-        }
-
-        // return results
-        return results;
-    }
 }

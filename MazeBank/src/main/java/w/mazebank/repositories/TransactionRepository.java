@@ -4,7 +4,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 
 import java.util.List;
@@ -27,4 +26,6 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long>
     List<Transaction> findBySearchString(String search, Pageable pageable);
 
     List<Transaction> findBySenderUserIdOrReceiverUserId(Long senderId, Long receiverId, Pageable pageable);
+
+    List<Transaction> findBySenderIdOrReceiverId(Long senderIban, Long receiverIban, Pageable pageable);
 }

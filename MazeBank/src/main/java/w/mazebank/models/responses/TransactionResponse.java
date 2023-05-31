@@ -5,9 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import w.mazebank.enums.TransactionType;
-
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -21,6 +18,6 @@ public class TransactionResponse {
     private String sender;
     private String receiver;
     private Long userPerforming;
-    private LocalDateTime timestamp;
+    private String timestamp;
     private String type;
 }

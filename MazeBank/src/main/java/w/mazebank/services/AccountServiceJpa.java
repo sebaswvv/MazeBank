@@ -3,6 +3,9 @@ package w.mazebank.services;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
@@ -232,28 +235,27 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return ibanResponses;
     }
 
-    // move to transactionService or nah????
-    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, String search, User user, Long accountId) throws AccountNotFoundException {
-        Account account = getAccountAndValidate(accountId, user);
+    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, User user, Long accountId) throws AccountNotFoundException {
+        getAccountAndValidate(accountId, user);
 
-        List<Transaction> transactions = findAllPaginationAndSort(offset, limit, "timestamp", sort, search, transactionRepository);
+        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "timestamp");
+        Pageable pageable = PageRequest.of(offset, limit, sortObject);
 
-        // parse users to user responses
+        List<Transaction> transactions = transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
+
+        // parse transactions to transaction responses
         List<TransactionResponse> transactionResponses = new ArrayList<>();
         for (Transaction transaction : transactions) {
-            TransactionResponse userResponse = TransactionResponse.builder()
+            TransactionResponse response = TransactionResponse.builder()
                 .id(transaction.getId())
                 .amount(transaction.getAmount())
                 .description(transaction.getDescription())
-                // TODO: return partial users?
-                .sender(transaction.getSender().getIban())
-                .receiver(transaction.getReceiver().getIban())
-                // TODO: only for employees
-                .userPerforming(transaction.getUserPerforming().getId())
+                .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
+                .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
                 .type(transaction.getTransactionType().name())
-                .timestamp(transaction.getTimestamp())
+                .timestamp(transaction.getTimestamp().toString())
                 .build();
-            transactionResponses.add(userResponse);
+            transactionResponses.add(response);
         }
         return transactionResponses;
     }

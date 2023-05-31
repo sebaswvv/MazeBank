@@ -26,6 +26,9 @@ public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
     public User getUserById(Long id) throws UserNotFoundException {
         // get users
         User user = userRepository.findById(id).orElse(null);
@@ -37,7 +40,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public User getUserByIdAndValidate(Long id, User userPerforming) throws UserNotFoundException {
         // check if user id is the same as the user performing the request or if the user performing the request is an employee
-        if(userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
+        if (userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
             throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
         }
         return getUserById(id);
@@ -58,7 +61,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
         // throw exception if user is not an employee and not the user performing the request
-        if(!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
+        if (!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
         }
 
@@ -83,7 +86,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
         // return account responses
         return accountResponses;
-
     }
 
     public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search) {
@@ -133,7 +135,8 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         // check if fields are allowed
         for (String field : userPatchRequest.getFields()) {
-            if (!allowedFields.contains(field)) throw new DisallowedFieldException("field not allowed to update: " + field);
+            if (!allowedFields.contains(field))
+                throw new DisallowedFieldException("field not allowed to update: " + field);
         }
 
         if (userPatchRequest.getEmail() != null) user.setEmail(userPatchRequest.getEmail());
@@ -141,7 +144,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
         if (userPatchRequest.getDayLimit() != null) user.setDayLimit(userPatchRequest.getDayLimit());
-        if (userPatchRequest.getTransactionLimit() != null) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if (userPatchRequest.getTransactionLimit() != null)
+            user.setTransactionLimit(userPatchRequest.getTransactionLimit());
 
         userRepository.save(user);
 
@@ -180,7 +184,7 @@ public class UserServiceJpa extends BaseServiceJpa {
                 .description(transaction.getDescription())
                 .sender(transaction.getSender().getIban())
                 .receiver(transaction.getReceiver().getIban())
-                .timestamp(transaction.getTimestamp())
+                .timestamp(transaction.getTimestamp().toString())
                 .build();
             transactionResponses.add(transactionResponse);
         }

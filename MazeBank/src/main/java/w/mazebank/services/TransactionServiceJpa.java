@@ -120,7 +120,7 @@ public class TransactionServiceJpa {
             transaction.getSender().getIban(),
             transaction.getReceiver().getIban(),
             transaction.getUserPerforming().getId(),
-            transaction.getTimestamp(),
+            transaction.getTimestamp().toString(),
             transaction.getTransactionType().toString());
     }
 
@@ -170,7 +170,7 @@ public class TransactionServiceJpa {
         validateTransaction(transaction);
 
         // check if receiver is a savings account
-        if(transaction.getReceiver().getAccountType() == AccountType.SAVINGS)
+        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS)
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
     }
 
