@@ -24,7 +24,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException {
-        User user = userService.getUserByIdController(id, userPerforming);
+        User user = userService.getUserByIdAndValidate(id, userPerforming);
         return ResponseEntity.ok(user);
     }
 
