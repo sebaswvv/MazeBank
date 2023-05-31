@@ -7,33 +7,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.BsnAlreadyUsedException;
 import w.mazebank.exceptions.EmailAlreadyUsedException;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.exceptions.UserNotOldEnoughException;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
 import w.mazebank.models.responses.AuthenticationResponse;
 import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuthServiceTest {
-
-
     @Mock
     private PasswordEncoder passwordEncoder;
+
     @Mock
-    JwtService jwtService;
+    private JwtService jwtService;
 
     @InjectMocks
     private AuthService authService;
@@ -41,8 +44,12 @@ class AuthServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AuthenticationManager authenticationManager;
+
     private RegisterRequest registerRequest;
     private User user;
+
     @BeforeEach
     void setUp() {
         // setup the passwordEncoded to prevent errors
@@ -51,7 +58,7 @@ class AuthServiceTest {
         // create Register Request
         registerRequest = new RegisterRequest("info@mail.nl", 123456789, "John", "Doe", "Abc123!@", "0612345678", LocalDate.of(1990, 1, 1));
 
-        // create usr with same info as register request
+        // create user with same info as register request
         user = User.builder()
             .email(registerRequest.getEmail())
             .bsn(registerRequest.getBsn())
@@ -86,7 +93,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void registerButEmailIsTaken(){
+    void registerButEmailIsTaken() {
         // mock the userRepository
         when(userRepository.findByEmail(any(String.class))).thenReturn(java.util.Optional.of(user));
 
@@ -105,7 +112,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void registerButBsnIsTaken(){
+    void registerButBsnIsTaken() {
         // mock the userRepository
         when(userRepository.findByBsn(any(Integer.class))).thenReturn(java.util.Optional.of(user));
 
@@ -124,7 +131,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void registerButUserIsNotOldEnough(){
+    void registerButUserIsNotOldEnough() {
         // modify the registerRequest to make the user not old enough
         registerRequest.setDateOfBirth(LocalDate.now().minusYears(17));
 
@@ -140,6 +147,56 @@ class AuthServiceTest {
         verify(userRepository, never()).save(any(User.class));
         verify(passwordEncoder, never()).encode(registerRequest.getPassword());
         verify(jwtService, never()).generateToken(any(User.class));
+    }
 
+    @Test
+    void loginIsSuccessful() {
+        LoginRequest loginRequest = LoginRequest.builder()
+            .email(registerRequest.getEmail())
+            .password(registerRequest.getPassword())
+            .build();
+
+        // mock methods
+        when(userRepository.findByEmail(any())).thenReturn(Optional.ofNullable(user));
+        when(authenticationManager.authenticate(any())).thenReturn(null);
+        when(jwtService.generateToken(any(User.class))).thenReturn("THISISAFAKETOKEN");
+
+        // call the login method
+        AuthenticationResponse response = authService.login(loginRequest);
+
+        // test results
+        assertEquals("THISISAFAKETOKEN", response.getAuthenticationToken());
+    }
+
+    @Test
+    void loginFailsWhenUserIsBlocked() {
+        user.setBlocked(true);
+
+        LoginRequest loginRequest = LoginRequest.builder()
+            .email(registerRequest.getEmail())
+            .password(registerRequest.getPassword())
+            .build();
+
+        // mock methods
+        when(userRepository.findByEmail(any())).thenReturn(Optional.ofNullable(user));
+
+        // test results
+        UnauthorizedAccountAccessException exception = assertThrows(UnauthorizedAccountAccessException.class, () -> authService.login(loginRequest));
+        assertEquals("User is blocked", exception.getMessage());
+    }
+
+    @Test
+    void loginFailsWhenUserIsNotFound() {
+        LoginRequest loginRequest = LoginRequest.builder()
+            .email(registerRequest.getEmail())
+            .password(registerRequest.getPassword())
+            .build();
+
+        // mock methods
+        when(userRepository.findByEmail(any())).thenReturn(Optional.empty());
+
+        // test results
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> authService.login(loginRequest));
+        assertEquals("User not found", exception.getMessage());
     }
 }
