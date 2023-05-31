@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.InsufficientFundsException;
 import w.mazebank.exceptions.TransactionFailedException;
 import w.mazebank.exceptions.TransactionNotFoundException;
@@ -30,8 +31,8 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
-        throws TransactionFailedException, InsufficientFundsException {
+        throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
         TransactionResponse response = transactionServiceJpa.postTransaction(transactionRequest, user);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(201).body(response);
     }
 }

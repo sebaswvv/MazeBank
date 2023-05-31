@@ -1,0 +1,45 @@
+import { createRouter, createWebHistory } from 'vue-router';
+import Home from '../views/HomeView.vue';
+import Atm from '../views/AtmView.vue';
+import Login from '../views/LoginView.vue';
+import Register from '../views/RegisterView.vue';
+import CustomerDashboard from '../views/CustomerDashboardView.vue';
+import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
+
+// Define routes
+const routes = [
+  { path: '/', component: Home },
+  { path: '/atm', component: Atm },
+  { path: '/login', component: Login },
+  { path: '/register', component: Register },
+  { path: '/customer-dashboard', component: CustomerDashboard },
+  { path: '/employee-dashboard', component: EmployeeDashboard },
+];
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+});
+
+// Check if user is logged in before each route change zodat je paginas kan afschermen
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = localStorage.getItem('token') !== null;
+  const userRole = localStorage.getItem('user_type');
+
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    next('/login');
+  } else if (
+    to.meta.requiresRestaurantOwner &&
+    (!isLoggedIn || userRole !== '1')
+  ) {
+    next('/');
+  } else if (to.meta.requiresAdmin && !isLoggedIn) {
+    next('/');
+  } else if (to.path === '/register' && isLoggedIn) {
+    next('/');
+  } else {
+    next();
+  }
+});
+
+export default router;

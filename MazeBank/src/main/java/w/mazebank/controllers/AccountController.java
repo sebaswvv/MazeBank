@@ -15,6 +15,7 @@ import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.requests.AtmRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.AccountServiceJpa;
@@ -38,6 +39,14 @@ public class AccountController {
         @RequestParam(required = false) String search
     ) {
         List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/iban/{name}")
+    public ResponseEntity<Object> getAccountsByName(
+        @PathVariable String name
+    ) {
+        List<IbanResponse> accounts = accountServiceJpa.getAccountsByName(name);
         return ResponseEntity.ok(accounts);
     }
 
@@ -69,33 +78,25 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<TransactionResponse> deposit(
-        @PathVariable("accountId") Long accountId,
-        @RequestBody AtmRequest atmRequest,
-        @AuthenticationPrincipal User user
-    ) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        return ResponseEntity.ok(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
+    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
 
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(
-        @PathVariable Long accountId,
-        @RequestBody AtmRequest atmRequest,
-        @AuthenticationPrincipal User user
-    ) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.ok(accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user));
     }
 
     @PutMapping("/{id}/disable")
     @Secured("ROLE_EMPLOYEE")
-    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException {
+    public ResponseEntity<LockedResponse> blockUser(@PathVariable Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         accountServiceJpa.lockAccount(id);
         return ResponseEntity.ok(new LockedResponse(true));
     }
 
     @PutMapping("/{id}/enable")
     @Secured("ROLE_EMPLOYEE")
-    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException {
+    public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         accountServiceJpa.unlockAccount(id);
         return ResponseEntity.ok(new LockedResponse(false));
     }

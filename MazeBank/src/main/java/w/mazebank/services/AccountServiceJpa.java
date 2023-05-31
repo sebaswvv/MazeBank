@@ -14,9 +14,11 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.requests.AccountRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.AccountRepository;
+import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.utils.IbanGenerator;
 
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserServiceJpa userServiceJpa;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     private final ModelMapper mapper = new ModelMapper();
 
@@ -69,13 +73,14 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
-        Account account = accountRepository.findById(id).orElse(null);
-        if (account == null) throw new AccountNotFoundException("Account with id: " + id + " not found");
-        return account;
+        return accountRepository.findById(id)
+            .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
     }
 
-    public Account getAccountByIban(String iban) {
-        return accountRepository.findByIban(iban);
+    public Account getAccountByIban(String iban) throws AccountNotFoundException {
+        System.out.println("iban: " + iban);
+        return accountRepository.findByIban(iban)
+            .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
     }
 
     public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
@@ -169,33 +174,84 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
-    public void lockAccount(Long id) throws AccountNotFoundException {
-        Account account = getAccountById(id);
-        account.setActive(true);
+    public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
 
-        accountRepository.save(account);
-    }
-
-    public void unlockAccount(Long id) throws AccountNotFoundException {
+        if (!getAccountById(id).isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already locked");
+        }
         Account account = getAccountById(id);
         account.setActive(false);
 
         accountRepository.save(account);
+        return account;
+    }
+
+    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+
+        if (getAccountById(id).isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already unlocked");
+        }
+
+        Account account = getAccountById(id);
+        account.setActive(true);
+
+        accountRepository.save(account);
+        return account;
+    }
+
+    public List<IbanResponse> getAccountsByName(String name) {
+        String[] names = name.split(" ");
+        return names.length == 2
+            ? getAccountsByFirstNameAndLastName(names[0], names[1])
+            : getAccountsByOneName(name);
+    }
+
+    private List<IbanResponse> getAccountsByOneName(String name) {
+        List<Account> accounts = accountRepository.findAccountsByOneName(name);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
+    }
+
+    private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
+        List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            ibanResponses.add(IbanResponse.builder()
+                .iban(account.getIban())
+                .firstName(account.getUser().getFirstName())
+                .lastName(account.getUser().getLastName())
+                .build());
+        }
+        return ibanResponses;
     }
 
     // move to transactionService or nah????
     public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, String search, User user, Long accountId) throws AccountNotFoundException {
         Account account = getAccountAndValidate(accountId, user);
 
-        List<TransactionServiceJpa> transactions = findAllPaginationAndSort(offset, limit, sort, search, transactionServiceJpa);
+        List<Transaction> transactions = findAllPaginationAndSort(offset, limit, "timestamp", sort, search, transactionRepository);
 
         // parse users to user responses
         List<TransactionResponse> transactionResponses = new ArrayList<>();
         for (Transaction transaction : transactions) {
             TransactionResponse userResponse = TransactionResponse.builder()
                 .id(transaction.getId())
-                .firstName(transaction.getFirstName())
-                .lastName(transaction.getLastName())
+                .amount(transaction.getAmount())
+                .description(transaction.getDescription())
+                // TODO: return partial users?
+                .sender(transaction.getSender().getIban())
+                .receiver(transaction.getReceiver().getIban())
+                // TODO: only for employees
+                .userPerforming(transaction.getUserPerforming().getId())
+                .type(transaction.getTransactionType().name())
+                .timestamp(transaction.getTimestamp())
                 .build();
             transactionResponses.add(userResponse);
         }
