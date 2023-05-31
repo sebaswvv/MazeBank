@@ -165,7 +165,6 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search) throws UserNotFoundException, UnauthorizedAccountAccessException {
-
         if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access transactions of user with id: " + userId);
         }
