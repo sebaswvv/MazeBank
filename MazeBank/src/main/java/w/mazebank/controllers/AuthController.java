@@ -3,6 +3,7 @@ package w.mazebank.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.BsnAlreadyUsedException;
@@ -24,7 +25,7 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> register(
         @RequestBody @Valid RegisterRequest request
     ) throws BsnAlreadyUsedException, UserNotOldEnoughException, EmailAlreadyUsedException {
-        return ResponseEntity.ok(authService.register(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PostMapping("/login")
