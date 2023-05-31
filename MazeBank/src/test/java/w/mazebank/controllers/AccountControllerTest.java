@@ -7,15 +7,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.InsufficientFundsException;
-import w.mazebank.exceptions.TransactionFailedException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.IbanResponse;
+import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 
 import java.time.LocalDate;
@@ -30,6 +28,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 class AccountControllerTest extends BaseControllerTest{
+    @Test
+    void disableAccountReturns200() throws Exception {
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.locked").value(true));
+    }
+
+    @Test
+    void enableAccountReturns200() throws Exception {
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.locked").value(false));
+    }
+
+    @Test
+    void enableAccountsAsCustomerReturns403() throws Exception {
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void disableAccountsAsCustomerReturns403() throws Exception {
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
 
     @Test
     void getAccountsByNameHappyFlowReturns200() throws Exception {
