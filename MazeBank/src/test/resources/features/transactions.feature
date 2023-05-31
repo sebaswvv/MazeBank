@@ -10,3 +10,8 @@ Feature: Everything transactions
         Given I have a valid token for role "employee"
         When I make a transaction from customer 3  to a savings account
         Then response status code is 400 with message "Cannot transfer to a savings account from an account that is not of the same customer"
+
+    Scenario: Make a transaction, as an employee, for a customer
+        Given I have a valid token for role "employee"
+        When I make a transaction from account 1 to account 4
+        Then the result is a 201 status code. and a transaction with id 4, amount 100.00, from account with iban "NL76INHO0493458014" to account with iban "NL76INHO0493458018"
