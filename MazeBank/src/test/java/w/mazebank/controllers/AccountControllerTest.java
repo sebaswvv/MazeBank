@@ -7,7 +7,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.*;
+import w.mazebank.exceptions.AccountNotFoundException;
+import w.mazebank.exceptions.InsufficientFundsException;
+import w.mazebank.exceptions.TransactionFailedException;
+import w.mazebank.exceptions.UnauthorizedAccountAccessException;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
@@ -19,9 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AccountControllerTest extends BaseControllerTest{
 
     @Test
-    void getAccountsByNamHappyFlowReturns200() throws Exception {
+    void getAccountsByNameHappyFlowReturns200() throws Exception {
         // create a list of IbanResponse objects
         List<IbanResponse> list = List.of(
             IbanResponse.builder()
