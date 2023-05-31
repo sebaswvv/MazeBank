@@ -29,8 +29,8 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
-        User user = userService.patchUserById(id, userPatchRequest);
+    public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException, DisallowedFieldException {
+        User user = userService.patchUserById(id, userPatchRequest, userPerforming);
         return ResponseEntity.ok(user);
     }
 

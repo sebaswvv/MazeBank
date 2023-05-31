@@ -275,7 +275,7 @@ class UserControllerTest extends BaseControllerTest {
         patchedUser.setLastName("Doe");
         patchedUser.setDayLimit(500.00);
 
-        when(userServiceJpa.patchUserById(1L, userPatchRequest)).thenReturn(patchedUser);
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer)).thenReturn(patchedUser);
 
         mockMvc.perform(patch("/users/1")
                 .header("Authorization", "Bearer " + customerToken)
@@ -289,7 +289,7 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.lastName").value("Doe"))
             .andExpect(jsonPath("$.dayLimit").value(500.00));
     }
-    
+
     @Test
     void patchUserByIdShouldReturn404IfUserIsNotFound() throws Exception {
         UserPatchRequest userPatchRequest = new UserPatchRequest();
@@ -297,7 +297,7 @@ class UserControllerTest extends BaseControllerTest {
         userPatchRequest.setLastName("Doe");
         userPatchRequest.setDayLimit(500.00);
 
-        when(userServiceJpa.patchUserById(1L, userPatchRequest))
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer))
             .thenThrow(new UserNotFoundException("User not found with id: " + 1));
 
         mockMvc.perform(patch("/users/1")
@@ -310,5 +310,51 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.message").value("User not found with id: 1"));
     }
 
+    @Test
+    void patchUserByIdShouldReturn403IfUserIsNotEmployeeAndNotUserPerforming() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
 
+        when(userServiceJpa.patchUserById(2L, userPatchRequest, authCustomer))
+            .thenThrow(new UnauthorizedUserAccessException("Access Denied"));
+
+        mockMvc.perform(patch("/users/2")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Access Denied"));
+    }
+
+    // user can be patched if user is employee
+    @Test
+    void patchUserByIdShouldReturn200IfUserIsEmployee() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        User patchedUser = new User();
+        patchedUser.setFirstName("Jane");
+        patchedUser.setLastName("Doe");
+        patchedUser.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest, authEmployee)).thenReturn(patchedUser);
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.firstName").value("Jane"))
+            .andExpect(jsonPath("$.lastName").value("Doe"))
+            .andExpect(jsonPath("$.dayLimit").value(500.00));
+    }
 }

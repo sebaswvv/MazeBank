@@ -123,9 +123,14 @@ public class UserServiceJpa extends BaseServiceJpa {
         userRepository.save(user);
     }
 
-    public User patchUserById(long id, UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
+    public User patchUserById(long id, UserPatchRequest userPatchRequest, User userPerforming) throws UserNotFoundException, DisallowedFieldException {
         User user = userRepository.findById(id).orElse(null);
         if (user == null) throw new UserNotFoundException("user not found with id: " + id);
+
+        // check if user is the same as the user performing the request or if the user performing the request is an employee
+        if (userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
+            throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
+        }
 
         List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber", "dayLimit", "transactionLimit");
 
