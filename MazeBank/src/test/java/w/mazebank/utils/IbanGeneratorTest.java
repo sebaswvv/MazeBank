@@ -44,7 +44,7 @@ class IbanGeneratorTest {
     @Test
     void accountNumberShouldBeGreaterThan1() {
         assertTrue(Integer.parseInt(iban.substring(8, 18)) > 1);
-        
+
         // DIT HIERONDER WERKTE NIET TIEMEN
         // System.out.println(iban.substring(8, 18));
         // assertEquals(1, iban.substring(8, 18).compareTo("0000000001"));
