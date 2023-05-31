@@ -80,7 +80,7 @@ class UserServiceJpaTest {
         when(userRepository.findAll(pageable)).thenReturn(usersPage);
 
         // call the method
-        List<UserResponse> results = userServiceJpa.getAllUsers(0, 10, "asc", "");
+        List<UserResponse> results = userServiceJpa.getAllUsers(0, 10, "asc", "", false);
 
         // test results
         assertEquals(2, results.size());

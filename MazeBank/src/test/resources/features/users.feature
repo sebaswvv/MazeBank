@@ -14,3 +14,9 @@ Feature: Everything Users
         Given I have a valid token for role "customer"
         When I call the users endpoint "/users/3/balance" with a get request
         Then the result is a user with a total balance of 12000.0, a savings balance of 10000.0, and a checking balance of 2000.0
+
+
+    Scenario: Get all users that have no accounts
+        Given I have a valid token for role "employee"
+        When I call the users endpoint "/users?withoutAccounts=true" with a get request
+        Then the result is a list of user of size 2

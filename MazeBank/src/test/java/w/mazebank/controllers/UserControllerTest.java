@@ -101,7 +101,7 @@ class UserControllerTest extends BaseControllerTest {
     @Test
     void getAllUsersShouldReturnStatus200OkAndObject() throws Exception {
         // parse users to user
-        when(userServiceJpa.getAllUsers(0, 10, "asc", null)).thenReturn(userResponses);
+        when(userServiceJpa.getAllUsers(0, 10, "asc", null, false)).thenReturn(userResponses);
 
         mockMvc.perform(get("/users")
                 .header("Authorization", "Bearer " + employeeToken)
@@ -120,7 +120,7 @@ class UserControllerTest extends BaseControllerTest {
     @Test
     void getAllUsersShouldReturnStatus200OkAndObjectWithLimit() throws Exception {
         // parse users to user
-        when(userServiceJpa.getAllUsers(0, 1, "asc", null)).thenReturn(userResponses.subList(0, 1));
+        when(userServiceJpa.getAllUsers(0, 1, "asc", null, false)).thenReturn(userResponses.subList(0, 1));
 
         mockMvc.perform(get("/users?limit=1")
                 .header("Authorization", "Bearer " + employeeToken)
@@ -135,7 +135,7 @@ class UserControllerTest extends BaseControllerTest {
 
     @Test
     void getAllUsersShouldReturnStatus403IfForbidden() throws Exception {
-        when(userServiceJpa.getAllUsers(0, 10, "asc", null)).thenReturn(userResponses);
+        when(userServiceJpa.getAllUsers(0, 10, "asc", null, false)).thenReturn(userResponses);
 
         mockMvc.perform(get("/users")
                 .header("Authorization", "Bearer " + employeeToken)
@@ -455,7 +455,7 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("user not allowed to access transactions of user with id: 1"));
     }
-    
+
     @Test
     void getTransactionsByUserIdShouldGive200AndEmptyArray() throws Exception {
         when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenReturn(new ArrayList<>());
