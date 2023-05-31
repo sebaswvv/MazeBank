@@ -18,19 +18,15 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         Date date = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
         Date date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 
-        // httpHeaders.clear();
-        // httpHeaders.add("Authorization", "Bearer " + token);
-        //
-        // // Create the HTTP entity with the request body and headers
-        // HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
-        //
-        // // Send the request
-        // lastResponse = restTemplate.exchange(
-        //     "http://localhost:" + port + "/transactions?startDate=" + startDate + "&endDate=" + endDate,
-        //     HttpMethod.GET, // Adjust the HTTP method if necessary
-        //     requestEntity,
-        //     String.class
-        // );
+        // call endpoint UserController getTransactionsByUserId
+        lastResponse = lastResponse = restTemplate.getForEntity(
+            "/transactions?startDate={startDate}&endDate={endDate}",
+            String.class,
+            date,
+            date2
+        );
+
+
         System.out.println("startDate: " + date);
         System.out.println("endDate: " + date2);
     }

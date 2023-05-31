@@ -1,6 +1,7 @@
 package w.mazebank.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +15,7 @@ import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.*;
 import w.mazebank.services.UserServiceJpa;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -83,10 +85,12 @@ public class UserController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String search)
-        throws UserNotFoundException
-    {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search);
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) throws UserNotFoundException {
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate);
         return ResponseEntity.ok(transactionResponses);
     }
+
 }

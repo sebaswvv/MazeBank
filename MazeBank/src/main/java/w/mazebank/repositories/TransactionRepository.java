@@ -6,6 +6,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import w.mazebank.models.Transaction;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -28,4 +30,8 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long>
     List<Transaction> findBySenderUserIdOrReceiverUserId(Long senderId, Long receiverId, Pageable pageable);
 
     List<Transaction> findBySenderIdOrReceiverId(Long senderIban, Long receiverIban, Pageable pageable);
+
+    @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :userId OR t.receiver.user.id = :userId) AND t.timestamp BETWEEN :startDate AND :endDate")
+    List<Transaction> findBySenderUserIdOrReceiverUserIdAndTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") long userId);
+
 }
