@@ -8,4 +8,4 @@ Feature: Everything Users
     Scenario: Patch user daylimit
         Given I have a valid token for role "employee"
         When I call the users endpoint with a patch request
-        Then the result is a user with a daylimit of 1000
+        Then the result is a user with a daylimit of 10000.0

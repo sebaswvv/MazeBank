@@ -1,11 +1,14 @@
 package w.mazebank.cucumberglue;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.junit.jupiter.api.Assertions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -19,6 +22,8 @@ import w.mazebank.services.JwtService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static org.junit.Assert.assertEquals;
 
 public class UsersStepDefinitions extends BaseStepDefinitions{
     @Given("^I have a valid token for role \"([^\"]*)\"$")
@@ -73,15 +78,16 @@ public class UsersStepDefinitions extends BaseStepDefinitions{
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
         lastResponse = restTemplate.exchange(
             "http://localhost:" + port + "/users/2",
-            HttpMethod.PATCH, // Adjust the HTTP method if necessary
+            HttpMethod.PATCH,
             requestEntity,
             String.class
         );
     }
 
-
-    @Then("the result is a user with a daylimit of {int}")
-    public void theResultIsAUserWithADaylimitOf(int expectedDayLimit) {
+    @Then("the result is a user with a daylimit of {double}")
+    public void theResultIsAUserWithADaylimitOf(double expectedDayLimit) throws JsonProcessingException {
         assert lastResponse.getBody() != null;
+        Object dayLimit = JsonPath.read(lastResponse.getBody(), "$.dayLimit");
+        assertEquals(expectedDayLimit, dayLimit);
     }
 }
