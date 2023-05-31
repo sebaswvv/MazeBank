@@ -4,12 +4,14 @@ import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.MediaType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.AccountNotFoundException;
 import w.mazebank.exceptions.UnauthorizedUserAccessException;
 import w.mazebank.exceptions.UserHasAccountsException;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
+import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.UserResponse;
 
 import java.time.LocalDateTime;
@@ -259,4 +261,54 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Access Denied"));
     }
+
+    // patch user by id
+    @Test
+    void patchUserByIdShouldReturn200IfUserWasUpdated() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        User patchedUser = new User();
+        patchedUser.setFirstName("Jane");
+        patchedUser.setLastName("Doe");
+        patchedUser.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest)).thenReturn(patchedUser);
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.firstName").value("Jane"))
+            .andExpect(jsonPath("$.lastName").value("Doe"))
+            .andExpect(jsonPath("$.dayLimit").value(500.00));
+    }
+    
+    @Test
+    void patchUserByIdShouldReturn404IfUserIsNotFound() throws Exception {
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setFirstName("Jane");
+        userPatchRequest.setLastName("Doe");
+        userPatchRequest.setDayLimit(500.00);
+
+        when(userServiceJpa.patchUserById(1L, userPatchRequest))
+            .thenThrow(new UserNotFoundException("User not found with id: " + 1));
+
+        mockMvc.perform(patch("/users/1")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(user(authCustomer))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userPatchRequest))
+            ).andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("User not found with id: 1"));
+    }
+
+
 }

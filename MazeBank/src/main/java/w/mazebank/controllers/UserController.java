@@ -28,7 +28,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // Even opzoeken hoe die requestBody werkt (JsonPatch)
     @PatchMapping("/{id}")
     public ResponseEntity<User> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest) throws UserNotFoundException, DisallowedFieldException {
         User user = userService.patchUserById(id, userPatchRequest);
