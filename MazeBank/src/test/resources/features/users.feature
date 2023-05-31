@@ -9,3 +9,4 @@ Feature: Everything Users
         Given I have a valid token for role "employee"
         When I call the users endpoint with a patch request
         Then the result is a user with a daylimit of 1000
+

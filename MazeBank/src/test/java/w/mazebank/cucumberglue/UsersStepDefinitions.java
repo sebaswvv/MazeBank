@@ -15,10 +15,13 @@ import org.springframework.web.client.RestTemplate;
 import w.mazebank.enums.RoleType;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
+import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.services.JwtService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 
 public class UsersStepDefinitions extends BaseStepDefinitions{
     @Given("^I have a valid token for role \"([^\"]*)\"$")
@@ -79,9 +82,11 @@ public class UsersStepDefinitions extends BaseStepDefinitions{
         );
     }
 
-
     @Then("the result is a user with a daylimit of {int}")
     public void theResultIsAUserWithADaylimitOf(int expectedDayLimit) {
         assert lastResponse.getBody() != null;
     }
+
+
+
 }
