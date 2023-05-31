@@ -97,4 +97,17 @@ public class User implements UserDetails {
         return true;
     }
 
+    public double getAmountRemaining() {
+        double amountRemaining = dayLimit;
+        if (accounts == null) return amountRemaining;
+        for (Account account : accounts) {
+            for (Transaction transaction : account.getSentTransactions()) {
+                if (transaction.getTimestamp().toLocalDate().equals(LocalDateTime.now().toLocalDate())) {
+                    amountRemaining -= transaction.getAmount();
+                }
+            }
+        }
+        return amountRemaining;
+    }
+
 }
