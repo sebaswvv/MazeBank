@@ -15,6 +15,7 @@ import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.utils.IbanGenerator;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -110,5 +111,56 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
             // pass the response to the lastResponse variable
             lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getRawStatusCode());
         }
+    }
+
+    @When("I make a transaction from account {int} to account {int}")
+    public void iMakeATransactionFromAccountToAccount(int accountIdSender, int accountIdReceiver) {
+        TransactionRequest transactionRequest = TransactionRequest.builder()
+            .amount(100.00)
+            .senderIban("NL76INHO0493458014")
+            .receiverIban("NL76INHO0493458018")
+            .build();
+
+        httpHeaders.clear();
+
+        token = jwtService.generateToken(employee);
+
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(transactionRequest, httpHeaders);
+
+        try {
+            // Send the request
+            lastResponse = restTemplate.exchange(
+                "http://localhost:" + port + "/transactions",
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+            );
+        } catch (HttpClientErrorException.BadRequest ex) {
+            // pass the response to the lastResponse variable
+            lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getRawStatusCode());
+        }
+    }
+
+    @Then("the result is a {int} status code. and a transaction with id {int}, amount {double}, from account with iban {string} to account with iban {string}")
+    public void theResultIsAStatusCodeAndATransactionWithIdAmountFromAccountWithIbanNLINHOToAccountWithIbanNLINHO(int statusCode, int transactionId, double amount, String senderIban, String receiverIban) {
+        // Assert the response status code
+        assertEquals(statusCode, lastResponse.getStatusCodeValue());
+
+        System.out.println(lastResponse.getBody());
+
+        // Assert the response body
+        assertTrue(Objects.requireNonNull(lastResponse.getBody()).contains("id"));
+        assertTrue(lastResponse.getBody().contains("amount"));
+        assertTrue(lastResponse.getBody().contains("sender"));
+        assertTrue(lastResponse.getBody().contains("receiver"));
+
+        // Assert the response body
+        assertTrue(lastResponse.getBody().contains(String.valueOf(transactionId)));
+        assertTrue(lastResponse.getBody().contains(String.valueOf(amount)));
+        assertTrue(lastResponse.getBody().contains(senderIban));
+        assertTrue(lastResponse.getBody().contains(receiverIban));
     }
 }

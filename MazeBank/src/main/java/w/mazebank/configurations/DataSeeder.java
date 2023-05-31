@@ -61,7 +61,7 @@ public class DataSeeder implements ApplicationRunner {
         accountService.addAccount(account2);
 
         // Create some sample accounts for user2
-        Account account3 = new Account(4, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
+        Account account3 = new Account(4, "NL76INHO0493458018", AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
         Account account4 = new Account(5, IbanGenerator.generate(), AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
 
         Account account5 = new Account(6, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
