@@ -18,11 +18,9 @@ import w.mazebank.configurations.SecurityConfiguration;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
+import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
-import w.mazebank.services.AccountServiceJpa;
-import w.mazebank.services.AuthService;
-import w.mazebank.services.JwtService;
-import w.mazebank.services.UserServiceJpa;
+import w.mazebank.services.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 @Import({ApplicationConfig.class, SecurityConfiguration.class })
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {AccountController.class, AuthController.class, UserController.class})
+@WebMvcTest(controllers = {AccountController.class, AuthController.class, UserController.class, TransactionController.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BaseControllerTest {
 
@@ -59,6 +57,12 @@ class BaseControllerTest {
 
     @MockBean
     protected UserServiceJpa userServiceJpa;
+
+    @MockBean
+    protected TransactionRepository transactionRepository;
+
+    @MockBean
+    protected TransactionServiceJpa transactionServiceJpa;
 
     protected final ObjectMapper objectMapper = new ObjectMapper();
 
