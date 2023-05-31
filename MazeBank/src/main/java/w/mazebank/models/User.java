@@ -51,7 +51,7 @@ public class User implements UserDetails {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
-    private double dayLimit = 1000;
+    private double dayLimit = 5000.00;
 
     @Builder.Default
     private double transactionLimit = 2000;

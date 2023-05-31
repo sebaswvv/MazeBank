@@ -38,11 +38,11 @@ public class DataSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         // Create some sample users
-        User bank = new User(1, "info@mazebank.com", 123456784, "Maze", "Bank", passwordEncoder.encode("1234"), "1234567890", RoleType.EMPLOYEE, LocalDate.now().minusYears(25), LocalDateTime.now(), 1000, 100, false, null);
-        User user1 = new User(2, "user1@example.com", 123456789, "John", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 1000, 100, false, null);
-        User user2 = new User(3, "user2@example.com", 987654321, "Jane", "Smith", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
-        User user3 = new User(4, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
-        User user4 = new User(5, "user4@example.com", 456123759, "Tim", "Brad", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000, 200, false, null);
+        User bank = new User(1, "info@mazebank.com", 123456784, "Maze", "Bank", passwordEncoder.encode("1234"), "1234567890", RoleType.EMPLOYEE, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user1 = new User(2, "user1@example.com", 123456789, "John", "Doe", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user2 = new User(3, "user2@example.com", 987654321, "Jane", "Smith", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user3 = new User(4, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user4 = new User(5, "user4@example.com", 456123759, "Tim", "Brad", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
 
 
         userService.addUser(bank);
@@ -53,7 +53,7 @@ public class DataSeeder implements ApplicationRunner {
 
         // Create some sample accounts for user1
         Account bankAccount = new Account(1, "NL01INHO0000000001", AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
-        Account account1 = new Account(2, IbanGenerator.generate(), AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
+        Account account1 = new Account(2, "NL76INHO0493458014", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
         Account account2 = new Account(3, IbanGenerator.generate(), AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
 
         accountService.addAccount(bankAccount);
@@ -64,8 +64,13 @@ public class DataSeeder implements ApplicationRunner {
         Account account3 = new Account(4, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
         Account account4 = new Account(5, IbanGenerator.generate(), AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
 
+        Account account5 = new Account(6, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
+        Account account6 = new Account(6, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
+
         accountService.addAccount(account3);
         accountService.addAccount(account4);
+        accountService.addAccount(account5);
+        accountService.addAccount(account6);
 
         // Perform some transactions between the accounts
         transactionService.saveTransaction(new Transaction(1, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, LocalDateTime.now()));
