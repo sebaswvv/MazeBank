@@ -1,7 +1,6 @@
 package w.mazebank.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,9 +8,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.context.WebApplicationContext;
+import w.mazebank.configurations.ApplicationConfig;
+import w.mazebank.configurations.SecurityConfiguration;
 import w.mazebank.enums.RoleType;
 import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.models.User;
@@ -27,10 +30,15 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
+@Import({ApplicationConfig.class, SecurityConfiguration.class })
 @ExtendWith(SpringExtension.class)
-@WebMvcTest({AccountController.class})
+@WebMvcTest(controllers = {AccountController.class, AuthController.class, UserController.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BaseControllerTest {
+
+    @Autowired
+    private WebApplicationContext context;
+
     @Autowired
     protected MockMvc mockMvc;
 
