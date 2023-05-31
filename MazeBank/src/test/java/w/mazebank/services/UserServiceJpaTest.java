@@ -20,6 +20,7 @@ import w.mazebank.models.responses.UserResponse;
 import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -399,6 +400,7 @@ class UserServiceJpaTest {
             .sender(account1)
             .receiver(account2)
             .transactionType(TransactionType.TRANSFER)
+            .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0))
             .build();
         Transaction transaction2 = Transaction.builder()
             .id(2L)
@@ -408,11 +410,13 @@ class UserServiceJpaTest {
             .sender(account2)
             .receiver(account1)
             .transactionType(TransactionType.TRANSFER)
+            .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0))
             .build();
 
         TransactionResponse transactionResponse1 = TransactionResponse.builder()
             .id(1L)
             .description("test transaction 1")
+            .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0).toString())
             .amount(100.0)
             .sender("NL01INHO0000000001")
             .receiver("NL01INHO0000000002")
@@ -421,6 +425,7 @@ class UserServiceJpaTest {
         TransactionResponse transactionResponse2 = TransactionResponse.builder()
             .id(2L)
             .description("test transaction 2")
+            .timestamp(LocalDateTime.of(2021, 1, 1, 0, 0).toString())
             .amount(200.0)
             .sender("NL01INHO0000000002")
             .receiver("NL01INHO0000000001")
