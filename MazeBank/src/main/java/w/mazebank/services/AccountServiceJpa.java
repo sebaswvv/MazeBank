@@ -129,6 +129,11 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
         Account account = getAccountById(id);
+
+        // if the account is a bank account, throw exception
+        if (account.getIban().equals("NL01INHO0000000001"))
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+
         if (body.getAbsoluteLimit() != null) {
             account.setAbsoluteLimit(body.getAbsoluteLimit());
         }
