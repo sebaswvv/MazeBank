@@ -33,9 +33,14 @@ public class TransactionServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
+    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException, AccountNotFoundException {
         // get transaction by id
         Transaction transaction = getTransactionById(id);
+
+        // if the transaction sender is the bank then throw error
+        if (transaction.getSender().getIban().equals(getBankAccount().getIban())) {
+            throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
+        }
 
         // check if the user is allowed to access the transaction
         checkIfUserIsTransactionParticipant(user, transaction);
