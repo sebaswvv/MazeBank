@@ -193,7 +193,7 @@ public class TransactionServiceJpa {
         savingsAccountCheckSend(transaction);
 
         // check if the user is an employee or owns the account from which the money is being sent
-        checkUser(transaction);
+        checkIfUserIsAuthorized(transaction);
     }
 
     private void checkIfAnAccountIsBlocked(Transaction transaction) throws TransactionFailedException {
@@ -212,7 +212,7 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("User is blocked");
     }
 
-    private void checkUser(Transaction transaction) throws TransactionFailedException {
+    private void checkIfUserIsAuthorized(Transaction transaction) throws TransactionFailedException {
         if (transaction.getUserPerforming().getRole() != RoleType.EMPLOYEE
             && transaction.getUserPerforming().getId() != transaction.getSender().getUser().getId())
             throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
