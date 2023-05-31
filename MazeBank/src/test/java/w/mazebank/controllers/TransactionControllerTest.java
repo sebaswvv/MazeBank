@@ -194,7 +194,7 @@ class TransactionControllerTest extends BaseControllerTest {
     }
 
     @Test
-    void transactionPerformedOnOtherAccountShouldResultIn401Unauthorized() throws Exception {
+    void transactionPerformedOnOtherAccountShouldResultIn403Unauthorized() throws Exception {
         when(transactionServiceJpa.postTransaction(Mockito.any(TransactionRequest.class), Mockito.any(User.class))).thenThrow(new UnauthorizedTransactionAccessException("User with id: " + 1 + " is not authorized to access transaction with id: " + 1));
 
         // mock mvc
@@ -208,7 +208,7 @@ class TransactionControllerTest extends BaseControllerTest {
 
             )
             .andDo(print())
-            .andExpect(status().isUnauthorized())
+            .andExpect(status().isForbidden())
             .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("User with id: " + 1 + " is not authorized to access transaction with id: " + 1))
             .andReturn();
 

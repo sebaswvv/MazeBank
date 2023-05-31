@@ -30,6 +30,27 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 class AccountControllerTest extends BaseControllerTest{
     @Test
+    void withdrawUnauthorizedThrows403() throws Exception {
+
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: UnauthorizedAccountAccessException("You are not authorized to access this account");
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/withdraw")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Unauthorized"));
+    }
+    @Test
     void withdrawReturns201() throws Exception {
         // create account for the authUser
         Account account = Account.builder()
@@ -383,7 +404,7 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
-    void depositUnauthorizedThrows401() throws Exception {
+    void depositUnauthorizedThrows403() throws Exception {
 
         // create AtmRequest
         JSONObject request = new JSONObject();
@@ -400,7 +421,7 @@ class AccountControllerTest extends BaseControllerTest{
             .contentType("application/json")
             .content(request.toString())
         ).andDo(print())
-            .andExpect(status().isUnauthorized())
+            .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
 
@@ -565,16 +586,16 @@ class AccountControllerTest extends BaseControllerTest{
 
 
     @Test
-    void depositWithInsufficientFundsThrows400() throws Exception {
+    void withdrawWithInsufficientFundsThrows400() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
         request.put("amount", 100.0);
 
         // this error message: "Sender has insufficient funds"
-        when(accountService.deposit(1L, 100.0 , authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
 
         // call the controller and force spring security
-        mockMvc.perform(post("/accounts/1/deposit")
+        mockMvc.perform(post("/accounts/1/withdraw")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(csrf())
                 .with(user(authCustomer))
@@ -596,6 +617,27 @@ class AccountControllerTest extends BaseControllerTest{
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Day limit exceeded"));
+    }
+
+    @Test
+    void withdrawWithDayLimitExceededThrows400() throws Exception {
+        // create AtmRequest
+        JSONObject request = new JSONObject();
+        request.put("amount", 100.0);
+
+        // this error message: "Sender has insufficient funds"
+        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
+
+        // call the controller
+        mockMvc.perform(post("/accounts/1/withdraw")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(csrf())
                 .with(user(authCustomer))

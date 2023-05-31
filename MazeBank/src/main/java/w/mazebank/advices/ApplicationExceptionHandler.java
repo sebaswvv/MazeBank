@@ -41,7 +41,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied1");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -76,20 +76,20 @@ public class ApplicationExceptionHandler {
         return ResponseHandler.generateErrorResponse(null, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(UnauthorizedAccountAccessException.class)
     public ResponseEntity<Object> handleUnauthorizedAccountAccessException(UnauthorizedAccountAccessException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Unauthorized Account Access");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized Account Access");
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(UnauthorizedTransactionAccessException.class)
     public ResponseEntity<Object> handleUnauthorizedTransactionAccessException(UnauthorizedTransactionAccessException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Unauthorized Transaction Access");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized Transaction Access");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
