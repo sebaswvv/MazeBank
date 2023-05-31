@@ -39,6 +39,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public User getUserByIdAndValidate(Long id, User userPerforming) throws UserNotFoundException {
+        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+
         // check if user id is the same as the user performing the request or if the user performing the request is an employee and not blocked
         if (userPerforming.getId() != id && (!userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.isBlocked())) {
             throw new UserNotFoundException("user not found with id: " + id);
@@ -60,6 +62,8 @@ public class UserServiceJpa extends BaseServiceJpa {
 //    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+        if(userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+
         // throw exception if user is not an employee and not the user performing the request
         if (!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
@@ -121,7 +125,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public void blockUser(Long id) throws UserNotFoundException {
-        // TODO: check if request is done by employee, if not throw NotAuthException??
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         User user = getUserById(id);
         user.setBlocked(true);
@@ -130,7 +134,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public void unblockUser(Long id) throws UserNotFoundException {
-        // TODO: check if request is done by employee, if not throw NotAuthException??
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         User user = getUserById(id);
         user.setBlocked(false);
@@ -139,6 +143,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public User patchUserById(long id, UserPatchRequest userPatchRequest, User userPerforming) throws UserNotFoundException, DisallowedFieldException {
+        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+
         User user = userRepository.findById(id).orElse(null);
         if (user == null) throw new UserNotFoundException("user not found with id: " + id);
 
@@ -170,6 +176,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public void deleteUserById(Long id)
         throws UserNotFoundException, UserHasAccountsException {
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to delete the bank");
         User user = getUserById(id);
 
         // if user has accounts, cannot delete user
@@ -180,6 +187,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search) throws UserNotFoundException, UnauthorizedAccountAccessException {
+        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+
         if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access transactions of user with id: " + userId);
         }
@@ -212,6 +221,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public BalanceResponse getBalanceByUserId(Long userId, User userPerforming) throws UserNotFoundException {
+        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+
         // check if userId is from a user that is a existing user
         // and validate if the performing user has the rights to access the user
         User user = getUserByIdAndValidate(userId, userPerforming);
