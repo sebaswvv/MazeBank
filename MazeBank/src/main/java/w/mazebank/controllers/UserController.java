@@ -73,7 +73,7 @@ public class UserController {
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<LockedResponse> unblockUser(@PathVariable Long id) throws UserNotFoundException {
         userService.unblockUser(id);
-        return ResponseEntity.ok(new LockedResponse(true));
+        return ResponseEntity.ok(new LockedResponse(false));
     }
 
     // GET/users/{userId}/transactions
