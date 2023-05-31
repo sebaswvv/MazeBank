@@ -12,11 +12,13 @@ import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
+import w.mazebank.models.responses.IbanResponse;
 import w.mazebank.models.responses.TransactionResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -28,6 +30,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 class AccountControllerTest extends BaseControllerTest{
+
+    @Test
+    void getAccountsByNamHappyFlowReturns200() throws Exception {
+        // create a list of IbanResponse objects
+        List<IbanResponse> list = List.of(
+            IbanResponse.builder()
+                .iban("NL01INHO123456789")
+                .firstName("John")
+                .lastName("Doe")
+                .build(),
+            IbanResponse.builder()
+                .iban("NL01INHO123456788")
+                .firstName("Jane")
+                .lastName("Doe")
+                .build()
+        );
+
+        // mock
+        when(accountService.getAccountsByName("John Doe")).thenReturn(list);
+
+        // perform
+        mockMvc.perform(get("/accounts/search/John Doe")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].iban").value("NL01INHO123456789"))
+            .andExpect(jsonPath("$[0].firstName").value("John"))
+            .andExpect(jsonPath("$[0].lastName").value("Doe"))
+            .andExpect(jsonPath("$[1].iban").value("NL01INHO123456788"))
+            .andExpect(jsonPath("$[1].firstName").value("Jane"))
+            .andExpect(jsonPath("$[1].lastName").value("Doe"));
+        ;
+    }
 
     @Test
     void getAllAccountsThrows200() throws Exception {
