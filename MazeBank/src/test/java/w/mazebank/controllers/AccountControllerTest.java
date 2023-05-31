@@ -13,15 +13,14 @@ import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.IbanResponse;
+import w.mazebank.models.responses.LockedResponse;
 import w.mazebank.models.responses.TransactionResponse;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -32,7 +31,74 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AccountControllerTest extends BaseControllerTest{
 
     @Test
-    void getAccountsByNamHappyFlowReturns200() throws Exception {
+    void disableAccountsWithNonExistingAccountReturns404() throws Exception {
+        when(accountService.lockAccount(1L)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
+    }
+
+    @Test
+    void enableAccountsWithNonExistingAccountReturns404() throws Exception {
+        when(accountService.unlockAccount(1L)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
+
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Account with id: 1 not found"));
+    }
+    @Test
+    void disableAccountReturns200() throws Exception {
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.locked").value(true));
+    }
+
+    @Test
+    void enableAccountReturns200() throws Exception {
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + employeeToken)
+                .with(csrf())
+                .with(user(authEmployee)))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.locked").value(false));
+    }
+
+    @Test
+    void enableAccountsAsCustomerReturns403() throws Exception {
+        mockMvc.perform(put("/accounts/1/enable")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void disableAccountsAsCustomerReturns403() throws Exception {
+        mockMvc.perform(put("/accounts/1/disable")
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getAccountsByNameHappyFlowReturns200() throws Exception {
         // create a list of IbanResponse objects
         List<IbanResponse> list = List.of(
             IbanResponse.builder()
