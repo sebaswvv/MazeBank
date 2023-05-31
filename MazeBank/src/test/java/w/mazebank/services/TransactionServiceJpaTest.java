@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
@@ -51,26 +52,26 @@ class TransactionServiceJpaTest {
         // create two users
         users = new ArrayList<>();
         users.add(User.builder()
-            .id(1L)
+            .id(2L)
             .firstName("John")
             .lastName("Doe")
             .blocked(false)
             .build());
         users.add(User.builder()
-            .id(2L)
+            .id(3L)
             .blocked(false)
             .firstName("Jane")
             .lastName("Doe")
             .build()
         );
         users.add(User.builder()
-            .id(3L)
+            .id(4L)
             .blocked(false)
             .firstName("Jack")
             .lastName("Doe")
             .build());
         users.add(User.builder()
-            .id(4L)
+            .id(5L)
             .blocked(false)
             .role(RoleType.EMPLOYEE)
             .firstName("Jill")
@@ -81,7 +82,7 @@ class TransactionServiceJpaTest {
         // create two accounts
         accounts = new ArrayList<>();
         accounts.add(Account.builder()
-            .id(1L)
+            .id(2L)
             .accountType(AccountType.CHECKING)
             .balance(1000.00)
             .isActive(true)
@@ -89,7 +90,7 @@ class TransactionServiceJpaTest {
             .user(users.get(0))
             .build());
         accounts.add(Account.builder()
-            .id(2L)
+            .id(3L)
             .accountType(AccountType.CHECKING)
             .balance(2000.00)
             .iban("receiver_iban")
@@ -98,7 +99,7 @@ class TransactionServiceJpaTest {
             .build()
         );
         accounts.add(Account.builder()
-            .id(3L)
+            .id(4L)
             .accountType(AccountType.SAVINGS)
             .balance(1000.00)
             .iban("savings_iban")
@@ -108,7 +109,7 @@ class TransactionServiceJpaTest {
         );
         // bank account
         accounts.add(Account.builder()
-            .id(4L)
+            .id(5L)
             .accountType(AccountType.CHECKING)
             .balance(100000.00)
             .iban("bank_iban")
@@ -121,7 +122,7 @@ class TransactionServiceJpaTest {
     @Test
     void deposit() throws AccountNotFoundException, TransactionFailedException {
         // mock the accountServiceJpa.getAccountByIban
-        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+        when(accountServiceJpa.getAccountByIban(Mockito.any())).thenReturn(accounts.get(3));
 
         // Perform the transaction
         TransactionResponse result = transactionServiceJpa.atmAction(accounts.get(0), 100.00, TransactionType.DEPOSIT, users.get(0));
@@ -134,20 +135,20 @@ class TransactionServiceJpaTest {
     @Test
     void withdraw() throws AccountNotFoundException, TransactionFailedException {
         // mock the accountServiceJpa.getAccountByIban
-        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+        when(accountServiceJpa.getAccountByIban(Mockito.any())).thenReturn(accounts.get(3));
 
         // Perform the transaction
-        TransactionResponse result = transactionServiceJpa.atmAction(accounts.get(0), 100.00, TransactionType.WITHDRAWAL, users.get(0));
+        TransactionResponse result = transactionServiceJpa.atmAction(accounts.get(1), 100.00, TransactionType.WITHDRAWAL, users.get(1));
 
         // Assert the transaction was successful
         assertNotNull(result);
-        assertEquals(900.00, accounts.get(0).getBalance());
+        assertEquals(1900.00, accounts.get(1).getBalance());
     }
 
     @Test
     void ATMActionReceiverCannotBeSavings() throws AccountNotFoundException {
         // mock the accountServiceJpa.getAccountByIban
-        when(accountServiceJpa.getAccountByIban("NL01MAZE0000000001")).thenReturn(accounts.get(3));
+        when(accountServiceJpa.getAccountByIban(Mockito.any())).thenReturn(accounts.get(3));
 
         // Create atm action, for account id 3. This is a savings account. This throw TransactionFailedException
         assertThrows(TransactionFailedException.class, () -> transactionServiceJpa.atmAction(accounts.get(2), 100.00, TransactionType.DEPOSIT, users.get(0)));
@@ -298,7 +299,7 @@ class TransactionServiceJpaTest {
         assertEquals(100.00, result.getAmount());
         assertEquals("sender_iban", result.getSender());
         assertEquals("receiver_iban", result.getReceiver());
-        assertEquals(1L, result.getUserPerforming());
+        assertEquals(2L, result.getUserPerforming());
         assertNotNull(result.getTimestamp());
     }
 
@@ -372,7 +373,7 @@ class TransactionServiceJpaTest {
         assertEquals(100.00, result.getAmount());
         assertEquals("sender_iban", result.getSender());
         assertEquals("receiver_iban", result.getReceiver());
-        assertEquals(4L, result.getUserPerforming());
+        assertEquals(5L, result.getUserPerforming());
         assertNotNull(result.getTimestamp());
     }
 }

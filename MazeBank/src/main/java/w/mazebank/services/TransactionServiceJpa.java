@@ -38,7 +38,7 @@ public class TransactionServiceJpa {
         Transaction transaction = getTransactionById(id);
 
         // if the transaction sender is the bank then throw error
-        if (transaction.getSender().getIban().equals(getBankAccount().getIban())) {
+        if (transaction.getSender().getIban().equals("NL01INHO0000000001")) {
             throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
         }
 
@@ -61,7 +61,7 @@ public class TransactionServiceJpa {
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
 
         // deny acces if senderAccount is of the bank
-        if (transactionRequest.getSenderIban().equals(getBankAccount().getIban())) {
+        if (transactionRequest.getSenderIban().equals("NL01INHO0000000001")) {
             throw new UnauthorizedAccountAccessException("You are not allowed to perform transactions for the bank's bank account");
         }
 
