@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.Assert.assertEquals;
 
-public class UsersStepDefinitions extends BaseStepDefinitions{
+public class UsersStepDefinitions extends BaseStepDefinitions {
     @Given("^I have a valid token for role \"([^\"]*)\"$")
     public void Test(String role){
         switch (role) {

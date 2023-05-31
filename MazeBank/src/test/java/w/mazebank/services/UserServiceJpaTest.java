@@ -367,13 +367,13 @@ class UserServiceJpaTest {
             .build();
 
         //should get UnauthorizedAccountAccessException
-        Exception exception = assertThrows(UnauthorizedAccountAccessException.class, () -> {
+        Exception exception = assertThrows(UnauthorizedUserAccessException.class, () -> {
             // call the method
             userServiceJpa.getAccountsByUserId(1L, performingUser);
         });
 
         // test results
-        assertEquals("user not allowed to access accounts of user with id: 1", exception.getMessage());
+        assertEquals("You are not allowed to access the bank", exception.getMessage());
         verify(userRepository, times(0)).findById(1L);
     }
 
