@@ -52,7 +52,7 @@ class BaseControllerTest {
     protected AuthService authService;
 
     @MockBean
-    private JwtService jwtService;
+    protected JwtService jwtService;
 
     @MockBean
     protected UserRepository userRepository;

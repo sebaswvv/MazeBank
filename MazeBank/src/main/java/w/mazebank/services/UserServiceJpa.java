@@ -37,7 +37,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     public User getUserByIdAndValidate(Long id, User userPerforming) throws UserNotFoundException {
         // check if user id is the same as the user performing the request or if the user performing the request is an employee
         if(userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
-            throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
+            throw new UnauthorizedUserAccessException("User not allowed to access user with id: " + id);
         }
         return getUserById(id);
     }
