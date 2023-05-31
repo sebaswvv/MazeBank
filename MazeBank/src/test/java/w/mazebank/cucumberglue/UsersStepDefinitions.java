@@ -118,4 +118,22 @@ public class UsersStepDefinitions extends BaseStepDefinitions{
         assertEquals(savingsBalance, savings);
         assertEquals(checkingBalance, checking);
     }
+
+
+    @Then("the result is a user with a email of {string}, a firstname of {string}, a lastname of {string}, a dayLimit of {double}, and a role of {string}, amountRemaining of {double}")
+    public void theResultIsAUserWithAEmailOfAFirstnameOfALastnameOfADayLimitOfAndARoleOfAmountRemainingOf(String email, String firstName, String lastName, double dayLimit, String role, double amountRemaining) {
+        assert lastResponse.getBody() != null;
+        Object emailResult = JsonPath.read(lastResponse.getBody(), "$.email");
+        Object firstNameResult = JsonPath.read(lastResponse.getBody(), "$.firstName");
+        Object lastNameResult = JsonPath.read(lastResponse.getBody(), "$.lastName");
+        Object dayLimitResult = JsonPath.read(lastResponse.getBody(), "$.dayLimit");
+        Object roleResult = JsonPath.read(lastResponse.getBody(), "$.role");
+        Object amountRemainingResult = JsonPath.read(lastResponse.getBody(), "$.amountRemaining");
+        assertEquals(email, emailResult);
+        assertEquals(firstName, firstNameResult);
+        assertEquals(lastName, lastNameResult);
+        assertEquals(dayLimit, dayLimitResult);
+        assertEquals(role, roleResult);
+        assertEquals(amountRemaining, amountRemainingResult);
+    }
 }
