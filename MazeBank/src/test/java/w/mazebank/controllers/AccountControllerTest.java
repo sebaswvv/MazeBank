@@ -67,6 +67,16 @@ class AccountControllerTest extends BaseControllerTest{
     }
 
     @Test
+    void getAccountsByNameWithoutBeingLoggedInReturns401() throws Exception {
+        // perform
+        mockMvc.perform(get("/accounts/search/John Doe")
+                .with(csrf())
+                .with(user(authCustomer)))
+            .andDo(print())
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void getAllAccountsThrows200() throws Exception {
         // user to add to the accounts
         User user = User.builder()
