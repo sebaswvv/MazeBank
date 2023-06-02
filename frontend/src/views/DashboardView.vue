@@ -1,14 +1,18 @@
 <template>
     <div class="container">
         <h2 class="text-center mt-4">Welkom {{ user.firstName }} {{ user.lastName }}</h2>
-        <p class="text-center mt-2">Klik op 1 van je accounts on verder te gaan</p>
         <div class="py-5 accounts">
             <div class="center">
-                <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
-                    :key="account.id" :iban="account.iban" :balance="account.balance"
-                    :accountType="account.accountType === 0 ? 'Current' : 'Savings'" class="account"
-                    @click="handleClickOnAccount(account.iban)" />
-
+                <template v-if="user.accounts && user.accounts.length > 0">
+                    <p class="text-center mt-2">Klik op 1 van je accounts on verder te gaan</p>
+                    <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
+                        :key="account.id" :iban="account.iban" :balance="account.balance"
+                        :accountType="account.accountType === 0 ? 'Current' : 'Savings'" class="account"
+                        @click="handleClickOnAccount(account.id)" />
+                </template>
+                <template v-else>
+                    <p>U heeft nog geen accounts, neem contact op met ons</p>
+                </template>
             </div>
         </div>
     </div>
@@ -18,12 +22,14 @@
 import { reactive, onMounted } from 'vue';
 import { useUserStore } from '../stores/UserStore';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import { useAccountStore } from '../stores/AccountStore';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
 
 const authenticationStore = useAuthenticationStore();
 const userStore = useUserStore();
+const accountStore = useAccountStore();
 
 const user = reactive<User>({
     id: 0,
@@ -46,9 +52,10 @@ onMounted(async () => {
     Object.assign(user, userStore.getUser);
 });
 
-const handleClickOnAccount = (iban: any) => {
+const handleClickOnAccount = async (id: any) => {
     // Use the `iban` parameter as needed
-    console.log('Clicked on account with IBAN:', iban);
+    await accountStore.fetchAccount(id);
+    router.push('/account');
 };
 </script>
 
