@@ -6,9 +6,14 @@
     <div class="form-container register-container">
       <div class="form">
         <h1>Registeer</h1>
-        <input type="text" placeholder="Name">
+        <input type="text" placeholder="Voornaam">
+        <input type="text" placeholder="Achternaam">
+        <input type="text" placeholder="BSN">
         <input type="email" placeholder="Email">
-        <input type="password" placeholder="Password">
+        <input type="tel" placeholder="Telefoonnummer">
+        <input type="password" placeholder="Wachtwoord">
+        <input type="date" placeholder="Geboortedatum">
+        <p id="error">{{ errorMessage }}</p>
         <button @click="handleRegisterClick">Register</button>
       </div>
     </div>
@@ -50,9 +55,10 @@
 import { ref } from 'vue'
 
 const containerClasses = ref('')
+const errorMessage = ref('')
 
 const handleRegisterClick = () => {
-  console.log('register')
+  errorMessage.value = 'Er is iets fout gegaan'
 }
 
 const handleLoginClick = () => {
@@ -75,10 +81,15 @@ const handleOpenLogin = () => {
   box-sizing: border-box;
 }
 
+#error {
+  margin-bottom: 0px;
+  color: #fd5252;
+}
+
 
 h1 {
   text-align: center;
-  margin-top: 4vh;
+  margin-top: 2vh;
 }
 
 a {
@@ -196,8 +207,19 @@ input {
   width: 100%;
 }
 
+/* input type date */
+input[type="date"] {
+  background-color: #eee;
+  border-radius: 10px;
+  border: none;
+  padding: 12px 15px;
+  margin: 8px 0;
+  /* width: 100%;
+  height: 50px; */
+}
+
 .container {
-  margin-top: 4vh;
+  margin-top: 2vh;
   background-color: #fff;
   border-radius: 25px;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.10), 0 10px 10px rgba(0, 0, 0, 0.10);
@@ -205,7 +227,7 @@ input {
   overflow: hidden;
   width: 768px;
   max-width: 100%;
-  min-height: 500px;
+  min-height: 660px;
 }
 
 .form-container {
