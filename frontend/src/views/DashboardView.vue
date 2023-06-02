@@ -18,6 +18,7 @@
 import { reactive, onMounted } from 'vue';
 import { useUserStore } from '../stores/UserStore';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
 
@@ -35,6 +36,10 @@ const user = reactive<User>({
 });
 
 onMounted(async () => {
+    // check is user is authenticated
+    if (!authenticationStore.isLoggedIn) {
+        router.push('/');
+    }
     await userStore.fetchUser(authenticationStore.userId);
     await userStore.getAccountsOfUser(authenticationStore.userId);
 
