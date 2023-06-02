@@ -8,7 +8,7 @@ import AuthState from '../interfaces/AuthState';
 export const useAuthenticationStore = defineStore({
   id: 'authentication',
   state: (): AuthState => ({
-    userId: null,
+    userId: localStorage.getItem('userId') ?? null,
     isLoggedIn: localStorage.getItem('token') !== null,
   }),
   getters: {
@@ -16,6 +16,9 @@ export const useAuthenticationStore = defineStore({
     // getUser(state) {
     //   return state.user;
     // },
+    getUserId(state) {
+      return state.userId;
+    },
     getIsLoggedIn(state) {
       return state.isLoggedIn;
     },

@@ -1,7 +1,7 @@
 // import User from './User';
 
 interface AuthState {
-  userId: number | null;
+  userId: any | null;
   isLoggedIn: boolean;
 }
 

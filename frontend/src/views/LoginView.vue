@@ -5,7 +5,7 @@
   <div :class="`container ${containerClasses}`" id="container">
     <div class="form-container register-container">
       <div class="form">
-        <h1>Registeer</h1>
+        <h1>Registreer</h1>
         <input type="text" placeholder="Voornaam" v-model="firstName">
         <input type="text" placeholder="Achternaam" v-model="lastName">
         <input type="text" placeholder="BSN" v-model="bsn">
@@ -14,7 +14,7 @@
         <input type="password" placeholder="Wachtwoord" v-model="passwordRegister">
         <input type="date" placeholder="Geboortedatum" v-model="dateOfBirth">
         <p id="error">{{ errorMessage }}</p>
-        <button @click="handleRegisterClick">Register</button>
+        <button class="btn-primary" @click="handleRegisterClick">Registreer</button>
       </div>
     </div>
 
@@ -24,7 +24,7 @@
         <input type="email" placeholder="Email" v-model="email">
         <input type="password" placeholder="Password" v-model="password">
         <p id="error">{{ errorMessage }}</p>
-        <button @click="handleLoginClick">Login</button>
+        <button class="btn-primary" @click="handleLoginClick">Login</button>
       </div>
     </div>
 
@@ -32,13 +32,13 @@
       <div class="overlay">
         <div class="overlay-panel overlay-left">
           <h1 class="title">Log hier in</h1>
-          <button class="ghost" id="login" @click="handleOpenLogin">Login
+          <button class="btn-secondary" id="login" @click="handleOpenLogin">Login
             <i class="lni lni-arrow-left login"></i>
           </button>
         </div>
         <div class="overlay-panel overlay-right">
           <h1 class="title">Nog geen <br> account?</h1>
-          <button class="ghost" id="register" @click="handleOpenRegisrer">Register
+          <button class="btn-secondary" id="register" @click="handleOpenRegisrer">Registreer
             <i class="lni lni-arrow-right register"></i>
           </button>
         </div>
@@ -179,6 +179,7 @@ const showErrorMessage = (message: String) => {
 </script>
 
 <style scoped>
+/* deze css exporteren naar main */
 @import url("https://fonts.googleapis.com/css2?family=Poppins");
 
 * {
@@ -234,61 +235,9 @@ a:hover {
   padding-left: 5px;
 }
 
-button {
-  position: relative;
-  border-radius: 20px;
-  border: 1px solid #4bb6b7;
-  background-color: #4bb6b7;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  margin: 10px;
-  padding: 12px 80px;
-  letter-spacing: 1px;
-  text-transform: capitalize;
-  transition: 0.3s ease-in-out;
-}
-
-button:hover {
-  letter-spacing: 3px;
-}
-
-button:active {
-  transform: scale(0.95);
-}
-
-button:focus {
-  outline: none;
-}
-
-button.ghost {
-  background-color: rgba(225, 225, 225, 0.2);
-  border: 2px solid #fff;
-  color: #fff;
-}
-
-button.ghost i {
-  position: absolute;
-  opacity: 0;
-  transition: 0.3s ease-in-out;
-}
-
-button.ghost i.register {
-  right: 70px;
-}
-
-button.ghost i.login {
-  left: 70px;
-}
-
-button.ghost:hover i.register {
-  right: 40px;
-  opacity: 1;
-}
-
-button.ghost:hover i.login {
-  left: 40px;
-  opacity: 1;
+.btn-secondary {
+  background: #fff;
+  border: none;
 }
 
 .form {

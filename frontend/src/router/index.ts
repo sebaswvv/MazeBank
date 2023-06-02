@@ -8,13 +8,10 @@ import Dashboard from '../views/DashboardView.vue';
 // Define routes
 const routes = [
   { path: '/', component: Login },
-  { path: '/login', component: Login},
   { path: '/home', component: Home },
   { path: '/atm', component: Atm },
   { path: '/login', component: Login },
-  { path: '/register', component: Register },
-  { path: '/customer-dashboard', component: CustomerDashboard },
-  { path: '/employee-dashboard', component: EmployeeDashboard },
+  { path: '/dashboard', component: Dashboard },
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/dashboard', component: Dashboard },
 ];
