@@ -251,26 +251,6 @@ a:hover {
   text-align: center;
 }
 
-input {
-  background-color: #eee;
-  border-radius: 10px;
-  border: none;
-  padding: 12px 15px;
-  margin: 8px 0;
-  width: 100%;
-}
-
-/* input type date */
-input[type="date"] {
-  background-color: #eee;
-  border-radius: 10px;
-  border: none;
-  padding: 12px 15px;
-  margin: 8px 0;
-  /* width: 100%;
-  height: 50px; */
-}
-
 .container {
   margin-top: 2vh;
   background-color: #fff;
