@@ -1,10 +1,5 @@
 package w.mazebank.services;
 
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +22,6 @@ import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -56,18 +50,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         return getUserById(id);
     }
 
-//    // patch user by id. Too little difference with getUserById to justify a separate method??
-//    public User patchUserById(long id) throws UserNotFoundException {
-//        // get user
-//        User user = getUserById(id);
-//
-//
-//        // save user
-//        userRepository.save(user);
-//
-//        // return user
-//        return user;
-//    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
         if(userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
@@ -194,69 +176,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         userRepository.delete(user);
     }
 
-    // public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount) throws UserNotFoundException, UnauthorizedAccountAccessException {
-    //
-    //     if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
-    //
-    //     if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
-    //         throw new UnauthorizedAccountAccessException("User not allowed to access transactions of user with id: " + userId);
-    //     }
-    //
-    //     // create a transaction response with dummy data
-    //     TransactionResponse transactionResponse = TransactionResponse.builder()
-    //         .id(1L)
-    //         .amount(1.0)
-    //         .sender("NL01INHO0000000001")
-    //         .receiver("NL01INHO0000000002")
-    //         .timestamp(LocalDateTime.now().toString())
-    //         .build();
-    //
-    //
-    //     // Throw UserNotFoundException if user not found
-    //     User user = getUserById(userId);
-    //
-    //
-    //     // Apply filtering based on the provided parameters
-    //     List<Transaction> transactions;
-    //     if (maxAmount != null && minAmount != null && startDate != null && endDate != null) {
-    //         transactions = transactionRepository.findBySenderUserAndAmountBetweenAndTimestampBetween(
-    //             user, minAmount, maxAmount,
-    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-    //         );
-    //     } else if (amount != null && startDate != null && endDate != null) {
-    //         transactions = transactionRepository.findBySenderUserAndAmountAndTimestampBetween(
-    //             user, amount,
-    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-    //         );
-    //     } else if (minAmount != null && startDate != null && endDate != null) {
-    //         transactions = transactionRepository.findBySenderUserAndAmountGreaterThanEqualAndTimestampBetween(
-    //             user, minAmount,
-    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-    //         );
-    //     } else if (maxAmount != null && startDate != null && endDate != null) {
-    //         transactions = transactionRepository.findBySenderUserAndAmountLessThanEqualAndTimestampBetween(
-    //             user, maxAmount,
-    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
-    //         );
-    //     } else if (search != null){
-    //         transactions = transactionRepository.findBySenderUserOrReceiverUserAndSenderIbanOrReceiverIban(
-    //             user, user, search, search
-    //         );
-    //     }
-    //     else {
-    //         transactions = transactionRepository.findBySenderUser(user);
-    //     }
-    //     // transactions = transactionRepository.findBySenderUserOrReceiverUserAndSenderIbanOrReceiverIban(
-    //     //             user, user, search, search
-    //     //         );
-    //
-    //     // Apply sorting and pagination
-    //     transactions = applySortingAndPagination(transactions, sort, offset, limit);
-    //
-    //
-    //     // map
-    //     return mapTransactionsToResponses(transactions);
-    // }
 
     public List<TransactionResponse> getTransactionsByUserId(
         Long userId,
@@ -276,11 +195,26 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         Specification<Transaction> specification = Specification.where(null);
 
+        // if (search != null) {
+        //     specification = specification.and((root, query, criteriaBuilder) ->
+        //         criteriaBuilder.like(
+        //             criteriaBuilder.lower(root.get("search")),
+        //             "%" + search.toLowerCase() + "%"
+        //         )
+        //     );
+        // }
+
         if (search != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("description")),
-                    "%" + search.toLowerCase() + "%"
+                criteriaBuilder.or(
+                    criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("sender").get("iban")),
+                        "%" + search.toLowerCase() + "%"
+                    ),
+                    criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("receiver").get("iban")),
+                        "%" + search.toLowerCase() + "%"
+                    )
                 )
             );
         }
@@ -324,29 +258,6 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         return mapTransactionsToResponses(transactions);
     }
-
-    private List<Transaction> applySortingAndPagination(List<Transaction> transactions, String sort, int offset, int limit) {
-        // Apply sorting
-        Comparator<Transaction> transactionComparator;
-        if (sort.equalsIgnoreCase("asc")) {
-            transactionComparator = Comparator.comparing(Transaction::getTimestamp);
-        } else {
-            transactionComparator = Comparator.comparing(Transaction::getTimestamp).reversed();
-        }
-        transactions.sort(transactionComparator);
-
-        // Apply pagination
-        int startIndex = Math.min(offset, transactions.size());
-        int endIndex = Math.min(offset + limit, transactions.size());
-        if (startIndex <= endIndex) {
-            transactions = transactions.subList(startIndex, endIndex);
-        } else {
-            transactions = Collections.emptyList();
-        }
-
-        return transactions;
-    }
-
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();
