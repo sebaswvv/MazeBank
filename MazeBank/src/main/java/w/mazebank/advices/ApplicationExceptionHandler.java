@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -122,6 +123,15 @@ public class ApplicationExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Has Accounts");
+    }
+
+    // BadCredentialsException = 401
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", "Invalid username or password");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Invalid Credentials");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

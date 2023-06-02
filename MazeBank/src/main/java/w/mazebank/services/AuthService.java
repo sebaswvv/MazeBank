@@ -3,13 +3,11 @@ package w.mazebank.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import w.mazebank.exceptions.BsnAlreadyUsedException;
-import w.mazebank.exceptions.EmailAlreadyUsedException;
-import w.mazebank.exceptions.UnauthorizedAccountAccessException;
-import w.mazebank.exceptions.UserNotOldEnoughException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
@@ -31,9 +29,9 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public boolean checkIfUserIsBlocked(String email) {
+    public boolean checkIfUserIsBlocked(String email) throws UserNotFoundException {
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new BadCredentialsException("User not found"));
         return user.isBlocked();
     }
 
@@ -64,7 +62,7 @@ public class AuthService {
             .build();
     }
 
-    public AuthenticationResponse login(LoginRequest request) {
+    public AuthenticationResponse login(LoginRequest request) throws UserNotFoundException {
         // check if user is blocked
         if (checkIfUserIsBlocked(request.getEmail())) {
             throw new UnauthorizedAccountAccessException("User is blocked");
@@ -79,7 +77,7 @@ public class AuthService {
 
         // get user
         var user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+            .orElseThrow(() -> new BadCredentialsException("User not found"));
 
         // generate a token and return response
         String jwt = jwtService.generateToken(user);

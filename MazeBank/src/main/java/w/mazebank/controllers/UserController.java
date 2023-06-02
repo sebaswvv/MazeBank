@@ -25,9 +25,24 @@ public class UserController {
     private UserServiceJpa userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException {
+    public ResponseEntity<FullUserResponse> getUserById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException {
         User user = userService.getUserByIdAndValidate(id, userPerforming);
-        return ResponseEntity.ok(user);
+        FullUserResponse fullUserResponse = FullUserResponse.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .bsn(user.getBsn())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .phoneNumber(user.getPhoneNumber())
+            .role(user.getRole().toString())
+            .dateOfBirth(user.getDateOfBirth().toString())
+            .createdAt(user.getCreatedAt().toString())
+            .dayLimit(user.getDayLimit())
+            .transactionLimit(user.getTransactionLimit())
+            .amountRemaining(user.getAmountRemaining())
+            .blocked(user.isBlocked())
+            .build();
+        return ResponseEntity.ok(fullUserResponse);
     }
 
     @PatchMapping("/{id}")
@@ -56,9 +71,10 @@ public class UserController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String search)
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "false") boolean withoutAccounts)
     {
-        List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search);
+        List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search, withoutAccounts);
         return ResponseEntity.ok(users);
     }
 
@@ -92,5 +108,9 @@ public class UserController {
         List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate);
         return ResponseEntity.ok(transactionResponses);
     }
-
+  
+    @GetMapping("{userId}/balance")
+    public ResponseEntity<BalanceResponse> getBalanceByUserId(@PathVariable Long userId, @AuthenticationPrincipal User user) throws UserNotFoundException {
+        return ResponseEntity.ok(userService.getBalanceByUserId(userId, user));
+    }
 }

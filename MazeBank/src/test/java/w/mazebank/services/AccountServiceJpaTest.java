@@ -45,13 +45,13 @@ class AccountServiceJpaTest {
         // create two users
         users = new ArrayList<>();
         users.add(User.builder()
-                .id(1L)
+                .id(2L)
                 .firstName("John")
                 .lastName("Doe")
                 .accounts(new ArrayList<>())
                 .build());
         users.add(User.builder()
-                .id(2L)
+                .id(3L)
                 .firstName("Jane")
                 .lastName("Doe")
                 .accounts(new ArrayList<>())
@@ -130,7 +130,7 @@ class AccountServiceJpaTest {
         Account result = accountServiceJpa.getAccountById(1L);
 
         // test results
-        assertEquals(1L, result.getUser().getId());
+        assertEquals(2L, result.getUser().getId());
         assertEquals("John", result.getUser().getFirstName());
         assertEquals("Doe", result.getUser().getLastName());
     }
@@ -138,28 +138,28 @@ class AccountServiceJpaTest {
     @Test
     void NoAccountFoundById() {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.empty());
 
         // call the method
         AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
-            accountServiceJpa.getAccountById(1L);
+            accountServiceJpa.getAccountById(2L);
         });
 
         // test results
-        assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+        assertEquals("Account with id: " + 2L + " not found", exception.getMessage());
     }
 
     @Test
     // Happy flow
     void unlockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
         // call the method
-        Account result = accountServiceJpa.unlockAccount(1L);
+        Account result = accountServiceJpa.unlockAccount(2L);
 
         // test results
-        assertEquals(1L, result.getUser().getId());
+        assertEquals(2L, result.getUser().getId());
         assertEquals("John", result.getUser().getFirstName());
         assertEquals("Doe", result.getUser().getLastName());
         assertTrue(result.isActive());
@@ -172,20 +172,20 @@ class AccountServiceJpaTest {
     // Account already unlocked
     void unlockAccountAlreadyUnlocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
         // call the method
-        Account result = accountServiceJpa.unlockAccount(1L);
+        Account result = accountServiceJpa.unlockAccount(2L);
 
         // test results
-        assertEquals(1L, result.getUser().getId());
+        assertEquals(2L, result.getUser().getId());
         assertEquals("John", result.getUser().getFirstName());
         assertEquals("Doe", result.getUser().getLastName());
         assertTrue(result.isActive());
 
         // call the method again
         AccountLockOrUnlockStatusException exception = assertThrows(AccountLockOrUnlockStatusException.class, () -> {
-            accountServiceJpa.unlockAccount(1L);
+            accountServiceJpa.unlockAccount(2L);
         });
 
         // test results
@@ -196,28 +196,28 @@ class AccountServiceJpaTest {
     // Account not found
     void unlockAccountNotFound() {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.empty());
 
         // call the method
         AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
-            accountServiceJpa.unlockAccount(1L);
+            accountServiceJpa.unlockAccount(2L);
         });
 
         // test results
-        assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+        assertEquals("Account with id: " + 2L + " not found", exception.getMessage());
     }
 
     @Test
     void createAccount() throws AccountCreationLimitReachedException, UserNotFoundException {
         // Mock userServiceJpa's getUserById method
-        when(userServiceJpa.getUserById(1L)).thenReturn(users.get(0));
+        when(userServiceJpa.getUserById(2L)).thenReturn(users.get(0));
 
         // Mock the AccountRepository's save method
         when(accountRepository.save(any(Account.class))).thenReturn(accounts.get(0));
 
         // Create an AccountRequest object
         AccountRequest accountRequest = AccountRequest.builder()
-            .userId(1L)
+            .userId(2L)
             .accountType(AccountType.CHECKING)
             .isActive(true)
             .absoluteLimit(5000.00)
@@ -227,7 +227,7 @@ class AccountServiceJpaTest {
         AccountResponse accountResponse = accountServiceJpa.createAccount(accountRequest);
 
         // Verify that the UserServiceJpa's getUserById method was called once with the correct argument
-        verify(userServiceJpa, times(1)).getUserById(1L);
+        verify(userServiceJpa, times(1)).getUserById(2L);
 
         // Verify that the AccountRepository's save method was called once with the correct argument
         verify(accountRepository, times(1)).save(any(Account.class));
@@ -237,7 +237,7 @@ class AccountServiceJpaTest {
         assertEquals(1L, accountResponse.getId());
         assertEquals(AccountType.CHECKING.getValue(), accountResponse.getAccountType());
         assertEquals(1000.00, accountResponse.getBalance());
-        assertEquals(1L, accountResponse.getUser().getId());
+        assertEquals(2L, accountResponse.getUser().getId());
         assertEquals("John", accountResponse.getUser().getFirstName());
         assertEquals("Doe", accountResponse.getUser().getLastName());
     }
@@ -324,16 +324,16 @@ class AccountServiceJpaTest {
     // happy flow
     void lockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
         // unlock the account
-        accountServiceJpa.unlockAccount(1L);
+        accountServiceJpa.unlockAccount(2L);
 
         // call the method
-        Account result = accountServiceJpa.lockAccount(1L);
+        Account result = accountServiceJpa.lockAccount(2L);
 
         // test results
-        assertEquals(1L, result.getUser().getId());
+        assertEquals(2L, result.getUser().getId());
         assertEquals("John", result.getUser().getFirstName());
         assertEquals("Doe", result.getUser().getLastName());
         assertFalse(result.isActive());
@@ -346,11 +346,11 @@ class AccountServiceJpaTest {
     // Account already locked
     void lockAccountAlreadyLocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
 
         // call the method
         AccountLockOrUnlockStatusException exception = assertThrows(AccountLockOrUnlockStatusException.class, () -> {
-            accountServiceJpa.lockAccount(1L);
+            accountServiceJpa.lockAccount(2L);
         });
 
         // test results
@@ -361,15 +361,15 @@ class AccountServiceJpaTest {
     // Account not found
     void lockAccountNotFound() {
         // mock the findById method and return an account
-        when(accountRepository.findById(1L)).thenReturn(java.util.Optional.empty());
+        when(accountRepository.findById(2L)).thenReturn(java.util.Optional.empty());
 
         // call the method
         AccountNotFoundException exception = assertThrows(AccountNotFoundException.class, () -> {
-            accountServiceJpa.lockAccount(1L);
+            accountServiceJpa.lockAccount(2L);
         });
 
         // test results
-        assertEquals("Account with id: " + 1L + " not found", exception.getMessage());
+        assertEquals("Account with id: " + 2L + " not found", exception.getMessage());
     }
 
     @Test

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import w.mazebank.exceptions.BsnAlreadyUsedException;
 import w.mazebank.exceptions.EmailAlreadyUsedException;
+import w.mazebank.exceptions.UserNotFoundException;
 import w.mazebank.exceptions.UserNotOldEnoughException;
 import w.mazebank.models.requests.LoginRequest;
 import w.mazebank.models.requests.RegisterRequest;
@@ -31,7 +32,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(
         @RequestBody LoginRequest request
-    ) {
+    ) throws UserNotFoundException {
         return ResponseEntity.ok(authService.login(request));
     }
 }

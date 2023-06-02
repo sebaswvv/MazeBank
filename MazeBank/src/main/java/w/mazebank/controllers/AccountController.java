@@ -101,7 +101,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions")
-    public ResponseEntity<Object> getAllTransactionsByAccontId(
+    public ResponseEntity<Object> getAllTransactionsByAccountId(
         @PathVariable Long accountId,
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,

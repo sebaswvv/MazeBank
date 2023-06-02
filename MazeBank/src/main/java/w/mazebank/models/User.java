@@ -51,7 +51,7 @@ public class User implements UserDetails {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
-    private double dayLimit = 1000;
+    private double dayLimit = 5000.00;
 
     @Builder.Default
     private double transactionLimit = 2000;
@@ -95,6 +95,19 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public double getAmountRemaining() {
+        double amountRemaining = dayLimit;
+        if (accounts == null) return amountRemaining;
+        for (Account account : accounts) {
+            for (Transaction transaction : account.getSentTransactions()) {
+                if (transaction.getTimestamp().toLocalDate().equals(LocalDateTime.now().toLocalDate())) {
+                    amountRemaining -= transaction.getAmount();
+                }
+            }
+        }
+        return amountRemaining;
     }
 
 }
