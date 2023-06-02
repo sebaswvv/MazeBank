@@ -1,5 +1,15 @@
 package w.mazebank.cucumberglue;
 
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import w.mazebank.models.responses.TransactionResponse;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -20,8 +30,24 @@ import java.util.Objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TransactionsStepDefinitions extends BaseStepDefinitions {
+public class TransactionsStepDefinitions extends BaseStepDefinitions{
+
     private Account savingsAccount;
+
+    @When("I call the transactions endpoint with a {string} and {string} parameter")
+    public void i_call_the_transactions_endpoint_with_a_and_parameter(String string, String string2) {
+        // Write code here that turns the phrase above into concrete actions
+        throw new io.cucumber.java.PendingException();
+    }
+
+    @Then("I should see a list of {int} transactions within the specified date range")
+    public void iShouldSeeAListOfTransactionsWithinTheSpecifiedDateRange(int listSizeOfTransactions) {
+        // assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
+
+
+
     @And("I have a savings account with balance {double}")
     public void iHaveASavingsAccountWithBalance(double balance) {
 
