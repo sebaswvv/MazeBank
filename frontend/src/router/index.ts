@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/HomeView.vue';
 import Atm from '../views/AtmView.vue';
+import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
 import Register from '../views/RegisterView.vue';
 import CustomerDashboard from '../views/CustomerDashboardView.vue';
@@ -14,6 +15,7 @@ const routes = [
   { path: '/register', component: Register },
   { path: '/customer-dashboard', component: CustomerDashboard },
   { path: '/employee-dashboard', component: EmployeeDashboard },
+  { path: '/account', component: Account, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
