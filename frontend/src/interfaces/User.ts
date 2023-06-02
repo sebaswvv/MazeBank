@@ -6,10 +6,7 @@ interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
-  password?: string;
-  profile_picture?: string;
   role: RoleType;
-  user_type: number;
 }
 
 export default User;
