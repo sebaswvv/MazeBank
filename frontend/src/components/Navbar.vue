@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg sticky bg-white navbar-light">
         <div class="container">
-            <router-link to="/" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
+            <router-link :to="getMazeBankLink" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -36,10 +36,16 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import { computed } from 'vue';
 
 // VARIABLES
 const authenticationStore = useAuthenticationStore();
 const router = useRouter();
+
+// Computed property to determine the MazeBank link based on login status
+const getMazeBankLink = computed(() => {
+    return authenticationStore.getIsLoggedIn ? '/dashboard' : '/';
+});
 
 // redirect to login page
 function goToLogin() {
