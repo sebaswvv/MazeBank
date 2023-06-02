@@ -25,13 +25,18 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long>
 
     @Override
     @Query("SELECT t FROM Transaction t WHERE t.sender.iban LIKE %?1% OR t.receiver.iban LIKE %?1%")
-    List<Transaction> findBySearchString(String search, Pageable pageable);
+    List<Transaction> findBySearchString(@Param("iban") String search, Pageable pageable);
 
-    List<Transaction> findBySenderUserIdOrReceiverUserId(Long senderId, Long receiverId, Pageable pageable);
+    @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :sender OR t.receiver.user.id = :receiver)")
+    List<Transaction> findBySenderUserIdOrReceiverUserId(@Param("sender") Long senderId, @Param("receiver") Long receiverId, Pageable pageable);
+
+
+    @Query("SELECT t FROM Transaction t WHERE t.timestamp BETWEEN :startDate AND :endDate")
+    List<Transaction> findByTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, Pageable pageable);
 
     List<Transaction> findBySenderIdOrReceiverId(Long senderIban, Long receiverIban, Pageable pageable);
 
-    @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :userId OR t.receiver.user.id = :userId) AND t.timestamp BETWEEN :startDate AND :endDate")
-    List<Transaction> findBySenderUserIdOrReceiverUserIdAndTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") long userId);
+    @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :userId OR t.receiver.user.id = :userId) AND t.timestamp BETWEEN :startDate AND :endDate AND (t.sender.iban LIKE %:iban% OR t.receiver.iban LIKE %:iban%)")
+    List<Transaction> findBySenderUserIdOrReceiverUserIdAndTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") long userId, @Param("iban") String iban);
 
 }

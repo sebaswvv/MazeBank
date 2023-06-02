@@ -108,7 +108,7 @@ public class UserController {
         List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate);
         return ResponseEntity.ok(transactionResponses);
     }
-  
+
     @GetMapping("{userId}/balance")
     public ResponseEntity<BalanceResponse> getBalanceByUserId(@PathVariable Long userId, @AuthenticationPrincipal User user) throws UserNotFoundException {
         return ResponseEntity.ok(userService.getBalanceByUserId(userId, user));

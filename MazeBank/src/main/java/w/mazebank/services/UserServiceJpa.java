@@ -188,7 +188,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         userRepository.delete(user);
     }
-  
+
     public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate) throws UserNotFoundException, UnauthorizedAccountAccessException {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
@@ -202,29 +202,48 @@ public class UserServiceJpa extends BaseServiceJpa {
         // Create a list to store the filtered transaction responses
         List<TransactionResponse> transactionResponses;
 
-        // Create a pageable object with offset, limit, and sort
+
+        // Create a pageable object with offset, limit, search, and sort
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
         Pageable pageable = PageRequest.of(offset, limit, sortObject);
 
         // Perform the filtering based on the specified criteria
         List<Transaction> transactions;
+        String caseValue = "";
         if (startDate != null && endDate != null) {
-
-            // parse startdate to localdatetime
-            LocalDateTime startDateTime = startDate.atStartOfDay();
-            LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
-
-            // Find transactions between the specified start date and end date
-            transactions = transactionRepository.findBySenderUserIdOrReceiverUserIdAndTimestampBetween(startDateTime, endDateTime, userId);
-
+            caseValue = "dateRange";
+        } else if (search != null) {
+            caseValue = "search";
         } else {
-            // No date range specified, fetch all transactions
-            transactions = transactionRepository.findBySenderUserIdOrReceiverUserId(userId, userId, pageable);
+            caseValue = "default";
         }
+
+        switch (caseValue) {
+            case "dateRange":
+                // Parse startdate to LocalDateTime
+                LocalDateTime startDateTime = startDate.atStartOfDay();
+                LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+                // Find transactions between the specified start date and end date
+                transactions = transactionRepository.findByTimestampBetween(startDateTime, endDateTime, pageable);
+                break;
+
+            case "search":
+                // No date range specified, fetch all transactions
+                transactions = transactionRepository.findBySearchString(search, pageable);
+                break;
+
+            default:
+                // No date range specified, fetch all transactions
+                transactions = transactionRepository.findBySenderUserIdOrReceiverUserId(userId, userId, pageable);
+                break;
+        }
+
         transactionResponses = mapTransactionsToResponses(transactions);
 
         return transactionResponses;
     }
+
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();
@@ -241,7 +260,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
         return transactionResponses;
     }
-  
+
     public BalanceResponse getBalanceByUserId(Long userId, User userPerforming) throws UserNotFoundException {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 

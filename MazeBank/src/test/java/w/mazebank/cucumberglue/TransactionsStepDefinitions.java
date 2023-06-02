@@ -85,6 +85,30 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         System.out.println(lastResponse.getBody());
     }
 
+    @When("I call the users endpoint with a search {string} parameter")
+    public void iCallTheAccountsEndpointWithAnIBANParameter(String search) {
+        httpHeaders.clear();
+        token = jwtService.generateToken(customer);
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + "/users/3/transactions?" + search,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
+    }
+
+    @Then("I should see a list of transactions with the IBAN parameter")
+    public void iShouldSeeAListOfTransactionsWithTheIBAN() {
+        assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
+
     @And("I have a savings account with balance {double}")
     public void iHaveASavingsAccountWithBalance(double balance) {
 
@@ -226,6 +250,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         assertTrue(lastResponse.getBody().contains(senderIban));
         assertTrue(lastResponse.getBody().contains(receiverIban));
     }
+
 
 
 }
