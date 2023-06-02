@@ -3,12 +3,13 @@ import axios from '../utils/axios';
 import Login from '../interfaces/requests/Login';
 import Register from '../interfaces/requests/Register';
 import AuthState from '../interfaces/AuthState';
+import { useUserStore } from './UserStore';
 
 // STORE
 export const useAuthenticationStore = defineStore({
   id: 'authentication',
   state: (): AuthState => ({
-    userId: null,
+    userId: localStorage.getItem('userId') ?? null,
     isLoggedIn: localStorage.getItem('token') !== null,
   }),
   getters: {
@@ -16,6 +17,9 @@ export const useAuthenticationStore = defineStore({
     // getUser(state) {
     //   return state.user;
     // },
+    getUserId(state) {
+      return state.userId;
+    },
     getIsLoggedIn(state) {
       return state.isLoggedIn;
     },
@@ -29,7 +33,7 @@ export const useAuthenticationStore = defineStore({
         });
         if (response.status === 200) {
           this.setUser(response.data.authenticationToken);
-          axios.updateAuthorizationHeader(response.data.jwt);
+          axios.updateAuthorizationHeader(response.data.authenticationToken);
         }
       } catch (error: any) {
         return error;
@@ -38,9 +42,11 @@ export const useAuthenticationStore = defineStore({
     logout() {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
+
       axios.updateAuthorizationHeader('');
       this.userId = null;
       this.isLoggedIn = false;
+      useUserStore().logout();
       this.router.push('/');
     },
     async register(registerRequest: Register) {

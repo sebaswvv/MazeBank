@@ -1,4 +1,5 @@
 import { RoleType } from './../enums/RoleType';
+import AccountCompact from './AccountCompact';
 
 interface User {
   id?: number;
@@ -6,10 +7,9 @@ interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
-  password?: string;
-  profile_picture?: string;
   role: RoleType;
-  user_type: number;
+  accounts?: AccountCompact[];
 }
 
 export default User;
+
