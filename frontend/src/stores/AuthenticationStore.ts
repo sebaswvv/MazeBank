@@ -30,7 +30,6 @@ export const useAuthenticationStore = defineStore({
         if (response.status === 200) {
           this.setUser(response.data.authenticationToken);
           axios.updateAuthorizationHeader(response.data.jwt);
-          this.router.push('/');
         }
       } catch (error: any) {
         return error;
@@ -42,17 +41,14 @@ export const useAuthenticationStore = defineStore({
       axios.updateAuthorizationHeader('');
       this.userId = null;
       this.isLoggedIn = false;
-
-      this.router.push('/login');
+      this.router.push('/');
     },
     async register(registerRequest: Register) {
       try {
         const response = await axios.post('/auth/register', registerRequest);
-        if (response.status === 200) {
+        if (response.status === 201) {
           this.setUser(response.data.authenticationToken);
           axios.updateAuthorizationHeader(response.data.jwt);
-          // refresh page to update navbar
-          window.location.reload();
         }
       } catch (error: any) {
         console.error(error);

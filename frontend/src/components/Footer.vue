@@ -29,6 +29,9 @@ const getCurrentYear = computed(() => {
 <style>
 footer {
     border-top: 1px solid #ddd;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }
 
 /*

@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg sticky bg-white navbar-light">
         <div class="container">
-            <router-link to="/" class="nav-link" active-class="active navbar-brand">FoodieFaves</router-link>
+            <router-link to="/" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -10,30 +10,15 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
                     </li>
-                    <li class="nav-item">
-                        <router-link to="/login" class="nav-link" active-class="active">
-                            <font-awesome-icon icon="fa-solid fa-user" />
-                            Login</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/register" class="nav-link" active-class="active">
-                            <font-awesome-icon icon="fa-solid fa-user" />
-                            Register</router-link>
-                    </li>
-                    <li class="nav-item">
+                    <li class="nav-item" v-if="authenticationStore.getIsLoggedIn">
                         <router-link to="/atm" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
                             ATM</router-link>
                     </li>
-                    <li class="nav-item">
-                        <router-link to="/employee-dashboard" class="nav-link" active-class="active">
+                    <li v-if="authenticationStore.getIsLoggedIn" class=" nav-item">
+                        <router-link to="/dashboard" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
-                            Employee Dashboard</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/customer-dashboard" class="nav-link" active-class="active">
-                            <font-awesome-icon icon="fa-solid fa-user" />
-                            Customer Dashboard</router-link>
+                            Dashboard</router-link>
                     </li>
                     <!-- Buttons voor in/uit-loggen -->
                     <li class="nav-item">
