@@ -83,5 +83,8 @@ export const useUserStore = defineStore({
             this.role = null;
             this.accounts = null;
         },
+        getAccounts() {
+            return this.accounts;
+        },
     }
 });
