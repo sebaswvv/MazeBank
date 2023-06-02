@@ -54,7 +54,7 @@ public class DataSeeder implements ApplicationRunner {
         // Create some sample accounts for user1
         Account bankAccount = new Account(1, "NL01INHO0000000001", AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
         Account account1 = new Account(2, "NL76INHO0493458014", AccountType.CHECKING, 1000.0, user1, true, LocalDateTime.now(), -10, null, null);
-        Account account2 = new Account(3, IbanGenerator.generate(), AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
+        Account account2 = new Account(3, "NL45INHO0328598538", AccountType.SAVINGS, 5000.0, user1, true, LocalDateTime.now(), 0, null, null);
 
         accountService.addAccount(bankAccount);
         accountService.addAccount(account1);
@@ -62,9 +62,9 @@ public class DataSeeder implements ApplicationRunner {
 
         // Create some sample accounts for user2
         Account account3 = new Account(4, "NL76INHO0493458018", AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
-        Account account4 = new Account(5, IbanGenerator.generate(), AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
+        Account account4 = new Account(5, "NL29INHO0165148974", AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
 
-        Account account5 = new Account(6, IbanGenerator.generate(), AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
+        Account account5 = new Account(6, "NL45INHO0328598536", AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
         Account account6 = new Account(6, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
 
         accountService.addAccount(account3);

@@ -2,8 +2,8 @@ Feature: Everything Transactions
 
     Scenario: Search transactions between a date range
         Given I have a valid token for role "customer"
-        When I call the transactions endpoint with a "2023-01-01" and "2023-01-02" parameter
-        Then I should see a list of 3 transactions within the specified date range
+        When I call the transactions endpoint with a "2022-01-01" and "2023-12-12" parameter
+        Then I should see a list of 2 transactions within the specified date range
 
 #    Scenario: Search transactions from/to specific IBAN
 #        Given I have a valid token for role "customer"

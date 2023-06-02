@@ -1,5 +1,6 @@
 package w.mazebank.cucumberglue;
 
+import com.jayway.jsonpath.JsonPath;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -7,8 +8,7 @@ import w.mazebank.models.responses.TransactionResponse;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -25,7 +25,6 @@ import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.utils.IbanGenerator;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,18 +34,78 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
     private Account savingsAccount;
 
     @When("I call the transactions endpoint with a {string} and {string} parameter")
-    public void i_call_the_transactions_endpoint_with_a_and_parameter(String string, String string2) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new io.cucumber.java.PendingException();
+    public void iCallTheTransactionsEndpointWithStartDateAndEndDateParameter(String startDate, String endDate) {
+
+        httpHeaders.clear();
+        token = jwtService.generateToken(customer);
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // make 2 transaction responses
+        TransactionResponse transactionResponse1 = TransactionResponse.builder()
+                .id(1L)
+                .amount(500.0)
+                .description("Transfer from account1 to account3")
+                .receiver("NL76INHO0493458014")
+                .sender("NL76INHO0493458018")
+                .timestamp("2023-05-30T10:30")
+                .build();
+
+        TransactionResponse transactionResponse2 = TransactionResponse.builder()
+                .id(2L)
+                .amount(2000.0)
+                .description("Transfer from account2 to account4")
+                .receiver("NL29INHO0165148974")
+                .sender("NL45INHO0328598536")
+                .timestamp("2023-05-31T10:30")
+                .build();
+
+        List<TransactionResponse> transactionResponseList = new ArrayList<>();
+        transactionResponseList.add(transactionResponse1);
+        transactionResponseList.add(transactionResponse2);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(transactionResponseList, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + "/users/3/transactions?startDate=" + startDate + "&endDate=" + endDate,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
     }
 
     @Then("I should see a list of {int} transactions within the specified date range")
     public void iShouldSeeAListOfTransactionsWithinTheSpecifiedDateRange(int listSizeOfTransactions) {
-        // assert lastResponse.getBody() != null;
+        // assert that the response body is not null
+        assert lastResponse.getBody() != null;
+        Object id = JsonPath.parse(lastResponse.getBody()).read("$.[0].id");
+        Object amount = JsonPath.parse(lastResponse.getBody()).read("$.[0].amount");
+        Object description = JsonPath.parse(lastResponse.getBody()).read("$.[0].description");
+        Object sender = JsonPath.parse(lastResponse.getBody()).read("$.[0].sender");
+        Object receiver = JsonPath.parse(lastResponse.getBody()).read("$.[0].receiver");
+        Object timestamp = JsonPath.parse(lastResponse.getBody()).read("$.[0].timestamp");
+        Object id1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].id");
+        Object amount1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].amount");
+        Object description1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].description");
+        Object sender1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].sender");
+        Object receiver1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].receiver");
+        Object timestamp1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].timestamp");
+        assertEquals(1, id);
+        assertEquals(500.0, amount);
+        assertEquals("Transfer from account1 to account3", description);
+        assertEquals("NL76INHO0493458014", sender);
+        assertEquals("NL76INHO0493458018", receiver);
+        assertEquals("2023-05-30T10:30", timestamp);
+        assertEquals(2, id1);
+        assertEquals(2000.0, amount1);
+        assertEquals("Transfer from account2 to account4", description1);
+        assertEquals("NL45INHO0328598538", sender1);
+        assertEquals("NL29INHO0165148974", receiver1);
+        assertEquals("2023-05-31T10:30", timestamp1);
+
         System.out.println(lastResponse.getBody());
     }
-
-
 
     @And("I have a savings account with balance {double}")
     public void iHaveASavingsAccountWithBalance(double balance) {
@@ -189,4 +248,6 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         assertTrue(lastResponse.getBody().contains(senderIban));
         assertTrue(lastResponse.getBody().contains(receiverIban));
     }
+
+
 }
