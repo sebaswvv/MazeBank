@@ -40,31 +40,8 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         token = jwtService.generateToken(customer);
         httpHeaders.add("Authorization", "Bearer " + token);
 
-        // make 2 transaction responses
-        TransactionResponse transactionResponse1 = TransactionResponse.builder()
-                .id(1L)
-                .amount(500.0)
-                .description("Transfer from account1 to account3")
-                .receiver("NL76INHO0493458014")
-                .sender("NL76INHO0493458018")
-                .timestamp("2023-05-30T10:30")
-                .build();
-
-        TransactionResponse transactionResponse2 = TransactionResponse.builder()
-                .id(2L)
-                .amount(2000.0)
-                .description("Transfer from account2 to account4")
-                .receiver("NL29INHO0165148974")
-                .sender("NL45INHO0328598536")
-                .timestamp("2023-05-31T10:30")
-                .build();
-
-        List<TransactionResponse> transactionResponseList = new ArrayList<>();
-        transactionResponseList.add(transactionResponse1);
-        transactionResponseList.add(transactionResponse2);
-
         // Create the HTTP entity with the request body and headers
-        HttpEntity<Object> requestEntity = new HttpEntity<>(transactionResponseList, httpHeaders);
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
 
         // Send the request
         lastResponse = restTemplate.exchange(
@@ -75,8 +52,9 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         );
     }
 
-    @Then("I should see a list of {int} transactions within the specified date range")
-    public void iShouldSeeAListOfTransactionsWithinTheSpecifiedDateRange(int listSizeOfTransactions) {
+    @Then("I should see a list of transactions within the specified date range")
+    public void iShouldSeeAListOfTransactionsWithinTheSpecifiedDateRange() {
+
         // assert that the response body is not null
         assert lastResponse.getBody() != null;
         Object id = JsonPath.parse(lastResponse.getBody()).read("$.[0].id");
