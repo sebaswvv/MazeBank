@@ -46,11 +46,9 @@ export const useAuthenticationStore = defineStore({
     async register(registerRequest: Register) {
       try {
         const response = await axios.post('/auth/register', registerRequest);
-        if (response.status === 200) {
+        if (response.status === 201) {
           this.setUser(response.data.authenticationToken);
           axios.updateAuthorizationHeader(response.data.jwt);
-          // refresh page to update navbar
-          window.location.reload();
         }
       } catch (error: any) {
         console.error(error);

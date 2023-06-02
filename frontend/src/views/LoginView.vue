@@ -53,6 +53,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import Login from "../interfaces/requests/Login.ts";
+import Register from "../interfaces/requests/Register.ts";
 
 const authenticationStore = useAuthenticationStore();
 const router = useRouter();
@@ -61,7 +62,7 @@ const containerClasses = ref('');
 const errorMessage: any = ref('');
 const firstName = ref('');
 const lastName = ref('');
-const bsn = ref('');
+const bsn: any = ref('');
 const emailRegister = ref('');
 const phoneNumber = ref('');
 const passwordRegister = ref('');
@@ -69,9 +70,27 @@ const dateOfBirth = ref('');
 const password = ref('');
 const email = ref('');
 
-const handleRegisterClick = () => {
+const handleRegisterClick = async () => {
   checkRegitserFields();
   // register the user
+  const registerRequest: Register = {
+    firstName: firstName.value,
+    lastName: lastName.value,
+    bsn: bsn.value,
+    email: emailRegister.value,
+    phoneNumber: phoneNumber.value,
+    password: passwordRegister.value,
+    dateOfBirth: dateOfBirth.value
+  }
+
+  await authenticationStore.register(registerRequest);
+
+  // check if the user is logged in
+  if (authenticationStore.isLoggedIn) {
+    router.push('/dashboard');
+  } else {
+    showErrorMessage('Er is iets fout gegaan bij het registreren, neem contact op met de bank');
+  }
   //errorMessage.value = '';
 }
 
