@@ -173,6 +173,7 @@ const checkRegitserFields = () => {
     showErrorMessage('Je moet 18 jaar of ouder zijn om een account te maken');
     return false;
   }
+  return true;
 }
 
 const showErrorMessage = (message: String) => {

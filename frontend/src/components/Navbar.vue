@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg sticky bg-white navbar-light">
         <div class="container">
-            <router-link to="/" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
+            <router-link :to="getMazeBankLink" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -20,6 +20,11 @@
                             <font-awesome-icon icon="fa-solid fa-user" />
                             Dashboard</router-link>
                     </li>
+                    <li v-if="userStore.getIsEmployee" class=" nav-item">
+                        <router-link to="/employee" class="nav-link" active-class="active">
+                            <font-awesome-icon icon="fa-solid fa-user" />
+                            Medewerker</router-link>
+                    </li>
                     <!-- Buttons voor in/uit-loggen -->
                     <li class="nav-item">
                         <button v-if="!authenticationStore.getIsLoggedIn" class=" btn btn-primary"
@@ -36,10 +41,18 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import { useUserStore } from '../stores/UserStore';
+import { computed } from 'vue';
 
 // VARIABLES
 const authenticationStore = useAuthenticationStore();
+const userStore = useUserStore();
 const router = useRouter();
+
+// Computed property to determine the MazeBank link based on login status
+const getMazeBankLink = computed(() => {
+    return authenticationStore.getIsLoggedIn ? '/dashboard' : '/';
+});
 
 // redirect to login page
 function goToLogin() {
