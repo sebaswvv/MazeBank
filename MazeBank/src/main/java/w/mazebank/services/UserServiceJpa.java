@@ -183,7 +183,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         int offset,
         int limit,
         String sort,
-        String search,
+        String iban,
         LocalDate startDate,
         LocalDate endDate,
         Double maxAmount,
@@ -204,16 +204,16 @@ public class UserServiceJpa extends BaseServiceJpa {
         //     );
         // }
 
-        if (search != null) {
+        if (iban != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.or(
                     criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("sender").get("iban")),
-                        "%" + search.toLowerCase() + "%"
+                        "%" + iban.toLowerCase() + "%"
                     ),
                     criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("receiver").get("iban")),
-                        "%" + search.toLowerCase() + "%"
+                        "%" + iban.toLowerCase() + "%"
                     )
                 )
             );
