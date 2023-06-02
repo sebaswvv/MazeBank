@@ -88,10 +88,10 @@ const handleRegisterClick = async () => {
   // check if the user is logged in
   if (authenticationStore.isLoggedIn) {
     router.push('/dashboard');
+    errorMessage.value = '';
   } else {
     showErrorMessage('Er is iets fout gegaan bij het registreren, neem contact op met de bank');
   }
-  //errorMessage.value = '';
 }
 
 const handleLoginClick = async () => {
@@ -110,6 +110,7 @@ const handleLoginClick = async () => {
   // check if the user is logged in
   if (authenticationStore.isLoggedIn) {
     router.push('/dashboard');
+    errorMessage.value = '';
   } else {
     showErrorMessage('Email of wachtwoord is onjuist');
   }
