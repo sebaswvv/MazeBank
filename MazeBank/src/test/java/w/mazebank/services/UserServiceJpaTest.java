@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
@@ -468,7 +469,8 @@ class UserServiceJpaTest {
 
         // Mock the repository
         when(userRepository.findById(Mockito.any())).thenReturn(Optional.ofNullable(user));
-        when(transactionRepository.findBySenderUserIdOrReceiverUserId(2L, 2L, PageRequest.of(0, 10, Sort.by("id").ascending()))).thenReturn(List.of(transaction1, transaction2));
+        when(transactionRepository.findAll(Mockito.any(Specification.class), Mockito.any(Pageable.class))).thenReturn(new PageImpl<>(List.of(transaction1, transaction2)));
+
 
         // Call the method
         List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null);
@@ -501,7 +503,7 @@ class UserServiceJpaTest {
         });
 
         // test results
-        assertEquals("user not found with id: 2", exception.getMessage());
+        assertEquals("User not found", exception.getMessage());
         verify(userRepository, times(1)).findById(2L);
 
     }

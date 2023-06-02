@@ -36,22 +36,6 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long,
     Page<Transaction> findAll(Specification<Transaction> specification, Pageable pageable);
 
 
-
-
-
-//     LUC
-
-//     List<Transaction> findBySenderUserAndAmountBetweenAndTimestampBetween(User user, Double minAmount, Double maxAmount, LocalDateTime startDate, LocalDateTime endDate);
-//
-//     List<Transaction> findBySenderUserAndAmountAndTimestampBetween(User user, Double amount, LocalDateTime startDate, LocalDateTime endDate);
-//
-//     List<Transaction> findBySenderUserAndAmountGreaterThanEqualAndTimestampBetween(User user, Double minAmount, LocalDateTime startDate, LocalDateTime endDate);
-//
-//     List<Transaction> findBySenderUserAndAmountLessThanEqualAndTimestampBetween(User user, Double maxAmount, LocalDateTime startDate, LocalDateTime endDate);
-//
-//     List<Transaction> findBySenderUser(User user);
-//
-//     List<Transaction> findBySenderUserOrReceiverUserAndSenderIbanOrReceiverIban(User senderUser, User receiverUser, String senderIban, String receiverIban);
 }
 
 

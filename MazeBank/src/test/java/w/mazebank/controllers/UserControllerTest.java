@@ -487,4 +487,5 @@ class UserControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$").isEmpty());
     }
+
 }

@@ -195,15 +195,6 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         Specification<Transaction> specification = Specification.where(null);
 
-        // if (search != null) {
-        //     specification = specification.and((root, query, criteriaBuilder) ->
-        //         criteriaBuilder.like(
-        //             criteriaBuilder.lower(root.get("search")),
-        //             "%" + search.toLowerCase() + "%"
-        //         )
-        //     );
-        // }
-
         if (iban != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
                 criteriaBuilder.or(
@@ -254,9 +245,10 @@ public class UserServiceJpa extends BaseServiceJpa {
         Pageable pageable = PageRequest.of(offset, limit, Sort.by(direction, "timestamp"));
 
         Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageable);
-        List<Transaction> transactions = transactionPage.getContent();
+        List<Transaction> transactions = transactionPage != null ? transactionPage.getContent() : Collections.emptyList();
 
         return mapTransactionsToResponses(transactions);
+
     }
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
