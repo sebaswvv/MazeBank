@@ -90,8 +90,8 @@ export const useAuthenticationStore = defineStore({
       this.isLoggedIn = true;
     },
     // async checkAuth() {
-    //   const userId = localStorage.getItem('user_id');
-    //   if (userId && this.user === null) {
+    //   const userId = localStorage.getItem('userId');
+    //   if (userId && this.userId === null) {
     //     const response = await axios.get('/users/' + userId);
     //     // console.log(response.data);
     //     // this.setUser(response.data, localStorage.getItem('token') || '');
