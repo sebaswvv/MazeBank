@@ -189,7 +189,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         userRepository.delete(user);
     }
 
-    public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate) throws UserNotFoundException, UnauthorizedAccountAccessException {
+    public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount) throws UserNotFoundException, UnauthorizedAccountAccessException {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
@@ -214,9 +214,15 @@ public class UserServiceJpa extends BaseServiceJpa {
             caseValue = "dateRange";
         } else if (search != null) {
             caseValue = "search";
-        } else {
+        } else if (maxAmount != null) {
+            caseValue = "maxAmount";
+        } else if (minAmount != null) {
+            caseValue = "minAmount";
+        } else if (amount != null) {
+            caseValue = "amount";
+        } else
             caseValue = "default";
-        }
+
 
         switch (caseValue) {
             case "dateRange":
@@ -229,9 +235,24 @@ public class UserServiceJpa extends BaseServiceJpa {
                 break;
 
             case "search":
-                // No date range specified, fetch all transactions
+                // Find transactions by search string
                 transactions = transactionRepository.findBySearchString(search, pageable);
                 break;
+
+            // case "maxAmount":
+            //     // Find transactions by max amount
+            //     transactions = transactionRepository.findByMaxAmount(maxAmount, userId, userId, pageable);
+            //     break;
+            //
+            // case "minAmount":
+            //     // find transactions by min amount
+            //     transactions = transactionRepository.findByMinAmount(minAmount, userId, userId, pageable);
+            //     break;
+            //
+            // case "amount":
+            //     // find transactions by amount
+            //     transactions = transactionRepository.findByAmount(amount, userId, userId, pageable);
+            //     break;
 
             default:
                 // No date range specified, fetch all transactions
@@ -239,11 +260,11 @@ public class UserServiceJpa extends BaseServiceJpa {
                 break;
         }
 
-        transactionResponses = mapTransactionsToResponses(transactions);
+            transactionResponses = mapTransactionsToResponses(transactions);
 
-        return transactionResponses;
+            return transactionResponses;
+
     }
-
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();

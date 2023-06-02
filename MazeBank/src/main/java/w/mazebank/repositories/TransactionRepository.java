@@ -39,4 +39,17 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long>
     @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :userId OR t.receiver.user.id = :userId) AND t.timestamp BETWEEN :startDate AND :endDate AND (t.sender.iban LIKE %:iban% OR t.receiver.iban LIKE %:iban%)")
     List<Transaction> findBySenderUserIdOrReceiverUserIdAndTimestampBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") long userId, @Param("iban") String iban);
 
+
+    // @Query("SELECT t FROM Transaction t WHERE t.amount <= :maxAmount AND t.sender.user.id = :sender OR t.receiver.user.id = :receiver")
+    // List<Transaction> findByMaxAmount( Double maxAmount, @Param("sender") Long senderId, @Param("receiver") Long receiverId, Pageable pageable);
+    //
+    // // equal amount
+    // @Query("SELECT t FROM Transaction t WHERE t.amount = :amount AND t.sender.user.id = :sender OR t.receiver.user.id = :receiver")
+    // List<Transaction> findByAmount( Double amount, @Param("sender") Long senderId, @Param("receiver") Long receiverId, Pageable pageable);
+    //
+    // // greater than or equal amount
+    // @Query("SELECT t FROM Transaction t WHERE t.amount >= :amount AND t.sender.user.id = :sender OR t.receiver.user.id = :receiver")
+    // List<Transaction> findByMinAmount( Double minAmount, @Param("sender") Long senderId, @Param("receiver") Long receiverId, Pageable pageable);
+
+
 }

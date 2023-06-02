@@ -103,9 +103,12 @@ public class UserController {
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String search,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+        @RequestParam(required = false) Double maxAmount,
+        @RequestParam(required = false) Double minAmount,
+        @RequestParam(required = false) Double amount
     ) throws UserNotFoundException {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate);
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate, maxAmount, minAmount, amount);
         return ResponseEntity.ok(transactionResponses);
     }
 
