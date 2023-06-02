@@ -2,8 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/HomeView.vue';
 import Atm from '../views/AtmView.vue';
 import Login from '../views/LoginView.vue';
-import CustomerDashboard from '../views/CustomerDashboardView.vue';
-import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
+import Dashboard from '../views/DashboardView.vue';
 
 // Define routes
 const routes = [
@@ -11,8 +10,7 @@ const routes = [
   { path: '/login', component: Login},
   { path: '/home', component: Home },
   { path: '/atm', component: Atm },
-  { path: '/customer-dashboard', component: CustomerDashboard },
-  { path: '/employee-dashboard', component: EmployeeDashboard },
+  { path: '/dashboard', component: Dashboard },
 ];
 
 const router = createRouter({

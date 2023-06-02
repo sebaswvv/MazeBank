@@ -28,6 +28,7 @@
             <a href="#">Wachtwoord vergeten?</a>
           </div>
         </div>
+        <p id="error">{{ errorMessage }}</p>
         <button @click="handleLoginClick">Login</button>
       </div>
     </div>
@@ -54,6 +55,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+import { useRouter } from 'vue-router';
+import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import Login from "../interfaces/requests/Login.ts";
+
+const authenticationStore = useAuthenticationStore();
+const router = useRouter();
+
 const containerClasses = ref('');
 const errorMessage: any = ref('');
 const firstName = ref('');
@@ -68,11 +76,29 @@ const email = ref('');
 
 const handleRegisterClick = () => {
   checkRegitserFields();
+  // register the user
   //errorMessage.value = '';
 }
 
-const handleLoginClick = () => {
-  console.log('login');
+const handleLoginClick = async () => {
+  // check if all fields are filled in
+  if (email.value === '' || password.value === '') {
+    showErrorMessage('Vul alle velden in');
+    return;
+  }
+
+  const loginRequest: Login = {
+    email: email.value,
+    password: password.value
+  }
+
+  await authenticationStore.login(loginRequest);
+  // check if the user is logged in
+  if (authenticationStore.isLoggedIn) {
+    router.push('/dashboard');
+  } else {
+    showErrorMessage('Email of wachtwoord is onjuist');
+  }
 }
 
 const handleOpenRegisrer = () => {

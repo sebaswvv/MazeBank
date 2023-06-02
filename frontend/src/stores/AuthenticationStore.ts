@@ -30,7 +30,6 @@ export const useAuthenticationStore = defineStore({
         if (response.status === 200) {
           this.setUser(response.data.authenticationToken);
           axios.updateAuthorizationHeader(response.data.jwt);
-          this.router.push('/');
         }
       } catch (error: any) {
         return error;
@@ -42,8 +41,7 @@ export const useAuthenticationStore = defineStore({
       axios.updateAuthorizationHeader('');
       this.userId = null;
       this.isLoggedIn = false;
-
-      this.router.push('/login');
+      this.router.push('/');
     },
     async register(registerRequest: Register) {
       try {
