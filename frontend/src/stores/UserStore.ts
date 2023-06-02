@@ -18,7 +18,10 @@ export const useUserStore = defineStore({
     getters: {
         getUser(state) {
             return state;
-        },       
+        },
+        getIsEmployee(state) {
+            return state.role === 'EMPLOYEE';
+        }
     },
     actions: {
         async fetchUser(id: number) {
@@ -85,6 +88,6 @@ export const useUserStore = defineStore({
         },
         getAccounts() {
             return this.accounts;
-        },
+        }
     }
 });
