@@ -8,6 +8,6 @@ import org.springframework.data.repository.NoRepositoryBean;
 import java.util.List;
 
 @NoRepositoryBean
-public interface BaseRepository<T, ID> extends JpaRepository<T, ID> {
+public interface BaseRepository<T, ID, J> extends JpaRepository<T, ID> {
     List<T> findBySearchString(String search, Pageable pageable);
 }

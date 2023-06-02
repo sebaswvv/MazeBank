@@ -1,9 +1,16 @@
 package w.mazebank.services;
 
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
@@ -22,9 +29,7 @@ import w.mazebank.repositories.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceJpa extends BaseServiceJpa {
@@ -189,82 +194,159 @@ public class UserServiceJpa extends BaseServiceJpa {
         userRepository.delete(user);
     }
 
-    public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount) throws UserNotFoundException, UnauthorizedAccountAccessException {
-        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+    // public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount) throws UserNotFoundException, UnauthorizedAccountAccessException {
+    //
+    //     if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+    //
+    //     if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
+    //         throw new UnauthorizedAccountAccessException("User not allowed to access transactions of user with id: " + userId);
+    //     }
+    //
+    //     // create a transaction response with dummy data
+    //     TransactionResponse transactionResponse = TransactionResponse.builder()
+    //         .id(1L)
+    //         .amount(1.0)
+    //         .sender("NL01INHO0000000001")
+    //         .receiver("NL01INHO0000000002")
+    //         .timestamp(LocalDateTime.now().toString())
+    //         .build();
+    //
+    //
+    //     // Throw UserNotFoundException if user not found
+    //     User user = getUserById(userId);
+    //
+    //
+    //     // Apply filtering based on the provided parameters
+    //     List<Transaction> transactions;
+    //     if (maxAmount != null && minAmount != null && startDate != null && endDate != null) {
+    //         transactions = transactionRepository.findBySenderUserAndAmountBetweenAndTimestampBetween(
+    //             user, minAmount, maxAmount,
+    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+    //         );
+    //     } else if (amount != null && startDate != null && endDate != null) {
+    //         transactions = transactionRepository.findBySenderUserAndAmountAndTimestampBetween(
+    //             user, amount,
+    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+    //         );
+    //     } else if (minAmount != null && startDate != null && endDate != null) {
+    //         transactions = transactionRepository.findBySenderUserAndAmountGreaterThanEqualAndTimestampBetween(
+    //             user, minAmount,
+    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+    //         );
+    //     } else if (maxAmount != null && startDate != null && endDate != null) {
+    //         transactions = transactionRepository.findBySenderUserAndAmountLessThanEqualAndTimestampBetween(
+    //             user, maxAmount,
+    //             startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX)
+    //         );
+    //     } else if (search != null){
+    //         transactions = transactionRepository.findBySenderUserOrReceiverUserAndSenderIbanOrReceiverIban(
+    //             user, user, search, search
+    //         );
+    //     }
+    //     else {
+    //         transactions = transactionRepository.findBySenderUser(user);
+    //     }
+    //     // transactions = transactionRepository.findBySenderUserOrReceiverUserAndSenderIbanOrReceiverIban(
+    //     //             user, user, search, search
+    //     //         );
+    //
+    //     // Apply sorting and pagination
+    //     transactions = applySortingAndPagination(transactions, sort, offset, limit);
+    //
+    //
+    //     // map
+    //     return mapTransactionsToResponses(transactions);
+    // }
 
-        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
-            throw new UnauthorizedAccountAccessException("User not allowed to access transactions of user with id: " + userId);
+    public List<TransactionResponse> getTransactionsByUserId(
+        Long userId,
+        User user,
+        int offset,
+        int limit,
+        String sort,
+        String search,
+        LocalDate startDate,
+        LocalDate endDate,
+        Double maxAmount,
+        Double minAmount,
+        Double amount
+    ) throws UserNotFoundException {
+        User requestedUser = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Specification<Transaction> specification = Specification.where(null);
+
+        if (search != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("description")),
+                    "%" + search.toLowerCase() + "%"
+                )
+            );
         }
 
-        // Throw UserNotFoundException if user not found
-        User user = getUserById(userId);
-
-        // Create a list to store the filtered transaction responses
-        List<TransactionResponse> transactionResponses;
-
-
-        // Create a pageable object with offset, limit, search, and sort
-        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
-
-        // Perform the filtering based on the specified criteria
-        List<Transaction> transactions;
-        String caseValue = "";
         if (startDate != null && endDate != null) {
-            caseValue = "dateRange";
-        } else if (search != null) {
-            caseValue = "search";
-        } else if (maxAmount != null) {
-            caseValue = "maxAmount";
-        } else if (minAmount != null) {
-            caseValue = "minAmount";
-        } else if (amount != null) {
-            caseValue = "amount";
-        } else
-            caseValue = "default";
-
-
-        switch (caseValue) {
-            case "dateRange":
-                // Parse startdate to LocalDateTime
-                LocalDateTime startDateTime = startDate.atStartOfDay();
-                LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
-
-                // Find transactions between the specified start date and end date
-                transactions = transactionRepository.findByTimestampBetween(startDateTime, endDateTime, pageable);
-                break;
-
-            case "search":
-                // Find transactions by search string
-                transactions = transactionRepository.findBySearchString(search, pageable);
-                break;
-
-            // case "maxAmount":
-            //     // Find transactions by max amount
-            //     transactions = transactionRepository.findByMaxAmount(maxAmount, userId, userId, pageable);
-            //     break;
-            //
-            // case "minAmount":
-            //     // find transactions by min amount
-            //     transactions = transactionRepository.findByMinAmount(minAmount, userId, userId, pageable);
-            //     break;
-            //
-            // case "amount":
-            //     // find transactions by amount
-            //     transactions = transactionRepository.findByAmount(amount, userId, userId, pageable);
-            //     break;
-
-            default:
-                // No date range specified, fetch all transactions
-                transactions = transactionRepository.findBySenderUserIdOrReceiverUserId(userId, userId, pageable);
-                break;
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
+            );
         }
 
-            transactionResponses = mapTransactionsToResponses(transactions);
+        if (maxAmount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
+            );
+        }
 
-            return transactionResponses;
+        if (minAmount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
+            );
+        }
 
+        if (amount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("amount"), amount)
+            );
+        }
+
+        specification = specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.or(
+                criteriaBuilder.equal(root.get("sender"), requestedUser),
+                criteriaBuilder.equal(root.get("receiver"), requestedUser)
+            )
+        );
+
+        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by(direction, "timestamp"));
+
+        Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageable);
+        List<Transaction> transactions = transactionPage.getContent();
+
+        return mapTransactionsToResponses(transactions);
     }
+
+    private List<Transaction> applySortingAndPagination(List<Transaction> transactions, String sort, int offset, int limit) {
+        // Apply sorting
+        Comparator<Transaction> transactionComparator;
+        if (sort.equalsIgnoreCase("asc")) {
+            transactionComparator = Comparator.comparing(Transaction::getTimestamp);
+        } else {
+            transactionComparator = Comparator.comparing(Transaction::getTimestamp).reversed();
+        }
+        transactions.sort(transactionComparator);
+
+        // Apply pagination
+        int startIndex = Math.min(offset, transactions.size());
+        int endIndex = Math.min(offset + limit, transactions.size());
+        if (startIndex <= endIndex) {
+            transactions = transactions.subList(startIndex, endIndex);
+        } else {
+            transactions = Collections.emptyList();
+        }
+
+        return transactions;
+    }
+
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();

@@ -1,15 +1,17 @@
 package w.mazebank.repositories;
     import org.springframework.data.domain.Pageable;
+    import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
     import org.springframework.data.jpa.repository.Query;
     import org.springframework.data.repository.query.Param;
     import org.springframework.stereotype.Repository;
     import w.mazebank.models.Account;
+    import w.mazebank.models.Transaction;
 
     import java.util.List;
     import java.util.Optional;
 
 @Repository
-public interface AccountRepository extends BaseRepository<Account, Long> {
+public interface AccountRepository extends BaseRepository<Account, Long, JpaSpecificationExecutor<Account>> {
     Optional<Account> findByIban(String iban);
 
     @Override
