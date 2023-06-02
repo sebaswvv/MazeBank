@@ -16,11 +16,6 @@
                             Login</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link to="/register" class="nav-link" active-class="active">
-                            <font-awesome-icon icon="fa-solid fa-user" />
-                            Register</router-link>
-                    </li>
-                    <li class="nav-item">
                         <router-link to="/atm" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
                             ATM</router-link>
