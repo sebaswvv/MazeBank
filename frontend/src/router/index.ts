@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/HomeView.vue';
 import Atm from '../views/AtmView.vue';
+import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
 import Dashboard from '../views/DashboardView.vue';
 
@@ -10,6 +11,11 @@ const routes = [
   { path: '/login', component: Login},
   { path: '/home', component: Home },
   { path: '/atm', component: Atm },
+  { path: '/login', component: Login },
+  { path: '/register', component: Register },
+  { path: '/customer-dashboard', component: CustomerDashboard },
+  { path: '/employee-dashboard', component: EmployeeDashboard },
+  { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/dashboard', component: Dashboard },
 ];
 
