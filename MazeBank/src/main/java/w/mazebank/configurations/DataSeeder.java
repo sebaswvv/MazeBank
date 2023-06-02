@@ -74,13 +74,17 @@ public class DataSeeder implements ApplicationRunner {
 
         LocalDateTime date = LocalDateTime.of(2023, 5, 30, 10, 30, 0);
         LocalDateTime date2 = LocalDateTime.of(2023, 5, 31, 10, 30, 0);
+        LocalDateTime date3 = LocalDateTime.of(2024, 5, 31, 10, 30, 0);
         LocalDateTime wrongDate = LocalDateTime.of(2022, 5, 31, 10, 30, 0);
         // Perform some transactions between the accounts
         transactionService.saveTransaction(new Transaction(1, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, date));
+        transactionService.saveTransaction(new Transaction(6, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, date));
+        transactionService.saveTransaction(new Transaction(5, "Transfer from account1 to account3", 500.0, user1, account1, account3, TransactionType.TRANSFER, date3));
         transactionService.saveTransaction(new Transaction(2, "Transfer from account2 to account4", 2000.0, user1, account2, account4, TransactionType.TRANSFER, date2));
 
         // perform transaction between account 1 and 2
         transactionService.saveTransaction(new Transaction(3, "Transfer from same user", 500.0, user1, account1, account2, TransactionType.TRANSFER, wrongDate));
+        transactionService.saveTransaction(new Transaction(4, "Transfer from same user", 500.0, user1, account1, account2, TransactionType.TRANSFER, date3));
     }
 }
 

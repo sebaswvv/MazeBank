@@ -1,9 +1,11 @@
 package w.mazebank.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
@@ -20,11 +22,8 @@ import w.mazebank.repositories.TransactionRepository;
 import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceJpa extends BaseServiceJpa {
@@ -51,18 +50,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         return getUserById(id);
     }
 
-//    // patch user by id. Too little difference with getUserById to justify a separate method??
-//    public User patchUserById(long id) throws UserNotFoundException {
-//        // get user
-//        User user = getUserById(id);
-//
-//
-//        // save user
-//        userRepository.save(user);
-//
-//        // return user
-//        return user;
-//    }
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
         if(userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
@@ -188,42 +175,80 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         userRepository.delete(user);
     }
-  
-    public List<TransactionResponse> getTransactionsByUserId(Long userId, User userPerforming, int offset, int limit, String sort, String search, LocalDate startDate, LocalDate endDate) throws UserNotFoundException, UnauthorizedAccountAccessException {
-        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
-        if (userPerforming.getRole() != RoleType.EMPLOYEE && userPerforming.getId() != userId) {
-            throw new UnauthorizedAccountAccessException("User not allowed to access transactions of user with id: " + userId);
+
+    public List<TransactionResponse> getTransactionsByUserId(
+        Long userId,
+        User user,
+        int offset,
+        int limit,
+        String sort,
+        String iban,
+        LocalDate startDate,
+        LocalDate endDate,
+        Double maxAmount,
+        Double minAmount,
+        Double amount
+    ) throws UserNotFoundException {
+        User requestedUser = userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Specification<Transaction> specification = Specification.where(null);
+
+        if (iban != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.or(
+                    criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("sender").get("iban")),
+                        "%" + iban.toLowerCase() + "%"
+                    ),
+                    criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("receiver").get("iban")),
+                        "%" + iban.toLowerCase() + "%"
+                    )
+                )
+            );
         }
 
-        // Throw UserNotFoundException if user not found
-        User user = getUserById(userId);
-
-        // Create a list to store the filtered transaction responses
-        List<TransactionResponse> transactionResponses;
-
-        // Create a pageable object with offset, limit, and sort
-        Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "id");
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
-
-        // Perform the filtering based on the specified criteria
-        List<Transaction> transactions;
         if (startDate != null && endDate != null) {
-
-            // parse startdate to localdatetime
-            LocalDateTime startDateTime = startDate.atStartOfDay();
-            LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
-
-            // Find transactions between the specified start date and end date
-            transactions = transactionRepository.findBySenderUserIdOrReceiverUserIdAndTimestampBetween(startDateTime, endDateTime, userId);
-
-        } else {
-            // No date range specified, fetch all transactions
-            transactions = transactionRepository.findBySenderUserIdOrReceiverUserId(userId, userId, pageable);
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
+            );
         }
-        transactionResponses = mapTransactionsToResponses(transactions);
 
-        return transactionResponses;
+        if (maxAmount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
+            );
+        }
+
+        if (minAmount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
+            );
+        }
+
+        if (amount != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("amount"), amount)
+            );
+        }
+
+        specification = specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.or(
+                criteriaBuilder.equal(root.get("sender"), requestedUser),
+                criteriaBuilder.equal(root.get("receiver"), requestedUser)
+            )
+        );
+
+        Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(offset, limit, Sort.by(direction, "timestamp"));
+
+        Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageable);
+        List<Transaction> transactions = transactionPage != null ? transactionPage.getContent() : Collections.emptyList();
+
+        return mapTransactionsToResponses(transactions);
+
     }
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
@@ -241,7 +266,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
         return transactionResponses;
     }
-  
+
     public BalanceResponse getBalanceByUserId(Long userId, User userPerforming) throws UserNotFoundException {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 

@@ -5,10 +5,10 @@ Feature: Everything Transactions
         When I call the transactions endpoint with a "2022-01-01" and "2023-12-12" parameter
         Then I should see a list of transactions within the specified date range
 
-#    Scenario: Search transactions from/to specific IBAN
-#        Given I have a valid token for role "customer"
-#        When I call the accounts/search/{name} endpoint with an IBAN parameter
-#        Then I should see a list of transactions with the specified IBAN
+    Scenario: Search transactions from/to specific IBAN
+        Given I have a valid token for role "customer"
+        When I call the users endpoint with a search "NL76INHO0493458018" parameter
+        Then I should see a list of transactions with the IBAN parameter
 #
 #    Scenario: Search transactions with balances less than a certain amount
 #        Given I have a valid token for role "customer"

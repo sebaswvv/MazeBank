@@ -101,14 +101,17 @@ public class UserController {
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String iban,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+        @RequestParam(required = false) Double maxAmount,
+        @RequestParam(required = false) Double minAmount,
+        @RequestParam(required = false) Double amount
     ) throws UserNotFoundException {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, search, startDate, endDate);
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, iban, startDate, endDate, maxAmount, minAmount, amount);
         return ResponseEntity.ok(transactionResponses);
     }
-  
+
     @GetMapping("{userId}/balance")
     public ResponseEntity<BalanceResponse> getBalanceByUserId(@PathVariable Long userId, @AuthenticationPrincipal User user) throws UserNotFoundException {
         return ResponseEntity.ok(userService.getBalanceByUserId(userId, user));
