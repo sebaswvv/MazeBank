@@ -14,13 +14,15 @@
     "@fortawesome/free-regular-svg-icons": "^6.3.0",
     "@fortawesome/free-solid-svg-icons": "^6.3.0",
     "@fortawesome/vue-fontawesome": "^3.0.3",
-    "pinia": "^2.0.32",
     "@types/axios": "^0.14.0",
     "axios": "^1.4.0",
+    "buffer": "^6.0.3",
+    "pinia": "^2.0.32",
     "vue": "^3.2.47",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.2",
     "@vitejs/plugin-vue": "^4.1.0",
     "typescript": "^5.0.2",
     "vite": "^4.3.9",

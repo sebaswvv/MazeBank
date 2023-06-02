@@ -31,10 +31,12 @@
                             Customer Dashboard</router-link>
                     </li>
                     <!-- Buttons voor in/uit-loggen -->
-                    <!-- <li class="nav-item">
-                        <button v-if="!isLoggedIn" class="nav-link btn btn-primary" @click="goToLogin">Inloggen</button>
-                        <button v-if="isLoggedIn" class="nav-link btn btn-primary" @click="logout">Uitloggen</button>
-                    </li> -->
+                    <li class="nav-item">
+                        <button v-if="!authenticationStore.getIsLoggedIn" class=" btn btn-primary"
+                            @click="goToLogin">Inloggen</button>
+                        <button v-if="authenticationStore.getIsLoggedIn" class=" btn btn-primary"
+                            @click="authenticationStore.logout">Uitloggen</button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -42,27 +44,17 @@
 </template>
 
 <script setup lang="ts">
-//  NOG EVEN LATEN STAAN! DIT KUNNEN WE GEBRUIKEN VOOR IN EN UITLOGGEN
-
-// import { computed } from 'vue';
-// import { useRouter } from 'vue-router';
-// import { useAuthenticationStore } from '../stores/AuthenticationStore';
+import { useRouter } from 'vue-router';
+import { useAuthenticationStore } from '../stores/AuthenticationStore';
 
 // VARIABLES
-// const authenticationStore = useAuthenticationStore();
-// const router = useRouter();
+const authenticationStore = useAuthenticationStore();
+const router = useRouter();
 
-// computed variables for authentication
-// const isLoggedIn = computed(() => authenticationStore.getIsLoggedIn);
-
-// // redirect to login page
-// function goToLogin() {
-//     router.push('/login');
-// }
-
-// function logout() {
-//     const res = authenticationStore.logout();
-// }
+// redirect to login page
+function goToLogin() {
+    router.push('/login');
+}
 </script>
 
 <style>
