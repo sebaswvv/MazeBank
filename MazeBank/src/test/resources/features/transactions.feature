@@ -9,21 +9,21 @@ Feature: Everything Transactions
         Given I have a valid token for role "customer"
         When I call the users endpoint with a search "NL76INHO0493458018" parameter
         Then I should see a list of transactions with the IBAN parameter
-#
-#    Scenario: Search transactions with balances less than a certain amount
-#        Given I have a valid token for role "customer"
-#        When I call the transactions endpoint with balance < maxAmount
-#        Then I should see a list of transactions with balances less than maxAmount
-#
-#    Scenario: Search transactions with balances equal to a certain amount
-#        Given I have a valid token for role "customer"
-#        When I call the transactions endpoint with balance == amount
-#        Then I should see a list of transactions with balances equal to amount
-#
-#    Scenario: Search transactions with balances greater than a certain amount
-#        Given I have a valid token for role "customer"
-#        When I call the transactions endpoint with balance > minAmount
-#        Then I should see a list of transactions with balances greater than minAmount
+
+    Scenario: Search transactions with balances less than a certain amount
+        Given I have a valid token for role "customer"
+        When I call the users endpoint with a parameter that asks for transactions less than 750 amount
+        Then I should see a list of transactions with transactions less than given amount
+
+    Scenario: Search transactions with balances equal to a certain amount
+        Given I have a valid token for role "customer"
+        When I call the users endpoint with a parameter that asks for transactions equal to 2000 amount
+        Then I should see a list of transactions with balances equal to given amount
+
+    Scenario: Search transactions with balances greater than a certain amount
+        Given I have a valid token for role "customer"
+        When I call the users endpoint with a parameter that asks for transactions more than 250 amount
+        Then I should see a list of transactions with balances greater than given amount
 
     Scenario: Make a transaction from a savings account to another customer (400)
         Given I have a valid token for role "customer"

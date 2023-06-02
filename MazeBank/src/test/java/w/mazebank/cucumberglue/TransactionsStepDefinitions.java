@@ -252,5 +252,82 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
     }
 
 
+    @When("I call the users endpoint with a parameter that asks for transactions less than {int} amount")
+    public void iCallTheUsersEndpointWithAParameterThatAsksForTransactionsLessThanAmount(int amount) {
+        httpHeaders.clear();
 
+        token = jwtService.generateToken(employee);
+
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + "/users/3/transactions?maxAmount=" + amount,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
+    }
+
+
+    @Then("I should see a list of transactions with transactions less than given amount")
+    public void iShouldSeeAListOfTransactionsWithTransactionsLessThanAmount() {
+        assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
+
+    @When("I call the users endpoint with a parameter that asks for transactions equal to {int} amount")
+    public void iCallTheUsersEndpointWithAParameterThatAsksForTransactionsEqualToAmount(int amount) {
+        httpHeaders.clear();
+
+        token = jwtService.generateToken(employee);
+
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + "/users/3/transactions?amount=" + amount,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
+    }
+
+    @Then("I should see a list of transactions with balances equal to given amount")
+    public void iShouldSeeAListOfTransactionsWithBalancesEqualToGivenAmount() {
+        assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
+
+    @When("I call the users endpoint with a parameter that asks for transactions more than {int} amount")
+    public void iCallTheUsersEndpointWithAParameterThatAsksForTransactionsMoreThanAmount(int amount) {
+        httpHeaders.clear();
+
+        token = jwtService.generateToken(employee);
+
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
+
+        // Send the request
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + "/users/3/transactions?minAmount=" + amount,
+            HttpMethod.GET, // Adjust the HTTP method if necessary
+            requestEntity,
+            String.class
+        );
+    }
+
+    @Then("I should see a list of transactions with balances greater than given amount")
+    public void iShouldSeeAListOfTransactionsWithBalancesGreaterThanGivenAmount() {
+        assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
 }
