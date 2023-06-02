@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg sticky bg-white navbar-light">
         <div class="container">
-            <router-link to="/" class="nav-link" active-class="active navbar-brand">FoodieFaves</router-link>
+            <router-link to="/" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
