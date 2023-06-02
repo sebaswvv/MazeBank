@@ -21,7 +21,7 @@
                             Dashboard</router-link>
                     </li>
                     <li v-if="userStore.getIsEmployee" class=" nav-item">
-                        <router-link to="/dashboard" class="nav-link" active-class="active">
+                        <router-link to="/employee" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
                             Medewerker</router-link>
                     </li>
