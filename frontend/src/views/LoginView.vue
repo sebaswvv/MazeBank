@@ -6,13 +6,13 @@
     <div class="form-container register-container">
       <div class="form">
         <h1>Registeer</h1>
-        <input type="text" placeholder="Voornaam">
-        <input type="text" placeholder="Achternaam">
-        <input type="text" placeholder="BSN">
-        <input type="email" placeholder="Email">
-        <input type="tel" placeholder="Telefoonnummer">
-        <input type="password" placeholder="Wachtwoord">
-        <input type="date" placeholder="Geboortedatum">
+        <input type="text" placeholder="Voornaam" v-model="firstName">
+        <input type="text" placeholder="Achternaam" v-model="lastName">
+        <input type="text" placeholder="BSN" v-model="bsn">
+        <input type="email" placeholder="Email" v-model="emailRegister">
+        <input type="tel" placeholder="Telefoonnummer" v-model="phoneNumber">
+        <input type="password" placeholder="Wachtwoord" v-model="passwordRegister">
+        <input type="date" placeholder="Geboortedatum" v-model="dateOfBirth">
         <p id="error">{{ errorMessage }}</p>
         <button @click="handleRegisterClick">Register</button>
       </div>
@@ -21,8 +21,8 @@
     <div class="form-container login-container">
       <div class="form">
         <h1>Login</h1>
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Password">
+        <input type="email" placeholder="Email" v-model="email">
+        <input type="password" placeholder="Password" v-model="password">
         <div class="content">
           <div class="pass-link">
             <a href="#">Wachtwoord vergeten?</a>
@@ -52,25 +52,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const containerClasses = ref('')
-const errorMessage = ref('')
+const containerClasses = ref('');
+const errorMessage: any = ref('');
+const firstName = ref('');
+const lastName = ref('');
+const bsn = ref('');
+const emailRegister = ref('');
+const phoneNumber = ref('');
+const passwordRegister = ref('');
+const dateOfBirth = ref('');
+const password = ref('');
+const email = ref('');
 
 const handleRegisterClick = () => {
-  errorMessage.value = 'Er is iets fout gegaan'
+  checkRegitserFields();
+  //errorMessage.value = '';
 }
 
 const handleLoginClick = () => {
-  console.log('login')
+  console.log('login');
 }
 
 const handleOpenRegisrer = () => {
-  containerClasses.value = 'right-panel-active'
+  containerClasses.value = 'right-panel-active';
 }
 
 const handleOpenLogin = () => {
-  containerClasses.value = ''
+  containerClasses.value = '';
+}
+
+
+const checkRegitserFields = () => {
+  // check if all fields are filled in
+  if (firstName.value === '' || lastName.value === '' || bsn.value === '' || emailRegister.value === '' || phoneNumber.value === '' || passwordRegister.value === '' || dateOfBirth.value === '') {
+    showErrorMessage('Vul alle velden in');
+    return;
+  }
+
+  // check bsn
+  if (bsn.value.length !== 9) {
+    showErrorMessage('BSN moet 9 cijfers bevatten');
+    return;
+  }
+
+  // check email
+  const emailRegex = new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+  if (!emailRegex.test(emailRegister.value)) {
+    showErrorMessage('Email is niet geldig');
+    return;
+  }
+
+  // check phoneNumber
+  if (phoneNumber.value.length !== 10) {
+    showErrorMessage('Telefoonnummer moet 10 cijfers bevatten');
+    return;
+  }
+
+  // check password
+  const passwordRegex = new RegExp('^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};\':\"\\\\|,.<>\\/?]).{8,}$');
+  if (!passwordRegex.test(passwordRegister.value)) {
+    showErrorMessage('Wachtwoord moet minimaal 8 karakters bevatten, 1 hoofdletter, 1 kleine letter, 1 cijfer en 1 speciaal karakter');
+    return;
+  }
+
+  // check if the date of birth makes the user 18 years or older
+  // check if date of birth is filled in
+  const dateOfBirthDate = new Date(dateOfBirth.value);
+  const today = new Date();
+  let age = today.getFullYear() - dateOfBirthDate.getFullYear();
+  const month = today.getMonth() - dateOfBirthDate.getMonth();
+  if (month < 0 || (month === 0 && today.getDate() < dateOfBirthDate.getDate())) {
+    age--;
+  }
+  if (age < 18) {
+    showErrorMessage('Je moet 18 jaar of ouder zijn om een account te maken');
+    return;
+  }
+}
+
+const showErrorMessage = (message: String) => {
+  errorMessage.value = message
 }
 </script>
 
