@@ -71,7 +71,8 @@ const password = ref('');
 const email = ref('');
 
 const handleRegisterClick = async () => {
-  checkRegitserFields();
+  if (!checkRegitserFields()) return;
+
   // register the user
   const registerRequest: Register = {
     firstName: firstName.value,
@@ -107,6 +108,7 @@ const handleLoginClick = async () => {
   }
 
   await authenticationStore.login(loginRequest);
+
   // check if the user is logged in
   if (authenticationStore.isLoggedIn) {
     router.push('/dashboard');
@@ -129,33 +131,33 @@ const checkRegitserFields = () => {
   // check if all fields are filled in
   if (firstName.value === '' || lastName.value === '' || bsn.value === '' || emailRegister.value === '' || phoneNumber.value === '' || passwordRegister.value === '' || dateOfBirth.value === '') {
     showErrorMessage('Vul alle velden in');
-    return;
+    return false;
   }
 
   // check bsn
   if (bsn.value.length !== 9) {
     showErrorMessage('BSN moet 9 cijfers bevatten');
-    return;
+    return false;
   }
 
   // check email
   const emailRegex = new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
   if (!emailRegex.test(emailRegister.value)) {
     showErrorMessage('Email is niet geldig');
-    return;
+    return false;
   }
 
   // check phoneNumber
   if (phoneNumber.value.length !== 10) {
     showErrorMessage('Telefoonnummer moet 10 cijfers bevatten');
-    return;
+    return false;
   }
 
   // check password
   const passwordRegex = new RegExp('^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};\':\"\\\\|,.<>\\/?]).{8,}$');
   if (!passwordRegex.test(passwordRegister.value)) {
     showErrorMessage('Wachtwoord moet minimaal 8 karakters bevatten, 1 hoofdletter, 1 kleine letter, 1 cijfer en 1 speciaal karakter');
-    return;
+    return false;
   }
 
   // check if the date of birth makes the user 18 years or older
@@ -169,7 +171,7 @@ const checkRegitserFields = () => {
   }
   if (age < 18) {
     showErrorMessage('Je moet 18 jaar of ouder zijn om een account te maken');
-    return;
+    return false;
   }
 }
 

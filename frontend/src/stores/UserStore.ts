@@ -7,13 +7,13 @@ import AccountCompact from '../interfaces/User';
 export const useUserStore = defineStore({
     id: 'user',
     state: (): any => ({
-        id: 0,
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        role: 0,
-        accounts: [],
+        id: localStorage.getItem('id') || null,
+        firstName: localStorage.getItem('firstName') || null,
+        lastName: localStorage.getItem('lastName') || null,
+        email: localStorage.getItem('email') || null,
+        phoneNumber: localStorage.getItem('phoneNumber') || null,
+        role: localStorage.getItem('role') || null,
+        accounts: localStorage.getItem('accounts') || null,
     }),
     getters: {
         getUser(state) {
@@ -61,6 +61,7 @@ export const useUserStore = defineStore({
         },
         setAccounts(accounts: AccountCompact[]) {
             this.accounts = accounts;
+            localStorage.setItem('accounts', JSON.stringify(accounts));
         },
         setUser(user: User) {
             this.id = user.id;
@@ -69,6 +70,18 @@ export const useUserStore = defineStore({
             this.email = user.email;
             this.phoneNumber = user.phoneNumber;
             this.role = user.role;
-        }
+            localStorage.setItem('user', JSON.stringify(user));
+        },
+        logout() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('accounts');
+            this.id = null;
+            this.firstName = null;
+            this.lastName = null;
+            this.email = null;
+            this.phoneNumber = null;
+            this.role = null;
+            this.accounts = null;
+        },
     }
 });

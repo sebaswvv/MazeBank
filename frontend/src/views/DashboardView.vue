@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1>Dashboard</h1>
+        <h1 class="text-center mt-3">Dashboard</h1>
         <h2>{{ email }}</h2>
     </div>
 </template>
@@ -19,7 +19,7 @@ onMounted(async () => {
     await userStore.fetchUser(authenticationStore.userId);
     await userStore.getAccountsOfUser(authenticationStore.userId);
 
-    email.value = userStore.getUser.accounts?.[0].iban;
+    email.value = userStore.getUser.role;
 });
 
 </script>

@@ -4,6 +4,7 @@ import Atm from '../views/AtmView.vue';
 import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
 import Dashboard from '../views/DashboardView.vue';
+import Employee from '../views/EmployeeDashboardView.vue';
 
 // Define routes
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
   { path: '/atm', component: Atm },
   { path: '/login', component: Login },
   { path: '/dashboard', component: Dashboard },
+  { path: '/employee', component: Employee },
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/dashboard', component: Dashboard },
 ];

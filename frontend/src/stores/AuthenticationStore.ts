@@ -3,6 +3,7 @@ import axios from '../utils/axios';
 import Login from '../interfaces/requests/Login';
 import Register from '../interfaces/requests/Register';
 import AuthState from '../interfaces/AuthState';
+import { useUserStore } from './UserStore';
 
 // STORE
 export const useAuthenticationStore = defineStore({
@@ -32,7 +33,7 @@ export const useAuthenticationStore = defineStore({
         });
         if (response.status === 200) {
           this.setUser(response.data.authenticationToken);
-          axios.updateAuthorizationHeader(response.data.jwt);
+          axios.updateAuthorizationHeader(response.data.authenticationToken);
         }
       } catch (error: any) {
         return error;
@@ -41,9 +42,11 @@ export const useAuthenticationStore = defineStore({
     logout() {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
+
       axios.updateAuthorizationHeader('');
       this.userId = null;
       this.isLoggedIn = false;
+      useUserStore().logout();
       this.router.push('/');
     },
     async register(registerRequest: Register) {
