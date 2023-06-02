@@ -23,11 +23,6 @@
         <h1>Login</h1>
         <input type="email" placeholder="Email" v-model="email">
         <input type="password" placeholder="Password" v-model="password">
-        <div class="content">
-          <div class="pass-link">
-            <a href="#">Wachtwoord vergeten?</a>
-          </div>
-        </div>
         <p id="error">{{ errorMessage }}</p>
         <button @click="handleLoginClick">Login</button>
       </div>
