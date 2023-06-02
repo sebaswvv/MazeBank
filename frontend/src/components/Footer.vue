@@ -3,7 +3,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-6 text-center text-md-start">
-                    <h5 class="mb-0">&copy; {{ getCurrentYear }} MazeBank. All Rights Reserved.</h5>
+                    <h5 class="mb-0">&copy; {{ getCurrentYear }} MazeBank: 100% legit - no heists required</h5>
                 </div>
                 <div class="col-md-6 text-center text-md-end">
                     <ul class="list-inline mb-0">
