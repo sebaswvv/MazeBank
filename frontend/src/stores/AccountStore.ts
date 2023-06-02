@@ -31,11 +31,17 @@ export const useAccountStore = defineStore({
         console.error(error);
       }
     },
-    async fetchTransactions(id: number) {
+    async fetchTransactions() {
       try {
-        const response = await axios.get(`/transactions/account/${id}`);
+        // const response = await axios.get(
+        //   `/transactions/account/${this.account?.id}`
+        // );
+
+        // for testing
+        const response = await axios.get(`/accounts/2/transactions`);
         if (response.status === 200) {
           this.transactions = response.data;
+          console.log(this.transactions);
         }
       } catch (error: any) {
         console.error(error);
