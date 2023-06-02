@@ -14,6 +14,7 @@ import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.UserResponse;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -443,7 +444,7 @@ class UserControllerTest extends BaseControllerTest {
     // get transactions by user id
     @Test
     void getTransactionsByUserIdShouldGive200AndObject() throws Exception {
-        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenReturn(transactionResponses);
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null, null, null)).thenReturn(transactionResponses);
 
         mockMvc.perform(get("/users/1/transactions")
                 .header("Authorization", "Bearer " + customerToken)
@@ -464,7 +465,7 @@ class UserControllerTest extends BaseControllerTest {
 
     @Test
     void getTransactionsByUserIdShouldThrow401WhenUserIsNotEmployeeAndNotOwner() throws Exception {
-        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenThrow(new UnauthorizedTransactionAccessException("user not allowed to access transactions of user with id: 1"));
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null, null, null)).thenThrow(new UnauthorizedTransactionAccessException("user not allowed to access transactions of user with id: 1"));
 
         mockMvc.perform(get("/users/1/transactions")
                 .header("Authorization", "Bearer " + customerToken)
@@ -476,7 +477,7 @@ class UserControllerTest extends BaseControllerTest {
 
     @Test
     void getTransactionsByUserIdShouldGive200AndEmptyArray() throws Exception {
-        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null)).thenReturn(new ArrayList<>());
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null, null, null)).thenReturn(new ArrayList<>());
 
         mockMvc.perform(get("/users/1/transactions")
                 .header("Authorization", "Bearer " + customerToken)
