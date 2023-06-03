@@ -37,7 +37,7 @@ export const useAtmStore = defineStore({
         amount: amount,
       });
 
-      //
+      // pass the error message or redirect to the next scene
       if (response.status != 201) throw new Error(response.data.message);
       else this.sceneState = AtmScenes.SELECT;
     },
