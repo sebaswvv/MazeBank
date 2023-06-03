@@ -68,12 +68,6 @@ public class TransactionServiceJpa {
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
-        // update account balance sender and receiver
-        senderAccount.setBalance(senderAccount.getBalance() - transactionRequest.getAmount());
-        accountRepository.save(senderAccount);
-        receiverAccount.setBalance(receiverAccount.getBalance() + transactionRequest.getAmount());
-        accountRepository.save(receiverAccount);
-
         // create transaction from the transaction request
         Transaction transaction = Transaction.builder()
             .amount(transactionRequest.getAmount())
@@ -86,6 +80,12 @@ public class TransactionServiceJpa {
             .build();
 
         validateRegularTransaction(transaction);
+
+        // update account balance sender and receiver
+        senderAccount.setBalance(senderAccount.getBalance() - transactionRequest.getAmount());
+        accountRepository.save(senderAccount);
+        receiverAccount.setBalance(receiverAccount.getBalance() + transactionRequest.getAmount());
+        accountRepository.save(receiverAccount);
 
         return performTransaction(transaction);
     }
@@ -146,9 +146,6 @@ public class TransactionServiceJpa {
             account.setBalance(account.getBalance() + amount);
         }
 
-        // save account's new balance
-        accountRepository.save(account);
-
         // create transaction of type deposit and save it
         Transaction transaction = Transaction.builder()
             .amount(amount)
@@ -161,6 +158,9 @@ public class TransactionServiceJpa {
 
         // validate transaction
         validateAtmTransaction(transaction);
+
+        // save account's new balance
+        accountRepository.save(account);
 
         return performTransaction(transaction);
     }

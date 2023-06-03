@@ -1,38 +1,26 @@
 package w.mazebank.cucumberglue;
 
-import com.jayway.jsonpath.JsonPath;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
-import w.mazebank.models.responses.TransactionResponse;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.junit.Assert;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import w.mazebank.enums.AccountType;
 import w.mazebank.models.Account;
-import w.mazebank.models.User;
 import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.utils.IbanGenerator;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TransactionsStepDefinitions extends BaseStepDefinitions{
-
+public class TransactionsStepDefinitions extends BaseStepDefinitions {
     private Account savingsAccount;
+    private Account checkingsAccount;
 
     @When("I call the transactions endpoint with a {string} and {string} parameter")
     public void iCallTheTransactionsEndpointWithStartDateAndEndDateParameter(String startDate, String endDate) {
@@ -115,11 +103,11 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
 
         // create a savings account
         savingsAccount = Account.builder()
-                .id(1)
-                .iban(IbanGenerator.generate())
-                .accountType(AccountType.SAVINGS)
-                .balance(1000.00)
-                .build();
+            .id(1)
+            .iban(IbanGenerator.generate())
+            .accountType(AccountType.SAVINGS)
+            .balance(1000.00)
+            .build();
 
         // add the savings account to the customer
         customer.setAccounts(List.of(savingsAccount));
@@ -129,10 +117,10 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
     public void iMakeATransactionFromMySavingsAccountToCustomer(int receivingUserId) {
         // create body for transactionRequest
         TransactionRequest transactionRequest = TransactionRequest.builder()
-                .amount(100.00)
-                .receiverIban("NL76INHO0493458014")
-                .senderIban("NL76INHO0493458015")
-                .build();
+            .amount(100.00)
+            .receiverIban("NL76INHO0493458014")
+            .senderIban("NL76INHO0493458015")
+            .build();
 
         httpHeaders.clear();
 
@@ -143,7 +131,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         // Create the HTTP entity with the request body and headers
         HttpEntity<Object> requestEntity = new HttpEntity<>(transactionRequest, httpHeaders);
 
-        try{
+        try {
             // Send the request
             lastResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/transactions",
@@ -151,18 +139,16 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
                 requestEntity,
                 String.class
             );
-        }
-        catch (HttpClientErrorException.BadRequest ex) {
+        } catch (HttpClientErrorException.BadRequest ex) {
             // pass the response to the lastResponse variable
             lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getRawStatusCode());
         }
-
     }
 
     @Then("response status code is {int} with message {string}")
     public void responseStatusCodeIsWithMessage(int statusCode, String errorMessage) {
         // Assert the response status code
-        assertEquals(statusCode, lastResponse.getStatusCodeValue());
+        assertEquals(statusCode, lastResponse.getStatusCode().value());
 
         // Assert the response body
         assertTrue(lastResponse.getBody().contains(errorMessage));
@@ -186,7 +172,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
         // Create the HTTP entity with the request body and headers
         HttpEntity<Object> requestEntity = new HttpEntity<>(transactionRequest, httpHeaders);
 
-        try{
+        try {
             // Send the request
             lastResponse = restTemplate.exchange(
                 "http://localhost:" + port + "/transactions",
@@ -194,8 +180,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
                 requestEntity,
                 String.class
             );
-        }
-        catch (HttpClientErrorException.BadRequest ex) {
+        } catch (HttpClientErrorException.BadRequest ex) {
             // pass the response to the lastResponse variable
             lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getRawStatusCode());
         }
@@ -333,10 +318,59 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
     }
 
 
-
     @Then("the result is a successful transaction with given fields")
     public void theResultIsASuccessfulTransactionWithGivenFields() {
         assert lastResponse.getBody() != null;
         System.out.println(lastResponse.getBody());
+    }
+
+    @And("I have an account with iban {string} and balance {double} and absoluteLimit {double}")
+    public void iHaveAnAccountWithIbanAndBalanceAndAbsoluteLimit(String iban, double balance, double absoluteLimit) {
+        checkingsAccount = Account.builder()
+            .id(1)
+            .iban(iban)
+            .accountType(AccountType.CHECKING)
+            .balance(balance)
+            .absoluteLimit(absoluteLimit)
+            .isActive(true)
+            .build();
+        customer.setAccounts(List.of(checkingsAccount));
+    }
+
+    @And("I have a user with transactionLimit {double}")
+    public void iHaveAUserWithTransactionLimit(double transactionLimit) {
+        customer.setTransactionLimit(transactionLimit);
+    }
+
+    @When("I make a transaction from account with iban {string} to account with iban {string} with amount {double}")
+    public void iMakeATransactionFromAccountToAccountWithAmount(String senderIban, String receiverIban, double amount) {
+        token = jwtService.generateToken(customer);
+
+        TransactionRequest transactionRequest = TransactionRequest.builder()
+            .senderIban(senderIban)
+            .receiverIban(receiverIban)
+            .amount(amount)
+            .build();
+
+        System.out.println(customer.getTransactionLimit());
+
+        // call the endpoint /accounts with a POST request
+        httpHeaders.clear();
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(transactionRequest, httpHeaders);
+
+        try {
+            lastResponse = restTemplate.exchange(
+                "http://localhost:" + port + "/transactions",
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+            );
+        } catch (HttpClientErrorException.BadRequest ex) {
+            // pass the response to the lastResponse variable
+            lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getStatusCode().value());
+        }
     }
 }
