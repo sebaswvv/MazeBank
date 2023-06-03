@@ -11,12 +11,15 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.HttpClientErrorException;
 import w.mazebank.models.requests.UserPatchRequest;
 
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UsersStepDefinitions extends BaseStepDefinitions {
     @Given("^I have a valid token for role \"([^\"]*)\"$")
@@ -93,12 +96,17 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
         HttpEntity<Object> requestEntity = new HttpEntity<>(null, httpHeaders);
 
         // Send the request
-        lastResponse = restTemplate.exchange(
-            "http://localhost:" + port + endpoint,
-            HttpMethod.GET, // Adjust the HTTP method if necessary
-            requestEntity,
-            String.class
-        );
+        try {
+            lastResponse = restTemplate.exchange(
+                "http://localhost:" + port + endpoint,
+                HttpMethod.GET, // Adjust the HTTP method if necessary
+                requestEntity,
+                String.class
+            );
+        } catch (HttpClientErrorException ex) {
+            // pass the response to the lastResponse variable
+            lastResponse = new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getResponseHeaders(), ex.getStatusCode().value());
+        }
     }
 
     @Then("the result is a user with a total balance of {double}, a savings balance of {double}, and a checking balance of {double}")
@@ -171,5 +179,14 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
         assert lastResponse.getBody() != null;
         List<Object> transactions = JsonPath.read(lastResponse.getBody(), "$");
         assertEquals(size, transactions.size());
+    }
+
+    @Then("the response status code is {int} with message {string}")
+    public void responseStatusCodeIsWithMessage(int statusCode, String errorMessage) {
+        // Assert the response status code
+        assertEquals(statusCode, lastResponse.getStatusCode().value());
+
+        // Assert the response body
+        assertTrue(lastResponse.getBody().contains(errorMessage));
     }
 }

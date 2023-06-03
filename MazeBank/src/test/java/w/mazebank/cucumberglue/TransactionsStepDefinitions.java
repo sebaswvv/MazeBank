@@ -148,7 +148,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
     @Then("response status code is {int} with message {string}")
     public void responseStatusCodeIsWithMessage(int statusCode, String errorMessage) {
         // Assert the response status code
-        assertEquals(statusCode, lastResponse.getStatusCodeValue());
+        assertEquals(statusCode, lastResponse.getStatusCode().value());
 
         // Assert the response body
         assertTrue(lastResponse.getBody().contains(errorMessage));

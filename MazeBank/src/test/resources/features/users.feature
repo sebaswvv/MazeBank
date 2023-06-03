@@ -39,3 +39,13 @@ Feature: Everything Users
         Then the result is a list of accounts of size 2
         When I call the users endpoint "/users/3/transactions" with a get request
         Then the result is a list of transactions of size 3
+
+    Scenario: As a bank, I want to make sure that other customers cannot access a customer’s account details, transaction history, and user details.
+        Given I have a valid token for role "customer"
+        When I call the users endpoint "/users/2" with a get request
+        # this message is currently returned when the performing user is not authorized to access this user
+        Then the response status code is 404 with message "user not found with id: 2"
+        When I call the users endpoint "/users/2/accounts" with a get request
+        Then the response status code is 403 with message "user not allowed to access accounts of user with id: 2"
+        When I call the users endpoint "/users/2/transactions" with a get request
+        Then the response status code is 403 with message "user not allowed to access transactions of user with id: 2"
