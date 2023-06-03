@@ -1,6 +1,6 @@
 package w.mazebank.models.requests;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class AccountPatchRequest {
-    @Min(value = 0, message = "Absolute limit must be greater than 0")
+    @Max(value = 0, message = "Absolute limit must be less than or equal to 0")
     private Double absoluteLimit;
 }

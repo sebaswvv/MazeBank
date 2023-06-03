@@ -18,7 +18,7 @@ public class AccountsStepDefinition extends BaseStepDefinitions {
         accountRequest.setUserId(userId);
         accountRequest.setAccountType(AccountType.CHECKING);
         accountRequest.setActive(true);
-        accountRequest.setAbsoluteLimit(1000);
+        accountRequest.setAbsoluteLimit(-5000);
 
         // call the endpoint /accounts with a POST request
         httpHeaders.clear();
@@ -34,7 +34,6 @@ public class AccountsStepDefinition extends BaseStepDefinitions {
             requestEntity,
             String.class
         );
-
     }
 
     @Then("I should get a {int} status code")

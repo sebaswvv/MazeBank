@@ -2,7 +2,7 @@ package w.mazebank.models.requests;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +26,6 @@ public class AccountRequest {
     private boolean isActive; // will be named "active" in json request body
 
     @NotNull(message = "Absolute limit is mandatory")
-    @Min(value = 0, message = "Absolute limit must be greater than 0")
+    @Max(value = 0, message = "Absolute limit must be less than or equal to 0")
     private double absoluteLimit;
 }
