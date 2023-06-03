@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AccountPatchRequestTest {
 
@@ -24,9 +24,9 @@ public class AccountPatchRequestTest {
     @Test
     void testAbsoluteLimit() {
         AccountPatchRequest accountPatchRequest = new AccountPatchRequest();
-        accountPatchRequest.setAbsoluteLimit(-1.0);
+        accountPatchRequest.setAbsoluteLimit(1000.0);
         Set<ConstraintViolation<AccountPatchRequest>> violations = validator.validate(accountPatchRequest);
         assertEquals(1, violations.size());
-        assertEquals("Absolute limit must be greater than 0", violations.iterator().next().getMessage());
+        assertEquals("Absolute limit must be less than or equal to 0", violations.iterator().next().getMessage());
     }
 }

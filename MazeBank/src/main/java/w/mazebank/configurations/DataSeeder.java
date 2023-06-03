@@ -15,7 +15,6 @@ import w.mazebank.models.User;
 import w.mazebank.services.AccountServiceJpa;
 import w.mazebank.services.TransactionServiceJpa;
 import w.mazebank.services.UserServiceJpa;
-import w.mazebank.utils.IbanGenerator;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -61,11 +60,11 @@ public class DataSeeder implements ApplicationRunner {
         accountService.addAccount(account2);
 
         // Create some sample accounts for user2
-        Account account3 = new Account(4, "NL76INHO0493458018", AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), 1500.0, null, null);
-        Account account4 = new Account(5, "NL29INHO0165148974", AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), 5000.0, null, null);
+        Account account3 = new Account(4, "NL76INHO0493458018", AccountType.CHECKING, 2000.0, user2, true, LocalDateTime.now(), -1500.0, null, null);
+        Account account4 = new Account(5, "NL29INHO0165148974", AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), -5000.0, null, null);
 
-        Account account5 = new Account(6, "NL45INHO0328598536", AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
-        Account account6 = new Account(6, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), 1500.0, null, null);
+        Account account5 = new Account(6, "NL45INHO0328598536", AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
+        Account account6 = new Account(6, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
 
         accountService.addAccount(account3);
         accountService.addAccount(account4);

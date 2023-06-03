@@ -220,7 +220,7 @@ class AccountServiceJpaTest {
             .userId(2L)
             .accountType(AccountType.CHECKING)
             .isActive(true)
-            .absoluteLimit(5000.00)
+            .absoluteLimit(0.0)
             .build();
 
         // Call the createAccount method
@@ -250,7 +250,7 @@ class AccountServiceJpaTest {
             .user(users.get(0))
             .accountType(AccountType.CHECKING)
             .isActive(true)
-            .absoluteLimit(5000.00)
+            .absoluteLimit(0.0)
             .balance(1000.00)
             .build());
 
@@ -259,7 +259,7 @@ class AccountServiceJpaTest {
             .user(users.get(0))
             .accountType(AccountType.SAVINGS)
             .isActive(true)
-            .absoluteLimit(5000.00)
+            .absoluteLimit(0.0)
             .balance(1000.00)
             .build());
 
@@ -274,7 +274,7 @@ class AccountServiceJpaTest {
             .userId(1L)
             .accountType(AccountType.CHECKING)
             .isActive(true)
-            .absoluteLimit(5000.00)
+            .absoluteLimit(0.0)
             .build();
 
         // Call the createAccount method
@@ -302,7 +302,7 @@ class AccountServiceJpaTest {
             .userId(1L)
             .accountType(AccountType.CHECKING)
             .isActive(true)
-            .absoluteLimit(5000.00)
+            .absoluteLimit(0.0)
             .build();
 
         // Call the createAccount method
