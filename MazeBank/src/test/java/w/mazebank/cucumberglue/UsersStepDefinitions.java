@@ -14,6 +14,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import w.mazebank.models.requests.UserPatchRequest;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class UsersStepDefinitions extends BaseStepDefinitions {
@@ -155,5 +157,19 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
     @Then("the result is a user with a transactionLimit of {double}")
     public void theResultIsAUserWithATransactionLimitOf(double transactionLimit) {
         Assertions.assertEquals(transactionLimit, JsonPath.read(lastResponse.getBody(), "$.transactionLimit"));
+    }
+
+    @Then("the result is a list of accounts of size {int}")
+    public void theResultIsAListOfAccountsOfSize(int size) {
+        assert lastResponse.getBody() != null;
+        List<Object> accounts = JsonPath.read(lastResponse.getBody(), "$");
+        assertEquals(size, accounts.size());
+    }
+
+    @Then("the result is a list of transactions of size {int}")
+    public void theResultIsAListOfTransactionsOfSize(int size) {
+        assert lastResponse.getBody() != null;
+        List<Object> transactions = JsonPath.read(lastResponse.getBody(), "$");
+        assertEquals(size, transactions.size());
     }
 }

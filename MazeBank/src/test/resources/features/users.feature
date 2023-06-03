@@ -30,3 +30,12 @@ Feature: Everything Users
         Given I have a valid token for role "employee"
         When I call the users endpoint "/users/3" with a patch request and a transactionLimit of 500.0
         Then the result is a user with a transactionLimit of 500.0
+
+    Scenario: As a customer, I want to be able to access my account details, transaction history, and user details.
+        Given I have a valid token for role "customer"
+        When I call the users endpoint "/users/3" with a get request
+        Then the result is a user with a email of "user2@example.com", a firstname of "Jane", a lastname of "Smith", a dayLimit of 5000.0, and a role of "CUSTOMER", amountRemaining of 5000.0
+        When I call the users endpoint "/users/3/accounts" with a get request
+        Then the result is a list of accounts of size 2
+        When I call the users endpoint "/users/3/transactions" with a get request
+        Then the result is a list of transactions of size 3
