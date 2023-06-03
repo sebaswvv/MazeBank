@@ -8,10 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 import w.mazebank.enums.AccountType;
-import w.mazebank.exceptions.AccountCreationLimitReachedException;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.AccountLockOrUnlockStatusException;
-import w.mazebank.exceptions.UserNotFoundException;
+import w.mazebank.enums.RoleType;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.AccountRequest;
@@ -21,6 +19,7 @@ import w.mazebank.repositories.AccountRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,35 +44,35 @@ class AccountServiceJpaTest {
         // create two users
         users = new ArrayList<>();
         users.add(User.builder()
-                .id(2L)
-                .firstName("John")
-                .lastName("Doe")
-                .accounts(new ArrayList<>())
-                .build());
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .accounts(new ArrayList<>())
+            .build());
         users.add(User.builder()
-                .id(3L)
-                .firstName("Jane")
-                .lastName("Doe")
-                .accounts(new ArrayList<>())
-                .build()
+            .id(3L)
+            .firstName("Jane")
+            .lastName("Doe")
+            .accounts(new ArrayList<>())
+            .build()
         );
 
         // create two accounts
         accounts = new ArrayList<>();
         accounts.add(Account.builder()
-                .id(1L)
-                .accountType(AccountType.CHECKING)
-                .iban("NL01MAZE0000000002")
-                .balance(1000.00)
-                .user(users.get(0))
-                .build());
+            .id(1L)
+            .accountType(AccountType.CHECKING)
+            .iban("NL01MAZE0000000002")
+            .balance(1000.00)
+            .user(users.get(0))
+            .build());
         accounts.add(Account.builder()
-                .id(2L)
-                .accountType(AccountType.SAVINGS)
-                .iban("NL01MAZE0000000003")
-                .balance(2000.00)
-                .user(users.get(1))
-                .build()
+            .id(2L)
+            .accountType(AccountType.SAVINGS)
+            .iban("NL01MAZE0000000003")
+            .balance(2000.00)
+            .user(users.get(1))
+            .build()
         );
     }
 
@@ -102,7 +101,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    void getAllAccountsButNoneFound(){
+    void getAllAccountsButNoneFound() {
         // clear the accounts list
         accounts.clear();
 
@@ -150,7 +149,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // Happy flow
+        // Happy flow
     void unlockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
@@ -164,12 +163,12 @@ class AccountServiceJpaTest {
         assertEquals("Doe", result.getUser().getLastName());
         assertTrue(result.isActive());
 
-       // check if repository was called
+        // check if repository was called
         verify(accountRepository, times(1)).save(any(Account.class));
     }
 
     @Test
-    // Account already unlocked
+        // Account already unlocked
     void unlockAccountAlreadyUnlocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
@@ -193,7 +192,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // Account not found
+        // Account not found
     void unlockAccountNotFound() {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.empty());
@@ -321,7 +320,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // happy flow
+        // happy flow
     void lockAccount() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
@@ -343,7 +342,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // Account already locked
+        // Account already locked
     void lockAccountAlreadyLocked() throws AccountNotFoundException, AccountLockOrUnlockStatusException {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.ofNullable(accounts.get(0)));
@@ -358,7 +357,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // Account not found
+        // Account not found
     void lockAccountNotFound() {
         // mock the findById method and return an account
         when(accountRepository.findById(2L)).thenReturn(java.util.Optional.empty());
@@ -373,7 +372,7 @@ class AccountServiceJpaTest {
     }
 
     @Test
-    // happy flow
+        // happy flow
     void getAccountsByOneName() {
         // mock the findByName method and return a list of accounts
         when(accountRepository.findAccountsByOneName("John")).thenReturn(accounts);
@@ -414,5 +413,91 @@ class AccountServiceJpaTest {
 
         // test results
         assertEquals(0, result.size());
+    }
+
+    @Test
+    void getAccountAndValidateHappyFlowCustomer() throws AccountNotFoundException {
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .accounts(new ArrayList<>())
+            .role(RoleType.CUSTOMER)
+            .build();
+
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(Optional.ofNullable(accounts.get(0)));
+
+        // call the method
+        Account result = accountServiceJpa.getAccountAndValidate(1L, user);
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.getIban());
+        assertEquals(AccountType.CHECKING, result.getAccountType());
+        assertEquals(2L, result.getUser().getId());
+        assertEquals("John", result.getUser().getFirstName());
+        assertEquals("Doe", result.getUser().getLastName());
+    }
+
+    @Test
+    void getAccountAndValidateHappyFlowEmployee() throws AccountNotFoundException {
+        User user = User.builder()
+            .id(4L)
+            .firstName("Billy")
+            .lastName("Bob")
+            .accounts(new ArrayList<>())
+            .role(RoleType.EMPLOYEE)
+            .build();
+
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(Optional.ofNullable(accounts.get(0)));
+
+        // call the method
+        Account result = accountServiceJpa.getAccountAndValidate(1L, user);
+
+        // test results
+        assertEquals("NL01MAZE0000000002", result.getIban());
+        assertEquals(AccountType.CHECKING, result.getAccountType());
+        assertEquals(2L, result.getUser().getId());
+        assertEquals("John", result.getUser().getFirstName());
+        assertEquals("Doe", result.getUser().getLastName());
+    }
+
+    @Test
+    void getAccountAndValidateThrowsAccountNotFound() {
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .accounts(new ArrayList<>())
+            .role(RoleType.CUSTOMER)
+            .build();
+
+        // mock the findById method and return null
+        when(accountRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // test results
+        assertThrows(AccountNotFoundException.class, () -> {
+            accountServiceJpa.getAccountAndValidate(1L, user);
+        });
+    }
+
+    @Test
+    void getAccountAndValidateThrowsUnauthorizedAccountAccess() {
+        User user = User.builder()
+            .id(1L)
+            .firstName("John")
+            .lastName("Doe")
+            .accounts(new ArrayList<>())
+            .role(RoleType.CUSTOMER)
+            .build();
+
+        // mock the findById method and return an account
+        when(accountRepository.findById(1L)).thenReturn(Optional.ofNullable(accounts.get(0)));
+
+        // test results
+        assertThrows(UnauthorizedAccountAccessException.class, () -> {
+            accountServiceJpa.getAccountAndValidate(1L, user);
+        });
     }
 }
