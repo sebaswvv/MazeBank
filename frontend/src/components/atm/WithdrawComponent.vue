@@ -45,7 +45,6 @@
                     </div>
                 </div>
 
-
                 <!-- Error message -->
                 <div v-if="errorMessage" class="alert alert-danger mt-3">
                     {{ errorMessage }}
