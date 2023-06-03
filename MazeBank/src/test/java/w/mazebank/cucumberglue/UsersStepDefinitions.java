@@ -9,28 +9,16 @@ import io.cucumber.java.en.When;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.jupiter.api.Assertions;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.client.RestTemplate;
-import w.mazebank.enums.RoleType;
-import w.mazebank.models.User;
 import w.mazebank.models.requests.UserPatchRequest;
-import w.mazebank.models.responses.TransactionResponse;
-import w.mazebank.services.JwtService;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class UsersStepDefinitions extends BaseStepDefinitions {
     @Given("^I have a valid token for role \"([^\"]*)\"$")
-    public void Test(String role){
+    public void Test(String role) {
         switch (role) {
             case "customer" -> token = jwtService.generateToken(customer);
             case "employee" -> token = jwtService.generateToken(employee);
@@ -86,7 +74,7 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
             String.class
         );
     }
-  
+
     @Then("the result is a user with a daylimit of {double}")
     public void theResultIsAUserWithADaylimitOf(double expectedDayLimit) throws JsonProcessingException {
         assert lastResponse.getBody() != null;
@@ -140,4 +128,32 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
         assertEquals(amountRemaining, amountRemainingResult);
     }
 
+    @When("I call the users endpoint {string} with a patch request and a transactionLimit of {double}")
+    public void iCallTheUsersEndpointWithAPatchRequestAndATransactionLimitOf(String endpoint, double transactionLimit) {
+        token = jwtService.generateToken(employee);
+
+        UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setTransactionLimit(transactionLimit);
+
+        httpHeaders.clear();
+        httpHeaders.add("Authorization", "Bearer " + token);
+
+        // Create the HTTP entity with the request body and headers
+        HttpEntity<Object> requestEntity = new HttpEntity<>(userPatchRequest, httpHeaders);
+
+        // Send the request
+        HttpClient client = HttpClientBuilder.create().build();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
+        lastResponse = restTemplate.exchange(
+            "http://localhost:" + port + endpoint,
+            HttpMethod.PATCH,
+            requestEntity,
+            String.class
+        );
+    }
+
+    @Then("the result is a user with a transactionLimit of {double}")
+    public void theResultIsAUserWithATransactionLimitOf(double transactionLimit) {
+        Assertions.assertEquals(transactionLimit, JsonPath.read(lastResponse.getBody(), "$.transactionLimit"));
+    }
 }
