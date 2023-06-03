@@ -8,6 +8,7 @@ import w.mazebank.models.responses.TransactionResponse;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import io.cucumber.java.en.And;
@@ -327,6 +328,14 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions{
 
     @Then("I should see a list of transactions with balances greater than given amount")
     public void iShouldSeeAListOfTransactionsWithBalancesGreaterThanGivenAmount() {
+        assert lastResponse.getBody() != null;
+        System.out.println(lastResponse.getBody());
+    }
+
+
+
+    @Then("the result is a successful transaction with given fields")
+    public void theResultIsASuccessfulTransactionWithGivenFields() {
         assert lastResponse.getBody() != null;
         System.out.println(lastResponse.getBody());
     }

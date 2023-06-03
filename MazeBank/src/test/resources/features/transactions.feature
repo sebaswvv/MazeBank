@@ -40,3 +40,8 @@ Feature: Everything Transactions
         Given I have a valid token for role "employee"
         When I make a transaction from account 1 to account 4
         Then the result is a 201 status code. and a transaction with id 4, amount 100.00, from account with iban "NL76INHO0493458014" to account with iban "NL76INHO0493458018"
+
+    Scenario: Ensure that a transaction contains: timestamp, account from, account to, amount, user performing
+        Given I have a valid token for role "employee"
+        When I make a transaction from account 1 to account 4
+        Then the result is a successful transaction with given fields
