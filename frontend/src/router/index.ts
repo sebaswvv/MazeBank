@@ -5,6 +5,7 @@ import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
 import Dashboard from '../views/DashboardView.vue';
 import Employee from '../views/EmployeeDashboardView.vue';
+import AllUsersView from '../views/AllUsersView.vue';
 
 // Define routes
 const routes = [
@@ -16,6 +17,7 @@ const routes = [
   { path: '/employee', component: Employee },
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/dashboard', component: Dashboard },
+  { path: '/users', component: AllUsersView, meta: { requiresAdmin: true } },
 ];
 
 const router = createRouter({
