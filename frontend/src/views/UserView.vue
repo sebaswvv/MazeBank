@@ -54,7 +54,8 @@
                     </div>
                     <div class="row mt-3">
                         <div class="col">
-                            <button class="btn-secondary" :disabled="user.accounts?.length != 0">Gebruiker
+                            <button class="btn-secondary" :disabled="user.accounts?.length != 0"
+                                @click="handleDeleteUser">Gebruiker
                                 verwijderen</button>
                         </div>
                     </div>
@@ -81,6 +82,7 @@ import User from '../interfaces/User';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import { RoleType } from '../enums/RoleType';
+import axios from 'axios';
 
 const userStore = useUserStore();
 const authenticationStore = useAuthenticationStore();
@@ -159,6 +161,20 @@ const handleClickOnAccount = async (id: any) => {
     await accountStore.fetchAccount(id);
     router.push('/account');
 };
+
+async function handleDeleteUser() {
+    try {
+        // prompt the user if he is sure
+        const result = confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?');
+        if (!result) return;
+
+        await userStore.deleteUser();
+        router.push('/dashboard');
+    }
+    catch (error) {
+        message.value = 'Error occurred while deleting user data.';
+    }
+}
 </script>
 
 <style scoped>

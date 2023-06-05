@@ -126,7 +126,18 @@ export const useUserStore = defineStore({
         console.error(error);
       }
     },
-    setUser(user: User) {
+    async deleteUser() {
+      try {
+        const response = await axios.delete(`/users/${this.user?.id}`);
+        if (response.status === 200) {
+          this.setUser(null);
+          return true;
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    setUser(user: User | null) {
       this.user = user;
     },
   },
