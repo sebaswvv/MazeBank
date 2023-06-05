@@ -1,0 +1,109 @@
+<template>
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="col-md-8 justify-content-center align-items-center">
+                <div class="col d-flex justify-content-center align-items-center mt-5">
+                    <h3>Zoek op gebruikers (voornaam, achternaam of ID)</h3>
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Zoek op ID, voornaam of achternaam"
+                        v-model="searchQuery" @input="performSearch" />
+                </div>
+            </div>
+        </div>
+        <div class="row d-flex justify-content-center align-items-center mt-5">
+            <div class="col-md-8 d-flex justify-content-center align-items-center">
+                <div class="all-users bg-light">
+                    <template v-if="filteredUsers.length > 0">
+                        <SingleUserPreview v-for="user in filteredUsers" :key="user.id" :user="user" />
+                    </template>
+                    <template v-else>
+                        <p>Geen gebruikers gevonden met deze zoekopdracht.</p>
+                    </template>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-md-8">
+                    <input type="checkbox" class="form-check-input" id="withoutAccounts" v-model="withoutAccounts"
+                        @change="fetchUsers" />
+                    <label class="form-check-label" for="withoutAccounts">Gebruikers zonder rekening(en)</label>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</template>
+
+<script setup lang="ts">
+import SingleUserPreview from '../components/SingleUserPreview.vue';
+import { ref, onMounted, computed, watch } from 'vue';
+import axios from './../utils/axios';
+
+const users = ref([]);
+const searchQuery = ref('');
+const offset = ref(0);
+const limit = ref(10);
+const sort = ref('asc');
+const withoutAccounts = ref(false);
+const fetchUsers = async () => {
+    const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}`);
+    users.value = res.data;
+    console.log(res.data);
+};
+
+async function fetchUsersWithoutAccounts() {
+    const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}&withoutAccounts=true`);
+    users.value = res.data;
+}
+
+
+watch(withoutAccounts, async (newValue) => {
+    if (newValue) {
+        await fetchUsersWithoutAccounts();
+    } else {
+        await fetchUsers();
+    }
+});
+
+const performSearch = (query) => {
+    const lowerCaseQuery = query.toLowerCase();
+    filteredUsers.value = users.value.filter(
+        user =>
+            user.firstName.toLowerCase().includes(lowerCaseQuery) ||
+            user.lastName.toLowerCase().includes(lowerCaseQuery) ||
+            user.id.toString().includes(lowerCaseQuery)
+    );
+};
+
+const filteredUsers = computed(() => {
+    const lowerCaseQuery = searchQuery.value.toLowerCase();
+    if (lowerCaseQuery === '') {
+        return users.value;
+    } else {
+        return users.value.filter(user =>
+            user.firstName.toLowerCase().includes(lowerCaseQuery) ||
+            user.lastName.toLowerCase().includes(lowerCaseQuery) ||
+            user.id.toString().includes(lowerCaseQuery)
+        );
+    }
+});
+
+watch(searchQuery, (newValue) => {
+    performSearch(newValue);
+});
+
+onMounted(() => {
+    fetchUsers();
+    console.log(users.value);
+});
+</script>
+
+<style scoped>
+.all-users {
+    width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+}
+</style>
