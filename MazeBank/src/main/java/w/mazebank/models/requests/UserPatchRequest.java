@@ -25,6 +25,12 @@ public class UserPatchRequest {
     private String lastName;
 
     @Nullable
+    private Double dayLimit;
+
+    @Nullable
+    private Double transactionLimit;
+
+    @Nullable
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number should be 10 digits")
     private String phoneNumber;
 
