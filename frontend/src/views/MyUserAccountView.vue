@@ -36,6 +36,7 @@ import { useCurrentUserStore } from '../stores/CurrentUserStore.js';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import router from '../router';
 import User from '../interfaces/User';
+import { RoleType } from '../enums/RoleType';
 
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
@@ -48,10 +49,12 @@ const user = reactive<User>({
     lastName: '',
     email: '',
     phoneNumber: '',
-    role: 'CUSTOMER',
+    role: RoleType.CUSTOMER,
     accounts: [],
     dayLimit: 0,
-    transactionLimit: 0
+    transactionLimit: 0,
+    bsn: '',
+    blocked: false,
 });
 
 onMounted(async () => {

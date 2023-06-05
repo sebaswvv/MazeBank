@@ -8,7 +8,7 @@ interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
-  role: string;
+  role: RoleType;
   accounts?: AccountCompact[];
   transactionLimit?: number;
   dayLimit?: number;

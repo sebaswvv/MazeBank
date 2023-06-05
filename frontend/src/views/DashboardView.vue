@@ -31,6 +31,7 @@ import { useAccountStore } from '../stores/AccountStore';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
+import { RoleType } from '../enums/RoleType';
 
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
@@ -42,9 +43,10 @@ const user = reactive<User>({
     lastName: '',
     email: '',
     phoneNumber: '',
-    role: 'CUSTOMER',
+    role: RoleType.CUSTOMER,
     accounts: [],
     blocked: false,
+    bsn: '',
 });
 
 onMounted(async () => {
