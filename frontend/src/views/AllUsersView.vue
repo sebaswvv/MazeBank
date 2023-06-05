@@ -49,6 +49,7 @@ const offset = ref(0);
 const limit = ref(10);
 const sort = ref('asc');
 const withoutAccounts = ref(false);
+const userStore = useUserStore();
 const fetchUsers = async () => {
     const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}`);
     users.value = res.data;
@@ -91,9 +92,9 @@ const filteredUsers = computed(() => {
     }
 });
 
-function handleUserClick(userId) {
-    useUserStore().fetchUser(userId);
-    localStorage.setItem('checkUserId', userId);
+function handleUserClick(userId: number) {
+    userStore.fetchUser(userId);
+    localStorage.setItem('checkUserId', userId.toString());
     router.push('/user');
 }
 
