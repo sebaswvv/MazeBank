@@ -47,8 +47,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
         accountRepository.save(account);
     }
 
-    public List<AccountResponse> getAllAccounts(int offset, int limit, String sort, String search) {
-        List<Account> accounts = findAllPaginationAndSort(offset, limit, sort, search, accountRepository);
+    public List<AccountResponse> getAllAccounts(int pageNumber, int pageSize, String sort, String search) {
+        List<Account> accounts = findAllPaginationAndSort(pageNumber, pageSize, sort, search, accountRepository);
 
         // parse users to user responses
         List<AccountResponse> accountResponses = new ArrayList<>();

@@ -33,12 +33,12 @@ public class AccountController {
     @GetMapping
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<Object> getAllAccounts(
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int pageNumber,
+        @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String search
     ) {
-        List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(offset, limit, sort, search);
+        List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(pageNumber, pageSize, sort, search);
         return ResponseEntity.ok(accounts);
     }
 
