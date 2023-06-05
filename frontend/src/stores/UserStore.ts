@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from '../utils/axios';
 import User from '../interfaces/User';
-import AccountCompact from '../interfaces/User';
+// import AccountCompact from '../interfaces/User';
 
 // STORE
 export const useUserStore = defineStore({
