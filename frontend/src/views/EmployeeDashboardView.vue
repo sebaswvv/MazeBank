@@ -1,6 +1,7 @@
 <template>
     <div>
-        <h1 style="text-align: center;">Medewerker overzicht</h1>
+        <h1 class="mt-5" style="text-align: center;">Medewerker overzicht</h1>
+        <p class="text-center mt-2">Klik op één van de opties om verder te gaan</p>
         <div class="mt-5 button-container">
             <div>
                 <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('users')">
@@ -19,7 +20,7 @@
                 </button>
             </div>
             <div>
-                <button class="btn btn-secondary btn-lg btn-block custom-button">
+                <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('transaction-employee')">
                     <span class="button-text">Doe een transactie</span>
                     <span class="button-icon">
                         <font-awesome-icon icon="fa-solid fa-money-bill-transfer" />
@@ -44,13 +45,11 @@ function handleNav(url: string) {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 380px;
-    /* Adjust the height as desired */
+    height: 300px;
 }
 
 .button-text {
     margin-bottom: 5px;
-    /* Adjust the margin as needed */
 }
 
 .button-container {
