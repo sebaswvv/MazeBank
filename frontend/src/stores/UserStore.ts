@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from '../utils/axios';
 import User from '../interfaces/User';
+import AccountCompact from '../interfaces/AccountCompact';
 import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
 // import AccountCompact from '../interfaces/User';
 
@@ -38,9 +39,33 @@ export const useUserStore = defineStore({
             dayLimit: response.data.dayLimit,
             transactionLimit: response.data.transactionLimit,
             accounts: response.data.accounts,
+            blocked: response.data.blocked,
           };
           this.setUser(user);
           console.log(user);
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    async fetchAccounts() {
+      try {
+        if (!this.user?.id) return;
+        const response = await axios.get(`/users/${this.user.id}/accounts`);
+        if (response.status === 200) {
+          // for each account in response.data, create an AccountCompact object
+          const accounts: AccountCompact[] = response.data.map(
+            (account: any) => {
+              return {
+                id: account.id,
+                iban: account.iban,
+                accountType: account.accountType,
+                balance: account.balance,
+              };
+            }
+          );
+
+          this.user.accounts = accounts;
         }
       } catch (error: any) {
         console.error(error);

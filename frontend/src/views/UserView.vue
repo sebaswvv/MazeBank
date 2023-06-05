@@ -2,7 +2,7 @@
     <div class="container py-5 d-flex justify-content-center flex-column">
         <div class="row pb-3">
             <!-- FullName of the user -->
-            <div class="col d-flex justify-content-center align-items-center">
+            <div class="col d-flex justify-content-center align-items-center py-2">
                 <h1>User: {{ user.firstName }} {{ user.lastName }} {{ userId }}</h1>
             </div>
 
@@ -10,7 +10,8 @@
         <!-- Select atm option -->
         <div class="row">
             <!-- Col met alle userdata -->
-            <div class="col-md-6">
+            <div class="col-md-6 bg-light rounded p-3 m-2">
+                <h2>Gegevens</h2>
                 <div>
                     <label for="email">Email:</label>
                     <input v-model="user.email" id="email" placeholder="Email" />
@@ -38,6 +39,28 @@
                 <button @click="saveUser" class="btn-primary">Opslaan</button>
                 <p id="message">{{ message }}</p>
             </div>
+            <div class="col ">
+                <div class="row bg-light rounded p-3 m-2">
+                    <h2>Acties</h2>
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn-primary">Rekening toevoegen</button>
+                        </div>
+                        <div class="col">
+                            <button class="btn-secondary"> {{ isBlocked ? 'Deblokkeer gebruiker' : 'Blokkeer gebruiker' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row bg-light rounded m-2 mt-3 p-3">
+                    <h2>Rekeningen</h2>
+                    <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
+                        :key="account.id" :iban="account.iban" :balance="account.balance"
+                        :accountType="account.accountType === 0 ? 'Uitgave' : 'Spaar'" class="account rounded"
+                        @click="handleClickOnAccount(account.id)" />
+                </div>
+
+            </div>
         </div>
     </div>
 </template>
@@ -45,12 +68,15 @@
 <script setup lang="ts">
 import { useUserStore } from '../stores/UserStore';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
-import { ref, onMounted, reactive } from 'vue';
+import { useAccountStore } from '../stores/AccountStore';
+import { ref, onMounted, reactive, computed } from 'vue';
 import User from '../interfaces/User';
 import router from '../router';
+import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 
 const userStore = useUserStore();
 const authenticationStore = useAuthenticationStore();
+const accountStore = useAccountStore();
 
 onMounted(async () => {
     // Check if the user is authenticated
@@ -59,6 +85,7 @@ onMounted(async () => {
     }
 
     await userStore.fetchUser(2);
+    await userStore.fetchAccounts();
     Object.assign(user, userStore.getUser);
 
 });
@@ -72,11 +99,17 @@ const user = reactive<User>({
     role: 'CUSTOMER',
     accounts: [],
     dayLimit: 0,
-    transactionLimit: 0
+    transactionLimit: 0,
+    blocked: false
 });
 
 const userId = userStore.getUserId;
 const message = ref('');
+
+const isBlocked = computed(() => {
+    // return user.value?.blocked ?? false;
+    return false;
+});
 
 async function saveUser() {
     try {
@@ -89,6 +122,19 @@ async function saveUser() {
         message.value = 'Error occurred while saving user data.';
     }
 }
+
+const handleClickOnAccount = async (id: any) => {
+    // Use the `iban` parameter as needed
+    await accountStore.fetchAccount(id);
+    router.push('/account');
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+.account {
+    background-color: #F2F3F6 !important;
+    margin: 1px;
+    width: 100% !important;
+    cursor: pointer;
+}
+</style>
