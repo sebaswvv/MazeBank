@@ -1,12 +1,12 @@
 <template>
     <div class="row box">
-        <div class="col">
+        <div class="col mt-1">
             <h5>{{ user.id }}</h5>
         </div>
-        <div class="col">
+        <div class="col mt-1">
             <h5>{{ user.firstName }}</h5>
         </div>
-        <div class="col">
+        <div class="col mt-1">
             <h5>{{ user.lastName }}</h5>
         </div>
     </div>
