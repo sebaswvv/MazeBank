@@ -15,7 +15,7 @@ import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
 import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
-import w.mazebank.models.requests.TransactionRequest;
+import w.mazebank.models.requests.UserPatchRequest;
 import w.mazebank.models.responses.AccountResponse;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.models.responses.UserResponse;
@@ -29,8 +29,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -188,7 +186,7 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void unblockNonExistingUser(){
+    void unblockNonExistingUser() {
         // mock the findById method and return null
         when(userRepository.findById(2L)).thenReturn(Optional.empty());
 
@@ -224,7 +222,7 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void deleteUserByIdThatHasAccounts(){
+    void deleteUserByIdThatHasAccounts() {
         // create a user
         User user = User.builder()
             .id(2L)
@@ -301,7 +299,6 @@ class UserServiceJpaTest {
         assertEquals(2, accounts.size());
         assertEquals("NL01INHO0000000002", accounts.get(0).getIban());
         assertEquals("NL01INHO0000000003", accounts.get(1).getIban());
-
     }
 
     @Test
@@ -379,7 +376,7 @@ class UserServiceJpaTest {
     }
 
     @Test
-    void getAccountsByUserIdWithNoExistingUser(){
+    void getAccountsByUserIdWithNoExistingUser() {
         // create a user
         User user = User.builder()
             .id(3L)
@@ -483,7 +480,7 @@ class UserServiceJpaTest {
 
 
     @Test
-    void getTransactionsByUserIdWithNoExistingUser(){
+    void getTransactionsByUserIdWithNoExistingUser() {
         // create a user
         User user = User.builder()
             .id(2L)
@@ -505,6 +502,141 @@ class UserServiceJpaTest {
         // test results
         assertEquals("User not found", exception.getMessage());
         verify(userRepository, times(1)).findById(2L);
+    }
 
+    @Test
+    void patchUserHappyFlowCustomer() throws UserNotFoundException {
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .email("johndoe@gmail.com")
+            .role(RoleType.CUSTOMER)
+            .phoneNumber("0612345678")
+            .build();
+        UserPatchRequest requestBody = UserPatchRequest.builder()
+            .firstName("Jane")
+            .lastName("Doe")
+            .email("janedoe@gmail.com")
+            .phoneNumber("0687654321")
+            .build();
+
+        // mock the findById method and return an account
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
+
+        // call the method
+        User result = userServiceJpa.patchUserById(2L, requestBody, user);
+
+        // test results
+        assertEquals(2L, result.getId());
+        assertEquals("Jane", result.getFirstName());
+        assertEquals("Doe", result.getLastName());
+        assertEquals("janedoe@gmail.com", result.getEmail());
+        assertEquals("0687654321", result.getPhoneNumber());
+    }
+
+    @Test
+    void patchUserHappyFlowEmployee() throws UserNotFoundException {
+        User performingUser = User.builder()
+            .id(3L)
+            .firstName("Bill")
+            .lastName("Gates")
+            .role(RoleType.EMPLOYEE)
+            .build();
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .email("johndoe@gmail.com")
+            .role(RoleType.CUSTOMER)
+            .phoneNumber("0612345678")
+            .dayLimit(1000.0)
+            .transactionLimit(100.0)
+            .build();
+        UserPatchRequest requestBody = UserPatchRequest.builder()
+            .firstName("Jane")
+            .lastName("Doe")
+            .email("janedoe@gmail.com")
+            .phoneNumber("0687654321")
+            .dayLimit(90.0)
+            .transactionLimit(50.0)
+            .build();
+
+        // mock the findById method and return an account
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
+
+        // call the method
+        User result = userServiceJpa.patchUserById(2L, requestBody, performingUser);
+
+        // test results
+        assertEquals(2L, result.getId());
+        assertEquals("Jane", result.getFirstName());
+        assertEquals("Doe", result.getLastName());
+        assertEquals("janedoe@gmail.com", result.getEmail());
+        assertEquals("0687654321", result.getPhoneNumber());
+        assertEquals(90.0, result.getDayLimit());
+        assertEquals(50.0, result.getTransactionLimit());
+    }
+
+    @Test
+    void patchUserThrowsUserNotFound() {
+        User performingUser = User.builder()
+            .id(3L)
+            .firstName("Bill")
+            .lastName("Gates")
+            .role(RoleType.EMPLOYEE)
+            .build();
+        UserPatchRequest requestBody = new UserPatchRequest();
+
+        // mock the findById method and return null
+        when(userRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () -> {
+            userServiceJpa.patchUserById(2L, requestBody, performingUser);
+        });
+    }
+
+    @Test
+    void patchUserThrowsUnauthorizedUserAccess() {
+        User performingUser = User.builder()
+            .id(3L)
+            .firstName("John")
+            .lastName("Doe")
+            .role(RoleType.CUSTOMER)
+            .build();
+        User user = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .email("johndoe@gmail.com")
+            .role(RoleType.CUSTOMER)
+            .build();
+        UserPatchRequest requestBody = new UserPatchRequest();
+
+        // mock the findById method and return null
+        when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
+
+        // test results
+        UnauthorizedUserAccessException exception = assertThrows(UnauthorizedUserAccessException.class, () -> {
+            userServiceJpa.patchUserById(2L, requestBody, performingUser);
+        });
+        assertEquals("user not allowed to access user with id: 2", exception.getMessage());
+    }
+
+    @Test
+    void patchUserThrowsUnauthorizedUserAccessForTheBanksUser() {
+        User performingUser = User.builder()
+            .id(2L)
+            .firstName("John")
+            .lastName("Doe")
+            .role(RoleType.CUSTOMER)
+            .build();
+        UserPatchRequest requestBody = new UserPatchRequest();
+
+        // test results
+        UnauthorizedUserAccessException exception = assertThrows(UnauthorizedUserAccessException.class, () -> {
+            userServiceJpa.patchUserById(1L, requestBody, performingUser);
+        });
+        assertEquals("You are not allowed to access the bank", exception.getMessage());
     }
 }

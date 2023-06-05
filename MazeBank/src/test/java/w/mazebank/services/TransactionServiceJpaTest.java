@@ -10,18 +10,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
 import w.mazebank.enums.TransactionType;
-import w.mazebank.exceptions.AccountNotFoundException;
-import w.mazebank.exceptions.InsufficientFundsException;
-import w.mazebank.exceptions.TransactionFailedException;
+import w.mazebank.exceptions.*;
 import w.mazebank.models.Account;
+import w.mazebank.models.Transaction;
 import w.mazebank.models.User;
 import w.mazebank.models.requests.TransactionRequest;
 import w.mazebank.models.responses.TransactionResponse;
 import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -276,7 +277,7 @@ class TransactionServiceJpaTest {
     }
 
     @Test
-    // happy flow
+        // happy flow
     void postTransaction() throws AccountNotFoundException, TransactionFailedException {
         // Create a transaction request
         TransactionRequest transactionRequest = new TransactionRequest();
@@ -375,5 +376,112 @@ class TransactionServiceJpaTest {
         assertEquals("receiver_iban", result.getReceiver());
         assertEquals(5L, result.getUserPerforming());
         assertNotNull(result.getTimestamp());
+    }
+
+    @Test
+    void getTransactionAndValidateHappyFlowCustomer() throws AccountNotFoundException, TransactionNotFoundException {
+        LocalDateTime timestamp = LocalDateTime.now();
+        Transaction transaction = Transaction.builder()
+            .id(1L)
+            .sender(accounts.get(0))
+            .receiver(accounts.get(1))
+            .amount(100.00)
+            .description("test transaction")
+            .timestamp(timestamp)
+            .build();
+
+        // mock the findById method and return a transaction
+        when(transactionRepository.findById(1L)).thenReturn(Optional.ofNullable(transaction));
+
+        // call the method
+        TransactionResponse result = transactionServiceJpa.getTransactionAndValidate(1L, users.get(0));
+
+        // test results
+        assertEquals(1L, result.getId());
+        assertEquals("sender_iban", result.getSender());
+        assertEquals("receiver_iban", result.getReceiver());
+        assertEquals(100.00, result.getAmount());
+        assertEquals("test transaction", result.getDescription());
+        assertEquals(timestamp.toString(), result.getTimestamp());
+    }
+
+    @Test
+    void getTransactionAndValidateHappyFlowEmployee() throws AccountNotFoundException, TransactionNotFoundException {
+        LocalDateTime timestamp = LocalDateTime.now();
+        Transaction transaction = Transaction.builder()
+            .id(1L)
+            .sender(accounts.get(0))
+            .receiver(accounts.get(1))
+            .amount(100.00)
+            .description("test transaction")
+            .timestamp(timestamp)
+            .build();
+
+        // mock the findById method and return a transaction
+        when(transactionRepository.findById(1L)).thenReturn(Optional.ofNullable(transaction));
+
+        // call the method
+        TransactionResponse result = transactionServiceJpa.getTransactionAndValidate(1L, users.get(3));
+
+        // test results
+        assertEquals(1L, result.getId());
+        assertEquals("sender_iban", result.getSender());
+        assertEquals("receiver_iban", result.getReceiver());
+        assertEquals(100.00, result.getAmount());
+        assertEquals("test transaction", result.getDescription());
+        assertEquals(timestamp.toString(), result.getTimestamp());
+    }
+
+    @Test
+    void getTransactionAndValidateThrowsTransactionNotFound() {
+        // mock the findById method and return null
+        when(transactionRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // test results
+        TransactionNotFoundException exception = assertThrows(TransactionNotFoundException.class, () ->
+            transactionServiceJpa.getTransactionAndValidate(1L, users.get(0))
+        );
+        assertEquals("Transaction with id: 1 not found", exception.getMessage());
+    }
+
+    @Test
+    void getTransactionAndValidateThrowsUnauthorizedTransactionAccess() {
+        Transaction transaction = Transaction.builder()
+            .id(1L)
+            .sender(accounts.get(0))
+            .receiver(accounts.get(1))
+            .build();
+
+        // mock the findById method and return a transaction
+        when(transactionRepository.findById(1L)).thenReturn(Optional.ofNullable(transaction));
+
+        // test results
+        UnauthorizedTransactionAccessException exception = assertThrows(UnauthorizedTransactionAccessException.class, () ->
+            transactionServiceJpa.getTransactionAndValidate(1L, users.get(2))
+        );
+        assertEquals("User with id: 4 is not authorized to access transaction with id: 1", exception.getMessage());
+    }
+
+    @Test
+    void getTransactionAndValidateThrowsUnauthorizedTransactionAccessForTheBanksAccount() {
+        Account bankAccount = Account.builder()
+            .id(1L)
+            .accountType(AccountType.CHECKING)
+            .iban("NL01INHO0000000001")
+            .build();
+        Transaction transaction = Transaction.builder()
+            .id(1L)
+            .sender(bankAccount)
+            .receiver(accounts.get(1))
+            .build();
+
+        // mock the findById method and return a transaction
+        when(transactionRepository.findById(1L)).thenReturn(Optional.ofNullable(transaction));
+
+        // test results
+        UnauthorizedTransactionAccessException exception = assertThrows(UnauthorizedTransactionAccessException.class, () ->
+            transactionServiceJpa.getTransactionAndValidate(1L, users.get(0))
+        );
+        assertEquals("You are not allowed to access transactions of the bank's bank account", exception.getMessage());
     }
 }
