@@ -6,6 +6,7 @@ import Login from '../views/LoginView.vue';
 import CustomerDashboard from '../views/DashboardView.vue';
 import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
 import User from '../views/UserView.vue';
+import MyUserAccountView from '../views/MyUserAccountView.vue';
 
 // Define routes
 const routes = [
@@ -18,6 +19,11 @@ const routes = [
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/dashboard', component: CustomerDashboard },
   { path: '/user', component: User, meta: { requiresAuth: true } },
+  {
+    path: '/mijn-account',
+    component: MyUserAccountView,
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

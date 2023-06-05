@@ -4,15 +4,20 @@
         <div class="py-5 accounts">
             <div class="center">
                 <template v-if="user.accounts && user.accounts.length > 0">
-                    <p class="text-center mt-2">Klik op 1 van je accounts on verder te gaan</p>
+                    <p class="text-center mt-2">Klik op 1 van u rekeningen on verder te gaan</p>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === 0 ? 'Current' : 'Savings'" class="account"
+                        :accountType="account.accountType === 0 ? 'Uitgave' : 'Spaar'" class="account"
                         @click="handleClickOnAccount(account.id)" />
                 </template>
                 <template v-else>
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
+                <!-- Wilt u u gegevens wijgzigen ga dan naar de <a> mijn-account pagina -->
+                <div class="text-center mt-2">
+                    <p>Wilt u uw gegevens wijzigen? ga dan naar de <router-link to="/mijn-account">mijn-account
+                            pagina</router-link></p>
+                </div>
             </div>
         </div>
     </div>
@@ -20,7 +25,7 @@
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue';
-import { useUserStore } from '../stores/LoggedInUserStore';
+import { useCurrentUserStore } from '../stores/CurrentUserStore.js';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import { useAccountStore } from '../stores/AccountStore';
 import router from '../router';
@@ -28,7 +33,7 @@ import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
 
 const authenticationStore = useAuthenticationStore();
-const userStore = useUserStore();
+const currentUserStore = useCurrentUserStore();
 const accountStore = useAccountStore();
 
 const user = reactive<User>({
@@ -37,7 +42,7 @@ const user = reactive<User>({
     lastName: '',
     email: '',
     phoneNumber: '',
-    role: 0,
+    role: 'CUSTOMER',
     accounts: []
 });
 
@@ -46,10 +51,10 @@ onMounted(async () => {
     if (!authenticationStore.isLoggedIn) {
         router.push('/');
     }
-    await userStore.fetchUser(authenticationStore.userId);
-    await userStore.getAccountsOfUser(authenticationStore.userId);
+    await currentUserStore.fetchUser(authenticationStore.userId);
+    await currentUserStore.getAccountsOfUser(authenticationStore.userId);
 
-    Object.assign(user, userStore.getUser);
+    Object.assign(user, currentUserStore.getUser);
 });
 
 const handleClickOnAccount = async (id: any) => {

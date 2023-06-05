@@ -2,18 +2,21 @@ import { defineStore } from 'pinia';
 import axios from '../utils/axios';
 import User from '../interfaces/User';
 import AccountCompact from '../interfaces/User';
+import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
 
 // STORE
-export const useUserStore = defineStore({
-  id: 'loggedInUser',
-  state: (): any => ({
-    id: localStorage.getItem('id') || null,
-    firstName: localStorage.getItem('firstName') || null,
-    lastName: localStorage.getItem('lastName') || null,
-    email: localStorage.getItem('email') || null,
-    phoneNumber: localStorage.getItem('phoneNumber') || null,
-    role: localStorage.getItem('role') || null,
-    accounts: localStorage.getItem('accounts') || null,
+export const useCurrentUserStore = defineStore({
+  id: 'currentUser',
+  state: (): User => ({
+    id: 0,
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    role: 'CUSTOMER',
+    accounts: [],
+    transactionLimit: 0,
+    dayLimit: 0,
   }),
   getters: {
     getUser(state) {
@@ -26,6 +29,8 @@ export const useUserStore = defineStore({
   actions: {
     async fetchUser(id: number) {
       try {
+        if (!id) return;
+
         const response = await axios.get(`/users/${id}`);
         if (response.status === 200) {
           // create user object with user data
@@ -36,6 +41,9 @@ export const useUserStore = defineStore({
             email: response.data.email,
             phoneNumber: response.data.phoneNumber,
             role: response.data.role,
+            accounts: response.data.accounts,
+            transactionLimit: response.data.transactionLimit,
+            dayLimit: response.data.dayLimit,
           };
           this.setUser(user);
         }
@@ -45,6 +53,7 @@ export const useUserStore = defineStore({
     },
     async getAccountsOfUser(id: number) {
       try {
+        if (!id) return;
         const response = await axios.get(`/users/${id}/accounts`);
         if (response.status === 200) {
           // for each account in response.data, create an AccountCompact object
@@ -64,9 +73,35 @@ export const useUserStore = defineStore({
         console.error(error);
       }
     },
-    setAccounts(accounts: AccountCompact[]) {
+    async editUser(user: User) {
+      try {
+        const userPatchRequest: UserPatchRequest = {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneNumber: user.phoneNumber,
+          dayLimit: user.dayLimit,
+          transactionLimit: user.transactionLimit,
+        };
+
+        const response = await axios.patch(
+          `/users/${user.id}`,
+          userPatchRequest
+        );
+        if (response.status === 200) {
+          this.setUser(user);
+          return true;
+        } else {
+          console.log(response);
+          return false;
+        }
+      } catch (error: any) {
+        console.error(error);
+        return false;
+      }
+    },
+    setAccounts(accounts: any[]) {
       this.accounts = accounts;
-      localStorage.setItem('accounts', JSON.stringify(accounts));
     },
     setUser(user: User) {
       this.id = user.id;
@@ -75,18 +110,19 @@ export const useUserStore = defineStore({
       this.email = user.email;
       this.phoneNumber = user.phoneNumber;
       this.role = user.role;
-      localStorage.setItem('user', JSON.stringify(user));
+      this.accounts = user.accounts;
+      this.transactionLimit = user.transactionLimit;
     },
     logout() {
-      localStorage.removeItem('user');
-      localStorage.removeItem('accounts');
-      this.id = null;
-      this.firstName = null;
-      this.lastName = null;
-      this.email = null;
-      this.phoneNumber = null;
-      this.role = null;
-      this.accounts = null;
+      this.id = 0;
+      this.firstName = '';
+      this.lastName = '';
+      this.email = '';
+      this.phoneNumber = '';
+      this.role = 'CUSTOMER';
+      this.accounts = [];
+      this.transactionLimit = 0;
+      this.dayLimit = 0;
     },
     getAccounts() {
       return this.accounts;

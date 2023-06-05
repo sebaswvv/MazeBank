@@ -7,9 +7,10 @@ interface User {
   lastName: string;
   email: string;
   phoneNumber: string;
-  role: RoleType;
+  role: string;
   accounts?: AccountCompact[];
+  transactionLimit?: number;
+  dayLimit?: number;
 }
 
 export default User;
-

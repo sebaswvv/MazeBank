@@ -20,7 +20,7 @@
                             <font-awesome-icon icon="fa-solid fa-user" />
                             Dashboard</router-link>
                     </li>
-                    <li v-if="userStore.getIsEmployee" class=" nav-item">
+                    <li v-if="currentUserStore.getIsEmployee" class=" nav-item">
                         <router-link to="/employee" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
                             Medewerker</router-link>
@@ -41,12 +41,12 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
-import { useUserStore } from '../stores/LoggedInUserStore';
+import { useCurrentUserStore } from '../stores/CurrentUserStore';
 import { computed } from 'vue';
 
 // VARIABLES
 const authenticationStore = useAuthenticationStore();
-const userStore = useUserStore();
+const currentUserStore = useCurrentUserStore();
 const router = useRouter();
 
 // Computed property to determine the MazeBank link based on login status
