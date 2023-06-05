@@ -1,13 +1,13 @@
 <template>
     <div class="row box">
-        <div class="col">
+        <div class="col mt-1">
             <h5>{{ user.id }}</h5>
         </div>
-        <div class="col">
-            <h3>{{ user.firstName }}</h3>
+        <div class="col mt-1">
+            <h5>{{ user.firstName }}</h5>
         </div>
-        <div class="col">
-            <h3>{{ user.lastName }}</h3>
+        <div class="col mt-1">
+            <h5>{{ user.lastName }}</h5>
         </div>
     </div>
 </template>
@@ -25,7 +25,7 @@ const { user } = defineProps({
 
 <style scoped>
 .box {
-    width: 95%;
-    border-bottom: 1px solid #dee2e6;
+    border: 1px solid #dee2e6;
+    margin: 5px;
 }
 </style>

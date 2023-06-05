@@ -18,9 +18,9 @@ import { ref } from 'vue';
 
 const userStore = useUserStore();
 
-const meegekregenId = ref(2);
+// const meegekregenId = ref(2);
 
-userStore.fetchUser(meegekregenId.value);
+// userStore.fetchUser(meegekregenId.value);
 
 </script>
 
