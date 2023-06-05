@@ -43,6 +43,13 @@ public class DataSeeder implements ApplicationRunner {
         User user2 = new User(3, "user2@example.com", 987654321, "Jane", "Smith", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
         User user3 = new User(4, "user3@example.com", 456123789, "Jim", "John", passwordEncoder.encode("1234"), "0987654321", RoleType.EMPLOYEE, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
         User user4 = new User(5, "user4@example.com", 456123759, "Tim", "Brad", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user5 = new User(6, "user5@example.com", 345123759, "Felipe", "Massa", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user6 = new User(7, "user6@example.com", 789652788, "Michael", "Schumacher", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user7 = new User(8, "user7@example.com", 456333721, "Lewis", "Hamilton", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user8 = new User(9, "user8@example.com", 123123757, "Valtteri", "Bottas", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user9 = new User(10, "user9@example.com", 369258147, "Sebastian", "Vettel", passwordEncoder.encode("1234"), "0987654321", RoleType.CUSTOMER, LocalDate.now().minusYears(30), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user10 = new User(11, "user10@example.com", 321654897, "Charles", "Leclerc", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user11 = new User(12, "user11@example.com", 444321897, "Max", "Verstappen", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
 
 
         userService.addUser(bank);
@@ -50,6 +57,14 @@ public class DataSeeder implements ApplicationRunner {
         userService.addUser(user2);
         userService.addUser(user3);
         userService.addUser(user4);
+        userService.addUser(user5);
+        userService.addUser(user6);
+        userService.addUser(user7);
+        userService.addUser(user8);
+        userService.addUser(user9);
+        userService.addUser(user10);
+        userService.addUser(user11);
+
 
         // Create some sample accounts for user1
         Account bankAccount = new Account(1, "NL01INHO0000000001", AccountType.CHECKING, 1000000.0, bank, true, LocalDateTime.now(), 0, null, null);
