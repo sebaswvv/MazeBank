@@ -52,6 +52,12 @@
                             </button>
                         </div>
                     </div>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <button class="btn-secondary" :disabled="user.accounts?.length != 0">Gebruiker
+                                verwijderen</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="row bg-light rounded m-2 mt-3 p-3">
                     <h2>Rekeningen</h2>
@@ -85,6 +91,14 @@ onMounted(async () => {
     if (!authenticationStore.isLoggedIn) {
         router.push('/');
     }
+
+    // get checkUserId from localstorage adn make number
+    if (!localStorage.getItem('checkUserId')) {
+        router.push('/dashboard');
+    }
+    const checkUserId: number = Number(localStorage.getItem('checkUserId'));
+
+    await userStore.fetchUser(checkUserId);
 
     await userStore.fetchAccounts();
     Object.assign(user, userStore.getUser);

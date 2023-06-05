@@ -93,6 +93,7 @@ const filteredUsers = computed(() => {
 
 function handleUserClick(userId) {
     useUserStore().fetchUser(userId);
+    localStorage.setItem('checkUserId', userId);
     router.push('/user');
 }
 
