@@ -63,16 +63,19 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
 
         // create userPatchRequest
         UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setDayLimit(1000.0);
 
         // Create the HTTP entity with the request body and headers
         HttpEntity<Object> requestEntity = new HttpEntity<>(userPatchRequest, httpHeaders);
+        System.out.println(requestEntity);
+
 
         // Send the request
         HttpClient client = HttpClientBuilder.create().build();
 
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
         lastResponse = restTemplate.exchange(
-            "http://localhost:" + port + "/users/2",
+            "http://localhost:" + port + "/users/3",
             HttpMethod.PATCH,
             requestEntity,
             String.class
@@ -142,6 +145,7 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
         token = jwtService.generateToken(employee);
 
         UserPatchRequest userPatchRequest = new UserPatchRequest();
+        userPatchRequest.setTransactionLimit(transactionLimit);
 
         httpHeaders.clear();
         httpHeaders.add("Authorization", "Bearer " + token);

@@ -151,10 +151,19 @@ public class UserServiceJpa extends BaseServiceJpa {
                 throw new DisallowedFieldException("field not allowed to update: " + field);
         }
 
+        // PATCHES AVAILABLE FOR CUSTOMERS
         if (userPatchRequest.getEmail() != null) user.setEmail(userPatchRequest.getEmail());
         if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
         if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
+
+        // PATCHES AVAILABLE FOR EMPLOYEES
+        if((userPatchRequest.getTransactionLimit()!=null || userPatchRequest.getDayLimit()!=null) && userPerforming.getRole() != RoleType.EMPLOYEE){
+            throw new UnauthorizedUserAccessException("You are not allowed to update the transaction limit or day limit");
+        }
+
+        if(userPatchRequest.getTransactionLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if(userPatchRequest.getDayLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE) user.setDayLimit(userPatchRequest.getDayLimit());
 
         userRepository.save(user);
 
