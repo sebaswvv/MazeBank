@@ -558,8 +558,6 @@ class UserServiceJpaTest {
             .lastName("Doe")
             .email("janedoe@gmail.com")
             .phoneNumber("0687654321")
-            .dayLimit(90.0)
-            .transactionLimit(50.0)
             .build();
 
         // mock the findById method and return an account
@@ -574,8 +572,6 @@ class UserServiceJpaTest {
         assertEquals("Doe", result.getLastName());
         assertEquals("janedoe@gmail.com", result.getEmail());
         assertEquals("0687654321", result.getPhoneNumber());
-        assertEquals(90.0, result.getDayLimit());
-        assertEquals(50.0, result.getTransactionLimit());
     }
 
     @Test

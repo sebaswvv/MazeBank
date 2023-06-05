@@ -1,9 +1,33 @@
 <template>
     <div class="container">
-        <h1 class="mt-5 text-center">U kunt hier uw gegevens aanpassen</h1>
-        <div>
-            <label for="email">Email:</label>
-            <input v-model="user.email" id="email" placeholder="Email" />
+        <div class="row bg-light rounded mt-5 p-5">
+            <h1 class="mt-5 text-center">U kunt hier uw gegevens aanpassen</h1>
+            <div>
+                <label for="email">Email:</label>
+                <input v-model="user.email" id="email" placeholder="Email" />
+            </div>
+            <div>
+                <label for="firstName">Voornaam:</label>
+                <input v-model="user.firstName" id="firstName" placeholder="First Name" />
+            </div>
+            <div>
+                <label for="lastName">Achternaam:</label>
+                <input v-model="user.lastName" id="lastName" placeholder="Last Name" />
+            </div>
+            <div>
+                <label for="phoneNumber">Telefoonnummer:</label>
+                <input v-model="user.phoneNumber" id="phoneNumber" placeholder="Phone Number" />
+            </div>
+            <div>
+                <label for="dayLimit">Dag limiet:</label>
+                <input v-model="user.dayLimit" id="dayLimit" placeholder="Day Limit" />
+            </div>
+            <div>
+                <label for="transactionLimit">Transactie limiet:</label>
+                <input v-model="user.transactionLimit" id="transactionLimit" placeholder="Transaction Limit" />
+            </div>
+            <button @click="saveUser" class="btn-primary mt-3">Opslaan</button>
+            <p id="message">{{ message }}</p>
         </div>
         <div>
             <label for="firstName">Voornaam:</label>
@@ -16,14 +40,6 @@
         <div>
             <label for="phoneNumber">Telefoonnummer:</label>
             <input v-model="user.phoneNumber" id="phoneNumber" placeholder="Phone Number" />
-        </div>
-        <div>
-            <label for="dayLimit">Dag limiet:</label>
-            <input v-model="user.dayLimit" id="dayLimit" placeholder="Day Limit" />
-        </div>
-        <div>
-            <label for="transactionLimit">Transactie limiet:</label>
-            <input v-model="user.transactionLimit" id="transactionLimit" placeholder="Transaction Limit" />
         </div>
         <button @click="saveUser" class="btn-primary">Opslaan</button>
         <p id="message">{{ message }}</p>
@@ -71,11 +87,6 @@ onMounted(async () => {
 
 const saveUser = async () => {
     message.value = '';
-    // check if both the limits are higher or equal to 0
-    if (user.dayLimit !== undefined && user.dayLimit < 0 || user.transactionLimit !== undefined && user.transactionLimit < 0) {
-        message.value = 'De limieten moeten hoger of gelijk zijn aan 0';
-        return;
-    }
     // Save the updated user data
     if (await currentUserStore.editUser(user)) {
         message.value = 'Uw gegevens zijn succesvol aangepast';

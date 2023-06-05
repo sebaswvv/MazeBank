@@ -82,8 +82,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         return accountResponses;
     }
 
-    public List<UserResponse> getAllUsers(int offset, int limit, String sort, String search, boolean withoutAccounts) {
-        List<User> users = findAllPaginationAndSort(offset, limit, sort, search, userRepository);
+    public List<UserResponse> getAllUsers(int pageNumber, int pageSize, String sort, String search, boolean withoutAccounts) {
+        List<User> users = findAllPaginationAndSort(pageNumber, pageSize, sort, search, userRepository);
 
         List<User> filteredUsers = new ArrayList<>(users);
 
@@ -143,7 +143,7 @@ public class UserServiceJpa extends BaseServiceJpa {
             throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
         }
 
-        List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber", "dayLimit", "transactionLimit");
+        List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber");
 
         // check if fields are allowed
         for (String field : userPatchRequest.getFields()) {
@@ -155,9 +155,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
         if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
-        if (userPatchRequest.getDayLimit() != null) user.setDayLimit(userPatchRequest.getDayLimit());
-        if (userPatchRequest.getTransactionLimit() != null)
-            user.setTransactionLimit(userPatchRequest.getTransactionLimit());
 
         userRepository.save(user);
 
@@ -180,8 +177,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     public List<TransactionResponse> getTransactionsByUserId(
         Long userId,
         User user,
-        int offset,
-        int limit,
+        int pageNumber,
+        int pageSize,
         String sort,
         String iban,
         LocalDate startDate,
@@ -242,13 +239,12 @@ public class UserServiceJpa extends BaseServiceJpa {
         );
 
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(offset, limit, Sort.by(direction, "timestamp"));
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(direction, "timestamp"));
 
         Page<Transaction> transactionPage = transactionRepository.findAll(specification, pageable);
         List<Transaction> transactions = transactionPage != null ? transactionPage.getContent() : Collections.emptyList();
 
         return mapTransactionsToResponses(transactions);
-
     }
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {

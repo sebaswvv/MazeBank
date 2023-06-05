@@ -63,7 +63,6 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
 
         // create userPatchRequest
         UserPatchRequest userPatchRequest = new UserPatchRequest();
-        userPatchRequest.setDayLimit(10000.00);
 
         // Create the HTTP entity with the request body and headers
         HttpEntity<Object> requestEntity = new HttpEntity<>(userPatchRequest, httpHeaders);
@@ -143,7 +142,6 @@ public class UsersStepDefinitions extends BaseStepDefinitions {
         token = jwtService.generateToken(employee);
 
         UserPatchRequest userPatchRequest = new UserPatchRequest();
-        userPatchRequest.setTransactionLimit(transactionLimit);
 
         httpHeaders.clear();
         httpHeaders.add("Authorization", "Bearer " + token);
