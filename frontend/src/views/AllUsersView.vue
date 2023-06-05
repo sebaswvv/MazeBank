@@ -45,19 +45,19 @@ import router from '../router';
 
 const users = ref([]);
 const searchQuery = ref('');
-const offset = ref(0);
-const limit = ref(10);
+const pageNumber = ref(0);
+const pageSize = ref(10);
 const sort = ref('asc');
 const withoutAccounts = ref(false);
 const userStore = useUserStore();
 const fetchUsers = async () => {
-    const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}`);
+    const res = await axios.get(`/users?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}`);
     users.value = res.data;
     console.log(res.data);
 };
 
 async function fetchUsersWithoutAccounts() {
-    const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}&withoutAccounts=true`);
+    const res = await axios.get(`/users?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}&withoutAccounts=true`);
     users.value = res.data;
 }
 
