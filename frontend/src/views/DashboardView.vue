@@ -43,7 +43,8 @@ const user = reactive<User>({
     email: '',
     phoneNumber: '',
     role: 'CUSTOMER',
-    accounts: []
+    accounts: [],
+    blocked: false,
 });
 
 onMounted(async () => {

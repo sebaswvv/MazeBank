@@ -12,6 +12,7 @@ interface User {
   accounts?: AccountCompact[];
   transactionLimit?: number;
   dayLimit?: number;
+  blocked: boolean;
 }
 
 export default User;

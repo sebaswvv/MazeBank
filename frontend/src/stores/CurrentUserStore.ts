@@ -17,6 +17,7 @@ export const useCurrentUserStore = defineStore({
     accounts: [],
     transactionLimit: 0,
     dayLimit: 0,
+    blocked: false,
   }),
   getters: {
     getUser(state) {
