@@ -44,7 +44,7 @@
                     <h2>Acties</h2>
                     <div class="row">
                         <div class="col">
-                            <button class="btn-primary">Rekening toevoegen</button>
+                            <button class="btn-primary" :disabled="user.accounts?.length == 2">Rekening toevoegen</button>
                         </div>
                         <div class="col">
                             <button class="btn-secondary" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
@@ -57,7 +57,7 @@
                     <h2>Rekeningen</h2>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === 0 ? 'Uitgave' : 'Spaar'" class="account rounded"
+                        :accountType="account.accountType === 0 ? 'Betaal' : 'Spaar'" class="account rounded"
                         @click="handleClickOnAccount(account.id)" />
                 </div>
 
@@ -74,6 +74,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import User from '../interfaces/User';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
+import { RoleType } from '../enums/RoleType';
 
 const userStore = useUserStore();
 const authenticationStore = useAuthenticationStore();
@@ -93,10 +94,11 @@ onMounted(async () => {
 const user = reactive<User>({
     id: 0,
     firstName: '',
+    bsn: '',
     lastName: '',
     email: '',
     phoneNumber: '',
-    role: 'CUSTOMER',
+    role: RoleType.CUSTOMER,
     accounts: [],
     dayLimit: 0,
     transactionLimit: 0,
@@ -151,5 +153,11 @@ const handleClickOnAccount = async (id: any) => {
     margin: 1px;
     width: 100% !important;
     cursor: pointer;
+}
+
+/* button disabled */
+.btn-primary:disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
 }
 </style>
