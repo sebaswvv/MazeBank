@@ -69,7 +69,7 @@ watch(withoutAccounts, async (newValue) => {
     }
 });
 
-const performSearch = (query) => {
+const performSearch = (query: any) => {
     const lowerCaseQuery = query.toLowerCase();
     filteredUsers.value = users.value.filter(
         user =>

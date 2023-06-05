@@ -1,13 +1,13 @@
 <template>
     <div class="row box">
         <div class="col mt-1">
-            <h5>{{ user.id }}</h5>
+            <h6>{{ user.id }}</h6>
         </div>
         <div class="col mt-1">
-            <h5>{{ user.firstName }}</h5>
+            <h6>{{ user.firstName }}</h6>
         </div>
         <div class="col mt-1">
-            <h5>{{ user.lastName }}</h5>
+            <h6>{{ user.lastName }}</h6>
         </div>
     </div>
 </template>

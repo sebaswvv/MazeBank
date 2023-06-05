@@ -4,6 +4,7 @@ import Atm from '../views/AtmView.vue';
 import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
 import AllUsersView from '../views/AllUsersView.vue';
+import AllAccountsView from '../views/AllAccountsView.vue';
 import CustomerDashboard from '../views/DashboardView.vue';
 import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
 import User from '../views/UserView.vue';
@@ -19,6 +20,7 @@ const routes = [
   { path: '/employee', component: EmployeeDashboard },
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/users', component: AllUsersView, meta: { requiresAdmin: true } },
+  { path: '/accounts', component: AllAccountsView, meta: { requiresAdmin: true } },
   { path: '/dashboard', component: CustomerDashboard },
   { path: '/user', component: User, meta: { requiresAuth: true } },
   {
