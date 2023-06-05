@@ -98,6 +98,34 @@ export const useUserStore = defineStore({
         return false;
       }
     },
+    async blockUser() {
+      try {
+        if (!this.user?.id) return;
+        const response = await axios.put(`/users/${this.user.id}/disable`);
+
+        if (response.status === 200) {
+          this.user.blocked = true;
+          return true;
+        }
+        return false;
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    async unblockUser() {
+      try {
+        if (!this.user?.id) return;
+        const response = await axios.put(`/users/${this.user.id}/enable`);
+
+        if (response.status === 200) {
+          this.user.blocked = false;
+          return true;
+        }
+        return false;
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
     setUser(user: User) {
       this.user = user;
     },

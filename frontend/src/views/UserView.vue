@@ -47,7 +47,8 @@
                             <button class="btn-primary">Rekening toevoegen</button>
                         </div>
                         <div class="col">
-                            <button class="btn-secondary"> {{ isBlocked ? 'Deblokkeer gebruiker' : 'Blokkeer gebruiker' }}
+                            <button class="btn-secondary" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
+                                'Blokkeer gebruiker' }}
                             </button>
                         </div>
                     </div>
@@ -107,8 +108,7 @@ const userId = userStore.getUserId;
 const message = ref('');
 
 const isBlocked = computed(() => {
-    // return user.value?.blocked ?? false;
-    return false;
+    return user.blocked ?? false;
 });
 
 async function saveUser() {
@@ -118,6 +118,21 @@ async function saveUser() {
         Object.assign(user, userStore.getUser);
 
         message.value = 'User data saved successfully.';
+    } catch (error) {
+        message.value = 'Error occurred while saving user data.';
+    }
+}
+
+async function handleBlockState() {
+    try {
+        // if the user is not blocked yet
+        if (!isBlocked.value) {
+            await userStore.blockUser();
+        } else {
+            await userStore.unblockUser();
+        }
+
+        Object.assign(user, userStore.getUser);
     } catch (error) {
         message.value = 'Error occurred while saving user data.';
     }
