@@ -120,9 +120,9 @@ class UserControllerTest extends BaseControllerTest {
     @Test
     void getAllUsersShouldReturnStatus200OkAndObjectWithLimit() throws Exception {
         // parse users to user
-        when(userServiceJpa.getAllUsers(0, 1, "asc", null, false)).thenReturn(userResponses.subList(0, 1));
+        when(userServiceJpa.getAllUsers(0, 3, "asc", null, false)).thenReturn(userResponses.subList(0, 1));
 
-        mockMvc.perform(get("/users?limit=1")
+        mockMvc.perform(get("/users?pageSize=3")
                 .header("Authorization", "Bearer " + employeeToken)
                 .with(csrf())
                 .with(user(authEmployee))

@@ -45,8 +45,8 @@ public class UserController {
             .lastName(user.getLastName())
             .phoneNumber(user.getPhoneNumber())
             .role(user.getRole().toString())
-            .dateOfBirth(user.getDateOfBirth().toString())
-            .createdAt(user.getCreatedAt().toString())
+            .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null)
+            .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
             .dayLimit(user.getDayLimit())
             .transactionLimit(user.getTransactionLimit())
             .amountRemaining(user.getAmountRemaining())
@@ -72,13 +72,13 @@ public class UserController {
     @GetMapping
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<List<UserResponse>> getAllUsers(
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int pageNumber,
+        @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String search,
         @RequestParam(defaultValue = "false") boolean withoutAccounts)
     {
-        List<UserResponse> users = userService.getAllUsers(offset, limit, sort, search, withoutAccounts);
+        List<UserResponse> users = userService.getAllUsers(pageNumber, pageSize, sort, search, withoutAccounts);
         return ResponseEntity.ok(users);
     }
 
@@ -102,8 +102,8 @@ public class UserController {
     public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(
         @PathVariable Long userId,
         @AuthenticationPrincipal User user,
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int pageNumber,
+        @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String iban,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -112,7 +112,7 @@ public class UserController {
         @RequestParam(required = false) Double minAmount,
         @RequestParam(required = false) Double amount
     ) throws UserNotFoundException {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, offset, limit, sort, iban, startDate, endDate, maxAmount, minAmount, amount);
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, pageNumber, pageSize, sort, iban, startDate, endDate, maxAmount, minAmount, amount);
         return ResponseEntity.ok(transactionResponses);
     }
 
