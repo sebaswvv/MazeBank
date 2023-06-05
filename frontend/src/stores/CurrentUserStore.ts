@@ -85,8 +85,6 @@ export const useCurrentUserStore = defineStore({
           firstName: user.firstName,
           lastName: user.lastName,
           phoneNumber: user.phoneNumber,
-          dayLimit: user.dayLimit,
-          transactionLimit: user.transactionLimit,
         };
 
         const response = await axios.patch(

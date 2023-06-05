@@ -29,7 +29,20 @@
             <button @click="saveUser" class="btn-primary mt-3">Opslaan</button>
             <p id="message">{{ message }}</p>
         </div>
-
+        <div>
+            <label for="firstName">Voornaam:</label>
+            <input v-model="user.firstName" id="firstName" placeholder="First Name" />
+        </div>
+        <div>
+            <label for="lastName">Achternaam:</label>
+            <input v-model="user.lastName" id="lastName" placeholder="Last Name" />
+        </div>
+        <div>
+            <label for="phoneNumber">Telefoonnummer:</label>
+            <input v-model="user.phoneNumber" id="phoneNumber" placeholder="Phone Number" />
+        </div>
+        <button @click="saveUser" class="btn-primary">Opslaan</button>
+        <p id="message">{{ message }}</p>
     </div>
 </template>
 
@@ -74,11 +87,6 @@ onMounted(async () => {
 
 const saveUser = async () => {
     message.value = '';
-    // check if both the limits are higher or equal to 0
-    if (user.dayLimit !== undefined && user.dayLimit < 0 || user.transactionLimit !== undefined && user.transactionLimit < 0) {
-        message.value = 'De limieten moeten hoger of gelijk zijn aan 0';
-        return;
-    }
     // Save the updated user data
     if (await currentUserStore.editUser(user)) {
         message.value = 'Uw gegevens zijn succesvol aangepast';

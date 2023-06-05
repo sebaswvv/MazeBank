@@ -288,12 +288,10 @@ class UserControllerTest extends BaseControllerTest {
         UserPatchRequest userPatchRequest = new UserPatchRequest();
         userPatchRequest.setFirstName("Jane");
         userPatchRequest.setLastName("Doe");
-        userPatchRequest.setDayLimit(500.00);
 
         User patchedUser = new User();
         patchedUser.setFirstName("Jane");
         patchedUser.setLastName("Doe");
-        patchedUser.setDayLimit(500.00);
 
         when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer)).thenReturn(patchedUser);
 
@@ -306,8 +304,7 @@ class UserControllerTest extends BaseControllerTest {
             ).andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.firstName").value("Jane"))
-            .andExpect(jsonPath("$.lastName").value("Doe"))
-            .andExpect(jsonPath("$.dayLimit").value(500.00));
+            .andExpect(jsonPath("$.lastName").value("Doe"));
     }
 
     @Test
@@ -315,7 +312,6 @@ class UserControllerTest extends BaseControllerTest {
         UserPatchRequest userPatchRequest = new UserPatchRequest();
         userPatchRequest.setFirstName("Jane");
         userPatchRequest.setLastName("Doe");
-        userPatchRequest.setDayLimit(500.00);
 
         when(userServiceJpa.patchUserById(1L, userPatchRequest, authCustomer))
             .thenThrow(new UserNotFoundException("User not found with id: " + 1));
@@ -335,7 +331,6 @@ class UserControllerTest extends BaseControllerTest {
         UserPatchRequest userPatchRequest = new UserPatchRequest();
         userPatchRequest.setFirstName("Jane");
         userPatchRequest.setLastName("Doe");
-        userPatchRequest.setDayLimit(500.00);
 
         when(userServiceJpa.patchUserById(2L, userPatchRequest, authCustomer))
             .thenThrow(new UnauthorizedUserAccessException("Access Denied"));
@@ -356,12 +351,10 @@ class UserControllerTest extends BaseControllerTest {
         UserPatchRequest userPatchRequest = new UserPatchRequest();
         userPatchRequest.setFirstName("Jane");
         userPatchRequest.setLastName("Doe");
-        userPatchRequest.setDayLimit(500.00);
 
         User patchedUser = new User();
         patchedUser.setFirstName("Jane");
         patchedUser.setLastName("Doe");
-        patchedUser.setDayLimit(500.00);
 
         when(userServiceJpa.patchUserById(1L, userPatchRequest, authEmployee)).thenReturn(patchedUser);
 
@@ -374,8 +367,7 @@ class UserControllerTest extends BaseControllerTest {
             ).andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.firstName").value("Jane"))
-            .andExpect(jsonPath("$.lastName").value("Doe"))
-            .andExpect(jsonPath("$.dayLimit").value(500.00));
+            .andExpect(jsonPath("$.lastName").value("Doe"));
     }
 
     // get accounts by user id
