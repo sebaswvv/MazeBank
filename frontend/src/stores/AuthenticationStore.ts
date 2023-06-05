@@ -3,7 +3,7 @@ import axios from '../utils/axios';
 import Login from '../interfaces/requests/Login';
 import Register from '../interfaces/requests/Register';
 import AuthState from '../interfaces/AuthState';
-import { useUserStore } from './UserStore';
+import { useUserStore } from './LoggedInUserStore';
 
 // STORE
 export const useAuthenticationStore = defineStore({
