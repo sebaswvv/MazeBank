@@ -85,7 +85,6 @@ onMounted(async () => {
         router.push('/');
     }
 
-    await userStore.fetchUser(2);
     await userStore.fetchAccounts();
     Object.assign(user, userStore.getUser);
 
@@ -122,6 +121,7 @@ async function saveUser() {
         message.value = 'Error occurred while saving user data.';
     }
 }
+
 
 async function handleBlockState() {
     try {

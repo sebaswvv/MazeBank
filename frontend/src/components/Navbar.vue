@@ -1,6 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg sticky bg-white navbar-light">
         <div class="container">
+            <img src="../assets/img/mazebank.jpg" alt="logo" width="50" height="50" class="d-inline-block align-text-top">
             <router-link :to="getMazeBankLink" class="nav-link" active-class="active navbar-brand">MazeBank</router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -12,7 +13,7 @@
                     </li>
                     <li class="nav-item" v-if="authenticationStore.getIsLoggedIn">
                         <router-link to="/atm" class="nav-link" active-class="active">
-                            <font-awesome-icon icon="fa-solid fa-user" />
+                            <font-awesome-icon icon="fa-solid fa-money-bills" />
                             ATM</router-link>
                     </li>
                     <li v-if="authenticationStore.getIsLoggedIn" class=" nav-item">
