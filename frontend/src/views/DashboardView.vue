@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue';
-import { useUserStore } from '../stores/UserStore';
+import { useUserStore } from '../stores/LoggedInUserStore';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import { useAccountStore } from '../stores/AccountStore';
 import router from '../router';

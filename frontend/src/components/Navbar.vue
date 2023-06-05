@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
-import { useUserStore } from '../stores/UserStore';
+import { useUserStore } from '../stores/LoggedInUserStore';
 import { computed } from 'vue';
 
 // VARIABLES
