@@ -15,7 +15,10 @@
             <div class="col-md-8 d-flex justify-content-center align-items-center">
                 <div class="all-users bg-light">
                     <template v-if="filteredUsers.length > 0">
-                        <SingleUserPreview v-for="user in filteredUsers" :key="user.id" :user="user" />
+                        <router-link v-for="user in filteredUsers" :key="user.id" to="/user" class="single-user-link"
+                            @click="handleUserClick(user.id)">
+                            <SingleUserPreview :user="user" />
+                        </router-link>
                     </template>
                     <template v-else>
                         <p>Geen gebruikers gevonden met deze zoekopdracht.</p>
@@ -39,6 +42,8 @@
 import SingleUserPreview from '../components/SingleUserPreview.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from './../utils/axios';
+import { useUserStore } from '../stores/UserStore';
+import router from '../router';
 
 const users = ref([]);
 const searchQuery = ref('');
@@ -56,7 +61,6 @@ async function fetchUsersWithoutAccounts() {
     const res = await axios.get(`/users?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}&withoutAccounts=true`);
     users.value = res.data;
 }
-
 
 watch(withoutAccounts, async (newValue) => {
     if (newValue) {
@@ -89,6 +93,11 @@ const filteredUsers = computed(() => {
     }
 });
 
+function handleUserClick(userId) {
+    useUserStore().fetchUser(userId);
+    router.push('/user');
+}
+
 watch(searchQuery, (newValue) => {
     performSearch(newValue);
 });
@@ -105,5 +114,10 @@ onMounted(() => {
     border: 1px solid #dee2e6;
     border-radius: 5px;
     padding: 10px;
+}
+
+.single-user-link {
+    text-decoration: none;
+    color: black;
 }
 </style>
