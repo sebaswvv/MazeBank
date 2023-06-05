@@ -1,6 +1,4 @@
 import { defineStore } from 'pinia';
-// import Account from '../interfaces/Account';
-// import Transaction from '../interfaces/Transaction';
 import { AtmScenes } from './../enums/AtmScenes';
 import axios from '../utils/axios';
 
@@ -37,9 +35,27 @@ export const useAtmStore = defineStore({
         amount: amount,
       });
 
-      // pass the error message or redirect to the next scene
-      if (response.status != 201) throw new Error(response.data.message);
-      else this.sceneState = AtmScenes.SELECT;
+      // Check the response status and handle accordingly
+      if (response.status !== 201) {
+        throw new Error(response.data.message);
+      } else {
+        this.sceneState = AtmScenes.SELECT;
+      }
+    },
+    async withdraw() {
+      const response = await axios.post(
+        `/accounts/${this.accountId}/withdraw`,
+        {
+          amount: this.amount,
+        }
+      );
+
+      // Check the response status and handle accordingly
+      if (response.status !== 200) {
+        throw new Error(response.data.message);
+      } else {
+        this.sceneState = AtmScenes.SELECT;
+      }
     },
   },
 });

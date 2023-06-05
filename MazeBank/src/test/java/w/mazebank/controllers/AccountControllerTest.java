@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AccountControllerTest extends BaseControllerTest{
+class AccountControllerTest extends BaseControllerTest {
     @Test
     void withdrawUnauthorizedThrows403() throws Exception {
 
@@ -40,7 +40,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: UnauthorizedAccountAccessException("You are not authorized to access this account");
-        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
+        when(accountService.withdraw(1L, 100.0, authCustomer)).thenThrow(new UnauthorizedAccountAccessException("Unauthorized"));
 
         // call the controller
         mockMvc.perform(post("/accounts/1/withdraw")
@@ -53,6 +53,7 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
+
     @Test
     void withdrawReturns201() throws Exception {
         // create account for the authUser
@@ -83,7 +84,7 @@ class AccountControllerTest extends BaseControllerTest{
             .build();
 
         // mock the service
-        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenReturn(transactionResponse);
+        when(accountService.withdraw(1L, 100.0, authCustomer)).thenReturn(transactionResponse);
 
         // call the controller
         mockMvc.perform(post("/accounts/1/withdraw")
@@ -455,12 +456,12 @@ class AccountControllerTest extends BaseControllerTest{
 
         // call the controller
         mockMvc.perform(post("/accounts/1/deposit")
-            .header("Authorization", "Bearer " + customerToken)
-            .with(csrf())
-            .with(user(authCustomer))
-            .contentType("application/json")
-            .content(request.toString())
-        ).andDo(print())
+                .header("Authorization", "Bearer " + customerToken)
+                .with(csrf())
+                .with(user(authCustomer))
+                .contentType("application/json")
+                .content(request.toString())
+            ).andDo(print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
@@ -502,12 +503,12 @@ class AccountControllerTest extends BaseControllerTest{
             .build();
 
         AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
-            .absoluteLimit(100.0)
+            .absoluteLimit(-1000.0)
             .build();
 
         // create AtmRequest
         JSONObject request = new JSONObject();
-        request.put("absoluteLimit", 100.0);
+        request.put("absoluteLimit", -1000.0);
 
         // create the TransactionResponse that the service should return
         AccountResponse accountResponse = AccountResponse.builder()
@@ -516,7 +517,7 @@ class AccountControllerTest extends BaseControllerTest{
             .accountType(AccountType.CHECKING.getValue())
             .balance(1000.0)
             .active(true)
-            .absoluteLimit(100.0)
+            .absoluteLimit(-1000.0)
             .build();
 
         // mock the service
@@ -536,16 +537,16 @@ class AccountControllerTest extends BaseControllerTest{
             .andExpect(jsonPath("$.accountType").value(AccountType.CHECKING.getValue()))
             .andExpect(jsonPath("$.balance").value(1000.0))
             .andExpect(jsonPath("$.active").value(true))
-            .andExpect(jsonPath("$.absoluteLimit").value(100.0));
+            .andExpect(jsonPath("$.absoluteLimit").value(-1000.0));
     }
 
     @Test
     void patchAccountWithNonExistingAccountWillGiveStatus404() throws Exception {
         // create AtmRequest
         JSONObject request = new JSONObject();
-        request.put("absoluteLimit", 100.0);
+        request.put("absoluteLimit", 0.0);
         AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
-            .absoluteLimit(100.0)
+            .absoluteLimit(0.0)
             .build();
         // mock the service
         when(accountService.updateAccount(1L, accountPatchRequest)).thenThrow(new AccountNotFoundException("Account with id: 1 not found"));
@@ -578,12 +579,12 @@ class AccountControllerTest extends BaseControllerTest{
             .build();
 
         AccountPatchRequest accountPatchRequest = AccountPatchRequest.builder()
-            .absoluteLimit(100.0)
+            .absoluteLimit(-1000.0)
             .build();
 
         // create AtmRequest
         JSONObject request = new JSONObject();
-        request.put("absoluteLimit", 100.0);
+        request.put("absoluteLimit", -1000.0);
 
         // create the TransactionResponse that the service should return
         AccountResponse accountResponse = AccountResponse.builder()
@@ -592,7 +593,7 @@ class AccountControllerTest extends BaseControllerTest{
             .accountType(AccountType.CHECKING.getValue())
             .balance(1000.0)
             .active(true)
-            .absoluteLimit(100.0)
+            .absoluteLimit(-1000.0)
             .build();
 
         // mock the service
@@ -632,7 +633,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: "Sender has insufficient funds"
-        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
+        when(accountService.withdraw(1L, 100.0, authCustomer)).thenThrow(new InsufficientFundsException("Sender has insufficient funds"));
 
         // call the controller and force spring security
         mockMvc.perform(post("/accounts/1/withdraw")
@@ -674,7 +675,7 @@ class AccountControllerTest extends BaseControllerTest{
         request.put("amount", 100.0);
 
         // this error message: "Sender has insufficient funds"
-        when(accountService.withdraw(1L, 100.0 , authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
+        when(accountService.withdraw(1L, 100.0, authCustomer)).thenThrow(new TransactionFailedException("Day limit exceeded"));
 
         // call the controller
         mockMvc.perform(post("/accounts/1/withdraw")
@@ -706,7 +707,7 @@ class AccountControllerTest extends BaseControllerTest{
 
 
         // mock the service
-        when(accountService.getTransactionsFromAccount(0, 10, "desc", authCustomer, 1L )).thenReturn(transactionResponses);
+        when(accountService.getTransactionsFromAccount(0, 10, "desc", authCustomer, 1L)).thenReturn(transactionResponses);
 
         // call the controller
         mockMvc.perform(get("/accounts/1/transactions")
