@@ -3,6 +3,7 @@ import axios from '../utils/axios';
 import User from '../interfaces/User';
 import AccountCompact from '../interfaces/User';
 import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
+import { RoleType } from '../enums/RoleType';
 
 // STORE
 export const useCurrentUserStore = defineStore({
@@ -12,8 +13,9 @@ export const useCurrentUserStore = defineStore({
     firstName: '',
     lastName: '',
     email: '',
+    bsn: '',
     phoneNumber: '',
-    role: 'CUSTOMER',
+    role: RoleType.CUSTOMER,
     accounts: [],
     transactionLimit: 0,
     dayLimit: 0,
@@ -24,7 +26,7 @@ export const useCurrentUserStore = defineStore({
       return state;
     },
     getIsEmployee(state) {
-      return state.role === 'EMPLOYEE';
+      return state.role.toString() === 'EMPLOYEE';
     },
   },
   actions: {
@@ -45,6 +47,8 @@ export const useCurrentUserStore = defineStore({
             accounts: response.data.accounts,
             transactionLimit: response.data.transactionLimit,
             dayLimit: response.data.dayLimit,
+            blocked: response.data.blocked,
+            bsn: response.data.bsn,
           };
           this.setUser(user);
         }
@@ -113,6 +117,9 @@ export const useCurrentUserStore = defineStore({
       this.role = user.role;
       this.accounts = user.accounts;
       this.transactionLimit = user.transactionLimit;
+      this.dayLimit = user.dayLimit;
+      this.blocked = user.blocked;
+      this.bsn = user.bsn;
     },
     logout() {
       this.id = 0;
@@ -120,10 +127,12 @@ export const useCurrentUserStore = defineStore({
       this.lastName = '';
       this.email = '';
       this.phoneNumber = '';
-      this.role = 'CUSTOMER';
+      this.role = RoleType.CUSTOMER;
       this.accounts = [];
       this.transactionLimit = 0;
       this.dayLimit = 0;
+      this.blocked = false;
+      this.bsn = '';
     },
     getAccounts() {
       return this.accounts;
