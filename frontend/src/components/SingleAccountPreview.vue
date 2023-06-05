@@ -1,19 +1,20 @@
 <template>
     <div class="row box">
         <div class="col mt-1">
-            <h5>{{ account.iban }}</h5>
+            <h6>{{ account.iban }}</h6>
         </div>
         <div class="col mt-1">
-            <h5>{{ user.firstName[0] }} {{ user.lastName }}</h5>
+            <h6>{{ user.firstName[0] }} {{ user.lastName }}</h6>
         </div>
         <div class="col mt-1">
-            <h5>{{ account.accountType }}</h5>
+            <h6>{{ getAccountTypeText(account.accountType) }}</h6>
         </div>
         <div class="col mt-1">
-            <h5>{{ account.balance }}</h5>
+            <h6>€ {{ formatBalance(account.balance) }}</h6>
         </div>
     </div>
 </template>
+
 
 <script setup lang="ts">
 import { PropType } from 'vue';
@@ -30,6 +31,15 @@ defineProps({
         required: true
     }
 });
+
+const getAccountTypeText = (accountType) => {
+    return accountType === 1 ? 'Betaalrekening' : 'Spaarrekening';
+};
+
+const formatBalance = (balance) => {
+    return balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 </script>
 
 <style scoped>

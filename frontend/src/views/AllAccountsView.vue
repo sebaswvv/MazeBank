@@ -11,7 +11,21 @@
                 </div>
             </div>
         </div>
-
+        <div class="row d-flex justify-content-center align-items-center mt-5">
+            <div class="col-md-8 d-flex justify-content-center align-items-center">
+                <div class="all-accounts bg-light">
+                    <template v-if="filteredAccounts.length > 0">
+                        <router-link v-for="account in filteredAccounts" :key="account.id" to="/account"
+                            class="single-account-link" @click="handleAccountClick(account.id)">
+                            <SingleAccountPreview :user="account.user" :account="account" />
+                        </router-link>
+                    </template>
+                    <template v-else>
+                        <p>Geen accounts gevonden met deze zoekopdracht.</p>
+                    </template>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -19,45 +33,23 @@
 import SingleAccountPreview from '../components/SingleAccountPreview.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from './../utils/axios';
-import { useAccountStore } from '../stores/AccountStore';
-import { useUserStore } from '../stores/UserStore';
 import router from '../router';
-import { AccountCompact } from '../interfaces/AccountCompact';
-import { UserCompact } from '../interfaces/UserCompact';
 
-const accounts = ref<AccountCompact[]>([]);
-const users = ref<UserCompact[]>([]);
+const accounts = ref([]);
 const searchQuery = ref('');
-const offset = ref(0);
-const limit = ref(10);
-const sort = ref('asc');
 
 const fetchAccounts = async () => {
-    const res = await axios.get(`/accounts?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}`);
+    const res = await axios.get(`/accounts`);
     accounts.value = res.data;
-    console.log(res.data);
 };
 
-const fetchUsers = async () => {
-    const res = await axios.get('/users');
-    users.value = res.data;
-};
-
-
-const getNameholder = (userId: number): string => {
-    const user = users.value.find((user) => user.id === userId);
-    if (user) {
-        return `${user.firstName} ${user.lastName}`;
-    }
-    return '';
-};
-
-const performSearch = (query: string) => {
+const performSearch = (query) => {
     const lowerCaseQuery = query.toLowerCase();
     filteredAccounts.value = accounts.value.filter(
         (account) =>
             account.iban.toLowerCase().includes(lowerCaseQuery) ||
-            getNameholder(account.userId).toLowerCase().includes(lowerCaseQuery)
+            account.user.firstName.toLowerCase().includes(lowerCaseQuery) ||
+            account.user.lastName.toLowerCase().includes(lowerCaseQuery)
     );
 };
 
@@ -66,15 +58,16 @@ const filteredAccounts = computed(() => {
     if (lowerCaseQuery === '') {
         return accounts.value;
     } else {
-        return accounts.value.filter((account) =>
-            account.iban.toLowerCase().includes(lowerCaseQuery) ||
-            getNameholder(account.userId).toLowerCase().includes(lowerCaseQuery)
+        return accounts.value.filter(
+            (account) =>
+                account.iban.toLowerCase().includes(lowerCaseQuery) ||
+                account.user.firstName.toLowerCase().includes(lowerCaseQuery) ||
+                account.user.lastName.toLowerCase().includes(lowerCaseQuery)
         );
     }
 });
 
-function handleAccountClick(accountId: number) {
-    useAccountStore().fetchAccount(accountId);
+function handleAccountClick(accountId) {
     router.push('/account');
 }
 
@@ -84,7 +77,6 @@ watch(searchQuery, (newValue) => {
 
 onMounted(() => {
     fetchAccounts();
-    fetchUsers();
 });
 </script>
 
