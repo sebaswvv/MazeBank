@@ -11,33 +11,12 @@
                 </div>
             </div>
         </div>
-        <div class="row d-flex justify-content-center align-items-center mt-5">
-            <div class="col-md-8 d-flex justify-content-center align-items-center">
-                <div class="all-accounts bg-light">
-                    <template v-if="filteredAccounts.length > 0">
-                        <router-link v-for="account in filteredAccounts" :key="account.id" to="/account"
-                            class="single-account-link" @click="handleAccountClick(account.id)">
-                            <AccountPreview :accountStore="accountStore" />
-                        </router-link>
-                    </template>
-                    <template v-else>
-                        <p>Geen accounts gevonden met deze zoekopdracht.</p>
-                    </template>
-                </div>
-            </div>
-            <div class="row d-flex justify-content-center align-items-center">
-                <div class="col-md-8">
-                    <input type="checkbox" class="form-check-input" id="withoutUsers" v-model="withoutUsers"
-                        @change="fetchAccountsWithoutUsers" />
-                    <label class="form-check-label" for="withoutUsers">Accounts zonder gebruikers</label>
-                </div>
-            </div>
-        </div>
+
     </div>
 </template>
 
 <script setup lang="ts">
-import AccountPreview from '../components/AccountPreview.vue';
+import SingleAccountPreview from '../components/SingleAccountPreview.vue';
 import { ref, onMounted, computed, watch } from 'vue';
 import axios from './../utils/axios';
 import { useAccountStore } from '../stores/AccountStore';
@@ -52,7 +31,6 @@ const searchQuery = ref('');
 const offset = ref(0);
 const limit = ref(10);
 const sort = ref('asc');
-const withoutUsers = ref(false);
 
 const fetchAccounts = async () => {
     const res = await axios.get(`/accounts?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}`);
@@ -65,20 +43,6 @@ const fetchUsers = async () => {
     users.value = res.data;
 };
 
-async function fetchAccountsWithoutUsers() {
-    const res = await axios.get(
-        `/accounts?offset=${offset.value}&limit=${limit.value}&sort=${sort.value}&withoutUsers=true`
-    );
-    accounts.value = res.data;
-}
-
-watch(withoutUsers, async (newValue) => {
-    if (newValue) {
-        await fetchAccountsWithoutUsers();
-    } else {
-        await fetchAccounts();
-    }
-});
 
 const getNameholder = (userId: number): string => {
     const user = users.value.find((user) => user.id === userId);
