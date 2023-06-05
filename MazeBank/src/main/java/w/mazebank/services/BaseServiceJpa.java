@@ -4,7 +4,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import w.mazebank.models.Transaction;
 import w.mazebank.repositories.BaseRepository;
 
 import java.util.List;

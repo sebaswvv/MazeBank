@@ -248,7 +248,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         List<Transaction> transactions = transactionPage != null ? transactionPage.getContent() : Collections.emptyList();
 
         return mapTransactionsToResponses(transactions);
-
     }
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
