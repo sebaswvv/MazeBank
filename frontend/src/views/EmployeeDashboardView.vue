@@ -1,32 +1,33 @@
 <template>
-    <h1>Employees</h1>
-    <div class="row">
-        <div class="col-md-4">
-            <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('users')">
-                <span class="button-text">Overzicht gebruikers</span>
-                <span class="button-icon">
-                <font-awesome-icon icon="fa-solid fa-user" />
-                </span>
-            </button>
-        </div>
-    <div class="col-md-4">
-            <button class="btn btn-secondary btn-lg btn-block custom-button">
-                <span class="button-text">Overzicht rekeningen</span>
-                <span class="button-icon">
-                <font-awesome-icon icon="fa-solid fa-credit-card" />
-                </span>
-            </button>
-        </div>
-        <div class="col-md-4">
-            <button class="btn btn-secondary btn-lg btn-block custom-button">
-                <span class="button-text">Doe een transactie</span>
-                <span class="button-icon">
-                <font-awesome-icon icon="fa-solid fa-money-bill-transfer" />
-                </span>
-            </button>
+    <div>
+        <h1 style="text-align: center;">Medewerker overzicht</h1>
+        <div class="mt-5 button-container">
+            <div>
+                <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('users')">
+                    <span class="button-text">Overzicht gebruikers</span>
+                    <span class="button-icon">
+                        <font-awesome-icon icon="fa-solid fa-user" />
+                    </span>
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('accounts')">
+                    <span class="button-text">Overzicht rekeningen</span>
+                    <span class="button-icon">
+                        <font-awesome-icon icon="fa-solid fa-credit-card" />
+                    </span>
+                </button>
+            </div>
+            <div>
+                <button class="btn btn-secondary btn-lg btn-block custom-button">
+                    <span class="button-text">Doe een transactie</span>
+                    <span class="button-icon">
+                        <font-awesome-icon icon="fa-solid fa-money-bill-transfer" />
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
-
 </template>
 
 <script setup lang="ts">
@@ -39,13 +40,22 @@ function handleNav(url: string) {
 
 <style>
 .custom-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 380px;
+    /* Adjust the height as desired */
 }
 
 .button-text {
-  margin-bottom: 5px; /* Adjust the margin as needed */
+    margin-bottom: 5px;
+    /* Adjust the margin as needed */
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
 }
 </style>
