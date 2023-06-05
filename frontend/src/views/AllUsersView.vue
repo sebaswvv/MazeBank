@@ -68,7 +68,7 @@ watch(withoutAccounts, async (newValue) => {
     }
 });
 
-const performSearch = (query) => {
+const performSearch = (query: any) => {
     const lowerCaseQuery = query.toLowerCase();
     filteredUsers.value = users.value.filter(
         user =>
@@ -91,7 +91,7 @@ const filteredUsers = computed(() => {
     }
 });
 
-function handleUserClick(userId) {
+function handleUserClick(userId: number) {
     useUserStore().fetchUser(userId);
     router.push('/user');
 }

@@ -32,11 +32,11 @@ defineProps({
     }
 });
 
-const getAccountTypeText = (accountType) => {
+const getAccountTypeText = (accountType: any) => {
     return accountType === 1 ? 'Betaalrekening' : 'Spaarrekening';
 };
 
-const formatBalance = (balance) => {
+const formatBalance = (balance: any) => {
     return balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
