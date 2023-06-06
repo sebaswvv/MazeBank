@@ -25,6 +25,13 @@
                     </template>
                 </div>
             </div>
+            <div class="row d-flex justify-content-center align-items-center mt-3">
+                <div class="col-md-8">
+
+                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Previous</button>
+                    <button class="btn-secondary" @click="nextPage">Next</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -37,9 +44,12 @@ import router from '../router';
 
 const accounts = ref([]);
 const searchQuery = ref('');
+const pageNumber = ref(0);
+const pageSize = ref(10);
+const sort = ref('asc');
 
 const fetchAccounts = async () => {
-    const res = await axios.get(`/accounts`);
+    const res = await axios.get(`/accounts?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}`);
     accounts.value = res.data;
 };
 
@@ -66,6 +76,19 @@ const filteredAccounts = computed(() => {
         );
     }
 });
+
+const previousPage = () => {
+    if (pageNumber.value > 0) {
+        pageNumber.value--;
+        fetchAccounts();
+    }
+};
+
+const nextPage = () => {
+    pageNumber.value++;
+    fetchAccounts();
+};
+
 
 function handleAccountClick(accountId) {
     router.push('/account');
