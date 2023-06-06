@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import axios from '../utils/axios';
 import User from '../interfaces/User';
-import AccountCompact from '../interfaces/User';
 import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
 import { RoleType } from '../enums/RoleType';
+import AccountCompact from '../interfaces/AccountCompact';
 
 // STORE
 export const useCurrentUserStore = defineStore({
@@ -28,6 +28,16 @@ export const useCurrentUserStore = defineStore({
     getIsEmployee(state) {
       return state.role.toString() === 'EMPLOYEE';
     },
+    getAccounts(state) {
+      return state.accounts;
+    },
+    // getCurrentAccount(state) {
+    //   // return state.accounts[0];
+
+    //   if (state.accounts[0].accountType == 1) return state.accounts[0];
+
+    //   return null;
+    // },
   },
   actions: {
     async fetchUser(id: number) {
@@ -56,7 +66,7 @@ export const useCurrentUserStore = defineStore({
         console.error(error);
       }
     },
-    async getAccountsOfUser(id: number) {
+    async fetchAccountsOfUser(id: number) {
       try {
         if (!id) return;
         const response = await axios.get(`/users/${id}/accounts`);
@@ -64,6 +74,9 @@ export const useCurrentUserStore = defineStore({
           // for each account in response.data, create an AccountCompact object
           const accounts: AccountCompact[] = response.data.map(
             (account: any) => {
+              if (account.accountType == 1) {
+                localStorage.setItem('currentAccountId', account.id);
+              }
               return {
                 id: account.id,
                 iban: account.iban,
@@ -73,6 +86,7 @@ export const useCurrentUserStore = defineStore({
             }
           );
           this.setAccounts(accounts);
+          console.log(this.accounts);
         }
       } catch (error: any) {
         console.error(error);
@@ -131,9 +145,7 @@ export const useCurrentUserStore = defineStore({
       this.dayLimit = 0;
       this.blocked = false;
       this.bsn = '';
-    },
-    getAccounts() {
-      return this.accounts;
+      localStorage.clear();
     },
   },
 });

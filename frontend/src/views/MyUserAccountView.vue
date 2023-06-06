@@ -58,7 +58,7 @@ onMounted(async () => {
     }
 
     await currentUserStore.fetchUser(authenticationStore.userId);
-    await currentUserStore.getAccountsOfUser(authenticationStore.userId);
+    await currentUserStore.fetchAccountsOfUser(authenticationStore.userId);
 
     Object.assign(user, currentUserStore.getUser);
 });
