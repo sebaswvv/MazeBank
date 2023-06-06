@@ -26,10 +26,7 @@ import TransactionComponent from '../components/TransactionComponent.vue';
 import { useAccountStore } from '../stores/AccountStore';
 
 const accountStore = useAccountStore();
-const accountId: number = 2;
 
-// Fetch account
-accountStore.fetchAccount(accountId);
 accountStore.fetchTransactions();
 
 

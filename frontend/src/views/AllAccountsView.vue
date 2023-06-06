@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import SingleAccountPreview from '../components/SingleAccountPreview.vue';
 import { ref, onMounted, computed, watch } from 'vue';
+import { useAccountStore } from '../stores/AccountStore';
 import axios from './../utils/axios';
 import router from '../router';
 
@@ -47,6 +48,8 @@ const searchQuery = ref('');
 const pageNumber = ref(0);
 const pageSize = ref(10);
 const sort = ref('asc');
+
+const accountStore = useAccountStore();
 
 const fetchAccounts = async () => {
     const res = await axios.get(`/accounts?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}`);
@@ -90,7 +93,8 @@ const nextPage = () => {
 };
 
 
-function handleAccountClick(accountId) {
+async function handleAccountClick(accountId: any) {
+    await accountStore.fetchAccount(accountId);
     router.push('/account');
 }
 
