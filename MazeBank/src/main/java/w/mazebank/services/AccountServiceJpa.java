@@ -94,6 +94,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
         User user = userServiceJpa.getUserById(body.getUserId());
+
         Account account = Account.builder()
             .accountType(body.getAccountType())
             .iban(IbanGenerator.generate())
@@ -106,6 +107,10 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<Account> accounts = user.getAccounts();
         int checkingAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.CHECKING).count();
         int savingsAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.SAVINGS).count();
+
+        // you cannot add a savings account when the user doesn't have a checking account
+        if (account.getAccountType() == AccountType.SAVINGS && checkingAccounts == 0)
+            throw new AccountCreationLimitReachedException("You need a checking account to create a savings account");
 
         // check if account creation limit has been reached
         if (account.getAccountType() == AccountType.SAVINGS && savingsAccounts >= 1)

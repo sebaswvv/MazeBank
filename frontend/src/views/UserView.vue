@@ -143,7 +143,7 @@ const handleAddAccount = async () => {
         errorMessageNewAccount.value = 'Account toegevoegd!';
         window.location.reload();
     } else
-        errorMessageNewAccount.value = 'Er is iets misgegaan, waarschijnlijk bestaat dit account al.';
+        errorMessageNewAccount.value = 'Dit account bestaat al of heeft nog geen betaal rekening.';
 };
 
 onMounted(async () => {
