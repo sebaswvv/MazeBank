@@ -54,9 +54,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<AccountResponse> accountResponses = new ArrayList<>();
         for (Account account : accounts) {
 
-            // if account is bankaccount, skip
-            if (account.getIban().equals("NL01INHO0000000001")) continue;
-
             AccountResponse accountResponse = AccountResponse.builder()
                 .id(account.getId())
                 .accountType(account.getAccountType().getValue())

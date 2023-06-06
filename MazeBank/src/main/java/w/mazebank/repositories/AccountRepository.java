@@ -1,11 +1,11 @@
 package w.mazebank.repositories;
+    import org.springframework.data.domain.Page;
     import org.springframework.data.domain.Pageable;
     import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
     import org.springframework.data.jpa.repository.Query;
     import org.springframework.data.repository.query.Param;
     import org.springframework.stereotype.Repository;
     import w.mazebank.models.Account;
-    import w.mazebank.models.Transaction;
 
     import java.util.List;
     import java.util.Optional;
@@ -23,4 +23,8 @@ public interface AccountRepository extends BaseRepository<Account, Long, JpaSpec
 
     @Query("SELECT a FROM Account a WHERE a.user.firstName LIKE %:firstName% AND a.user.lastName LIKE %:lastName%")
     List<Account> findAccountsByFirstNameAndLastName(@Param("firstName") String firstName, @Param("lastName") String lastName);
+
+    @Override
+    @Query("SELECT a FROM Account a WHERE a.iban <> 'NL01INHO0000000001'")
+    Page<Account> findAll(Pageable pageable);
 }
