@@ -33,7 +33,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 
-@Import({ApplicationConfig.class, SecurityConfiguration.class })
+@Import({ApplicationConfig.class, SecurityConfiguration.class})
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {AccountController.class, AuthController.class, UserController.class, TransactionController.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -95,8 +95,8 @@ class BaseControllerTest {
         userResponses.add(new UserResponse(2L, "Jane", "Doe"));
 
         accountResponses = new ArrayList<>();
-        accountResponses.add(new AccountResponse(1L, 1, "NL01MAZE0000000001", userResponses.get(0), 1000, null, null, LocalDateTime.now()));
-        accountResponses.add(new AccountResponse(2L, 1, "NL01MAZE0000000002", userResponses.get(0), 2000, null, null, LocalDateTime.now()));
+        accountResponses.add(new AccountResponse(1L, 1, "NL01MAZE0000000001", userResponses.get(0), 1000, null, null, LocalDateTime.now().toString()));
+        accountResponses.add(new AccountResponse(2L, 1, "NL01MAZE0000000002", userResponses.get(0), 2000, null, null, LocalDateTime.now().toString()));
 
         transactionResponses = new ArrayList<>();
         transactionResponses.add(new TransactionResponse(1L, 100, "", "NL01MAZE0000000001", "NL01MAZE0000000002", 1L, LocalDateTime.now().toString(), "deposit"));
