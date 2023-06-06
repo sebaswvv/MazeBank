@@ -506,7 +506,7 @@ class UserServiceJpaTest {
         });
 
         // test results
-        assertEquals("User not found", exception.getMessage());
+        assertEquals("user not found with id: 2", exception.getMessage());
         verify(userRepository, times(1)).findById(2L);
     }
 
