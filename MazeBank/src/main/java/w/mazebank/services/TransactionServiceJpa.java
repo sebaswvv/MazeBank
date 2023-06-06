@@ -149,7 +149,7 @@ public class TransactionServiceJpa {
         // create transaction of type deposit and save it
         Transaction transaction = Transaction.builder()
             .amount(amount)
-            .transactionType(TransactionType.DEPOSIT)
+            .transactionType(transactionType)
             .userPerforming(userPerforming)
             .sender(getBankAccount())
             .receiver(account)
