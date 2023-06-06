@@ -247,7 +247,7 @@ class TransactionServiceJpaTest {
         when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
 
         // Perform the transaction
-        assertThrows(InsufficientFundsException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
+        assertThrows(AccountAbsoluteLimitReachedException.class, () -> transactionServiceJpa.postTransaction(transactionRequest, users.get(0)));
 
         // Assert the transaction was not successful
         assertEquals(0, transactionRepository.findAll().size());
@@ -320,7 +320,7 @@ class TransactionServiceJpaTest {
         when(accountServiceJpa.getAccountByIban("receiver_iban")).thenReturn(accounts.get(1));
 
         // Perform the transaction
-        assertThrows(InsufficientFundsException.class, () -> {
+        assertThrows(AccountAbsoluteLimitReachedException.class, () -> {
             transactionServiceJpa.postTransaction(transactionRequest, users.get(0));
         });
 
