@@ -32,6 +32,13 @@
                     <label class="form-check-label" for="withoutAccounts">Gebruikers zonder rekening(en)</label>
                 </div>
             </div>
+            <div class="row d-flex justify-content-center align-items-center mt-3">
+                <div class="col-md-8">
+
+                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Previous</button>
+                    <button class="btn-secondary" @click="nextPage">Next</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -60,6 +67,18 @@ async function fetchUsersWithoutAccounts() {
     const res = await axios.get(`/users?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}&withoutAccounts=true`);
     users.value = res.data;
 }
+// Add the following functions
+const previousPage = () => {
+    if (pageNumber.value > 0) {
+        pageNumber.value--;
+        fetchUsers();
+    }
+};
+
+const nextPage = () => {
+    pageNumber.value++;
+    fetchUsers();
+};
 
 watch(withoutAccounts, async (newValue) => {
     if (newValue) {
