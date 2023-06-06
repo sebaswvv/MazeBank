@@ -44,7 +44,29 @@
                     <h2>Acties</h2>
                     <div class="row">
                         <div class="col">
-                            <button class="btn-primary" :disabled="user.accounts?.length == 2">Rekening toevoegen</button>
+                            <button class="btn-primary" @click="openAddAccountDialog"
+                                :disabled="user.accounts?.length == 2">Rekening toevoegen</button>
+                            <dialog id="addAccountDialog">
+                                <button class="close-button" @click="closeAddAccountDialog">&times;</button>
+                                <form @submit.prevent>
+                                    <label for="accountType">Rekening type:</label>
+                                    <select v-model="newAccountType" id="accountType">
+                                        <option value="0">Betaalrekening</option>
+                                        <option value="1">Spaarrekening</option>
+                                    </select>
+                                    <div>
+                                        <label for="isActive">Actief:</label>
+                                        <input :="newAccountIsActive" type="checkbox" id="isActive" checked />
+                                    </div>
+                                    <div>
+                                        <label for="absoluteLimit">Absolute limiet:</label>
+                                        <input :="newAccountAbosulteLimit" max="0" value="0" type="number"
+                                            id="absoluteLimit" />
+                                    </div>
+                                    <p>{{ errorMessageNewAccount }}</p>
+                                    <button @click="handleAddAccount" class="btn-primary">Toevoegen</button>
+                                </form>
+                            </dialog>
                         </div>
                         <div class="col">
                             <button class="btn-secondary" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
@@ -82,11 +104,47 @@ import User from '../interfaces/User';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import { RoleType } from '../enums/RoleType';
-import axios from 'axios';
+import { AccountType } from '../enums/AccountType';
+import AccountRequest from '../interfaces/requests/AccountRequest';
+// import axios from 'axios';
 
 const userStore = useUserStore();
 const authenticationStore = useAuthenticationStore();
 const accountStore = useAccountStore();
+
+const newAccountType = ref(AccountType.CURRENT)
+const newAccountIsActive = ref(true);
+const newAccountAbosulteLimit = ref(0);
+const errorMessageNewAccount = ref('');
+
+
+const openAddAccountDialog = () => {
+    const dialog = document.getElementById('addAccountDialog') as HTMLDialogElement;
+    dialog.showModal();
+};
+
+const closeAddAccountDialog = () => {
+    const dialog = document.getElementById('addAccountDialog') as HTMLDialogElement;
+    dialog.close();
+};
+
+
+const handleAddAccount = async () => {
+    // create new account request
+    const newAccountRequest: AccountRequest = {
+        userId: user.id,
+        accountType: newAccountType.value == 1 ? AccountType.SAVINGS : AccountType.CURRENT,
+        isActive: newAccountIsActive.value,
+        absoluteLimit: newAccountAbosulteLimit.value
+    };
+
+    // add account to user
+    if (await userStore.addAccount(newAccountRequest)) {
+        errorMessageNewAccount.value = 'Account toegevoegd!';
+        window.location.reload();
+    } else
+        errorMessageNewAccount.value = 'Er is iets misgegaan, waarschijnlijk bestaat dit account al.';
+};
 
 onMounted(async () => {
     // Check if the user is authenticated
@@ -189,5 +247,45 @@ async function handleDeleteUser() {
 .btn-primary:disabled {
     background-color: #6c757d !important;
     border-color: #6c757d !important;
+}
+
+dialog {
+    border-radius: 5px;
+}
+
+dialog form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+dialog label {
+    font-weight: bold;
+}
+
+dialog input[type="checkbox"],
+dialog input[type="number"],
+dialog select {
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+dialog button.close-button {
+    position: absolute;
+    top: -1px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 35px;
+    cursor: pointer;
+}
+
+dialog button.close-button:hover {
+    color: #333;
 }
 </style>
