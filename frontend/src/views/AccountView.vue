@@ -15,7 +15,12 @@
 
         <!-- Show transactions of this account -->
         <div class="row rounded bg-light py-2 d-flex justify-content-center">
-            <TransactionComponent v-for="transaction in accountStore.getTransactions" :transaction="transaction" />
+            <template v-if="accountStore.getTransactions.length > 0">
+                <TransactionComponent v-for="transaction in accountStore.getTransactions" :transaction="transaction" />
+            </template>
+            <template v-else>
+                <p>Deze rekening heeft nog geen transacties.</p>
+            </template>
         </div>
     </div>
 </template>
