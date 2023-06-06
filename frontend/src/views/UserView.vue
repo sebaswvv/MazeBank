@@ -51,8 +51,8 @@
                                 <form @submit.prevent>
                                     <label for="accountType">Rekening type:</label>
                                     <select v-model="newAccountType" id="accountType">
-                                        <option value="0">Betaalrekening</option>
-                                        <option value="1">Spaarrekening</option>
+                                        <option value="0">Spaarrekening</option>
+                                        <option value="1">Betaalrekening</option>
                                     </select>
                                     <div>
                                         <label for="isActive">Actief:</label>
@@ -86,7 +86,7 @@
                     <h2>Rekeningen</h2>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === 0 ? 'Betaal' : 'Spaar'" class="account rounded"
+                        :accountType="account.accountType === 1 ? 'Betaal' : 'Spaar'" class="account rounded"
                         @click="handleClickOnAccount(account.id)" />
                 </div>
 
@@ -133,7 +133,7 @@ const handleAddAccount = async () => {
     // create new account request
     const newAccountRequest: AccountRequest = {
         userId: user.id,
-        accountType: newAccountType.value == 1 ? AccountType.SAVINGS : AccountType.CURRENT,
+        accountType: newAccountType.value == 0 ? AccountType.SAVINGS : AccountType.CURRENT,
         isActive: newAccountIsActive.value,
         absoluteLimit: newAccountAbosulteLimit.value
     };
