@@ -7,7 +7,7 @@
                     <p class="text-center mt-2">Klik op één van uw rekeningen om verder te gaan</p>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === 0 ? 'Betaal' : 'Spaar'" class="account"
+                        :accountType="account.accountType === 1 ? 'Betaal' : 'Spaar'" class="account"
                         @click="handleClickOnAccount(account.id)" />
                 </template>
                 <template v-else>
@@ -55,7 +55,7 @@ onMounted(async () => {
         router.push('/');
     }
     await currentUserStore.fetchUser(authenticationStore.userId);
-    await currentUserStore.getAccountsOfUser(authenticationStore.userId);
+    await currentUserStore.fetchAccountsOfUser(authenticationStore.userId);
 
     Object.assign(user, currentUserStore.getUser);
 });

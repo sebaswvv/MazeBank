@@ -40,8 +40,7 @@ export const useAuthenticationStore = defineStore({
       }
     },
     logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
+      localStorage.clear();
 
       axios.updateAuthorizationHeader('');
       this.userId = null;

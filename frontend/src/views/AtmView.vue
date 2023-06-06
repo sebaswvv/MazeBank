@@ -24,12 +24,28 @@ import { AtmScenes } from './../enums/AtmScenes';
 import DepositComponent from './../components/atm/DepositComponent.vue';
 import WithdrawComponent from './../components/atm/WithdrawComponent.vue';
 import { useAtmStore } from './../stores/AtmStore.ts';
-
+import { useCurrentUserStore } from '../stores/CurrentUserStore';
+import { computed, onMounted } from 'vue';
 const atmStore = useAtmStore();
 
-// mock the accountId: FOR TESTING ONLY
-atmStore.setAccountId(2);
 
+onMounted(async () => {
+    const atmStore = useAtmStore();
+    const currentUserStore = useCurrentUserStore();
+
+    // get the current account of the user
+    const userId = localStorage.getItem('userId');
+    await currentUserStore.fetchUser(Number(userId));
+    await currentUserStore.fetchAccountsOfUser(Number(userId));
+    atmStore.setAccountId(Number(localStorage.getItem('currentAccountId')));
+});
+
+
+// get the current account of the user
+// const userId = localStorage.getItem('userId');
+// await currentUserStore.fetchUser(Number(userId));
+// await currentUserStore.fetchAccountsOfUser(Number(userId));
+// atmStore.setAccountId(Number(localStorage.getItem('currentAccountId')));
 
 function handleChangeScene(scene: AtmScenes) {
     atmStore.setSceneState(scene);
