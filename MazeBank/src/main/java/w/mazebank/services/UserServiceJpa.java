@@ -87,9 +87,6 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         List<User> filteredUsers = new ArrayList<>(users);
 
-        // remove the user account of the bank
-        filteredUsers.removeIf(user -> user.getId() == 1L);
-
         // If withoutAccounts is true, remove users that have accounts
         if (withoutAccounts) {
             filteredUsers.removeIf(user -> user.getAccounts() != null && !user.getAccounts().isEmpty());
