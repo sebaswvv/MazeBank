@@ -21,8 +21,8 @@
     <div class="form-container login-container">
       <div class="form">
         <h1>Login</h1>
-        <input type="email" placeholder="Email" v-model="email">
-        <input type="password" placeholder="Password" v-model="password">
+        <input @keydown.enter="handleLoginClick" type="email" placeholder="Email" v-model="email">
+        <input @keydown.enter="handleLoginClick" type="password" placeholder="Password" v-model="password">
         <p id="error">{{ errorMessage }}</p>
         <button class="btn-primary" @click="handleLoginClick">Login</button>
       </div>

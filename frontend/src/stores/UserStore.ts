@@ -3,6 +3,7 @@ import axios from '../utils/axios';
 import User from '../interfaces/User';
 import AccountCompact from '../interfaces/AccountCompact';
 import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
+import AccountRequest from '../interfaces/requests/AccountRequest';
 // import AccountCompact from '../interfaces/User';
 
 // STORE
@@ -40,6 +41,7 @@ export const useUserStore = defineStore({
             transactionLimit: response.data.transactionLimit,
             accounts: response.data.accounts,
             blocked: response.data.blocked,
+            bsn: response.data.bsn,
           };
           this.setUser(user);
           console.log(user);
@@ -71,6 +73,22 @@ export const useUserStore = defineStore({
         console.error(error);
       }
     },
+    async addAccount(accountRequest: AccountRequest) {
+      // add account for user with id in AccountRequest
+      try {
+        const response = await axios.post(
+          `/accounts`,
+          accountRequest
+        );
+        if (response.status === 201) {
+          return true;
+        }
+        return false;
+      } catch (error: any) {
+      console.error(error);
+      return false;
+    }
+    },    
     async updateUser(user: User) {
       try {
         const userPatchRequest: UserPatchRequest = {
@@ -78,8 +96,6 @@ export const useUserStore = defineStore({
           firstName: user.firstName,
           lastName: user.lastName,
           phoneNumber: user.phoneNumber,
-          dayLimit: user.dayLimit,
-          transactionLimit: user.transactionLimit,
         };
 
         const response = await axios.patch(
