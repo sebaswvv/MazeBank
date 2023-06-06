@@ -67,7 +67,7 @@ async function fetchUsersWithoutAccounts() {
     const res = await axios.get(`/users?pageNumber=${pageNumber.value}&pageSize=${pageSize.value}&sort=${sort.value}&withoutAccounts=true`);
     users.value = res.data;
 }
-// Add the following functions
+
 const previousPage = () => {
     if (pageNumber.value > 0) {
         pageNumber.value--;
