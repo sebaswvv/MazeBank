@@ -33,12 +33,11 @@ export const useAccountStore = defineStore({
     },
     async fetchTransactions() {
       try {
-        // const response = await axios.get(
-        //   `/transactions/account/${this.account?.id}`
-        // );
+        const response = await axios.get(
+          `/accounts/${this.account?.id}/transactions`
+        );
 
         // for testing
-        const response = await axios.get(`/accounts/2/transactions`);
         if (response.status === 200) {
           this.transactions = response.data;
           console.log(this.transactions);

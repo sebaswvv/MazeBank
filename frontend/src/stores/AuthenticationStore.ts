@@ -54,7 +54,7 @@ export const useAuthenticationStore = defineStore({
         const response = await axios.post('/auth/register', registerRequest);
         if (response.status === 201) {
           this.setUser(response.data.authenticationToken);
-          axios.updateAuthorizationHeader(response.data.jwt);
+          axios.updateAuthorizationHeader(response.data.authenticationToken);
         }
       } catch (error: any) {
         console.error(error);
