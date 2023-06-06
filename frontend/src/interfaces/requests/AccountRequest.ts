@@ -3,7 +3,7 @@ import { AccountType } from "../../enums/AccountType";
 interface AccountRequest {
     accountType: AccountType;
     userId: number;
-    isActive: boolean;
+    active: boolean;
     absoluteLimit: number;
 }
 

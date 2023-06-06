@@ -7,6 +7,7 @@ import AllUsersView from '../views/AllUsersView.vue';
 import AllAccountsView from '../views/AllAccountsView.vue';
 import CustomerDashboard from '../views/DashboardView.vue';
 import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
+import EditAccountView from '../views/EditAccountView.vue';
 import User from '../views/UserView.vue';
 import MyUserAccountView from '../views/MyUserAccountView.vue';
 
@@ -21,6 +22,7 @@ const routes = [
   { path: '/account', component: Account, meta: { requiresAuth: true } },
   { path: '/users', component: AllUsersView, meta: { requiresAdmin: true } },
   { path: '/accounts', component: AllAccountsView, meta: { requiresAdmin: true } },
+  { path: '/edit-account', component: EditAccountView, meta: { requiresAdmin: true } },
   { path: '/dashboard', component: CustomerDashboard },
   { path: '/user', component: User, meta: { requiresAuth: true } },
   {

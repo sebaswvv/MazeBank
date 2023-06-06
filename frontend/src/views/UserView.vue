@@ -134,7 +134,7 @@ const handleAddAccount = async () => {
     const newAccountRequest: AccountRequest = {
         userId: user.id,
         accountType: newAccountType.value == 0 ? AccountType.SAVINGS : AccountType.CURRENT,
-        isActive: newAccountIsActive.value,
+        active: newAccountIsActive.value,
         absoluteLimit: newAccountAbosulteLimit.value
     };
 
@@ -217,7 +217,7 @@ async function handleBlockState() {
 const handleClickOnAccount = async (id: any) => {
     // Use the `iban` parameter as needed
     await accountStore.fetchAccount(id);
-    router.push('/account');
+    router.push('/edit-account');
 };
 
 async function handleDeleteUser() {

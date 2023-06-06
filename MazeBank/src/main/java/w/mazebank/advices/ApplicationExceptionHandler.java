@@ -166,4 +166,13 @@ public class ApplicationExceptionHandler {
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Not Old Enough");
     }
 
+    //  AccountLockOrUnlockStatusException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AccountLockOrUnlockStatusException.class)
+    public ResponseEntity<Object> handleAccountLockOrUnlockStatusException(AccountLockOrUnlockStatusException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
 }

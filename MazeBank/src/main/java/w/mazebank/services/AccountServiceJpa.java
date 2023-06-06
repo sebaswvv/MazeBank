@@ -104,6 +104,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
             .balance(0.0)
             .build();
 
+        System.out.println(body);
+
         List<Account> accounts = user.getAccounts();
         int checkingAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.CHECKING).count();
         int savingsAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.SAVINGS).count();
