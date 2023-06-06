@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import Account from '../interfaces/Account';
 import Transaction from '../interfaces/Transaction';
 import axios from '../utils/axios';
+import AccountPatchRequest from '../interfaces/requests/AccountPatchRequest';
 
 export const useAccountStore = defineStore({
   id: 'account',
@@ -41,6 +42,36 @@ export const useAccountStore = defineStore({
         if (response.status === 200) {
           this.transactions = response.data;
           console.log(this.transactions);
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    async updateAccount(request: AccountPatchRequest) {
+      try {
+        const response = await axios.patch(`/accounts/${this.account?.id}`, request);
+        if (response.status === 200) {
+          this.account = response.data;
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    async blockAccount() {
+      try {
+        const response = await axios.put(`/accounts/${this.account?.id}/disable`);
+        if (response.status === 200) {
+          this.fetchAccount(this.account?.id!);
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+    },
+    async unblockAccount() {
+      try {
+        const response = await axios.put(`/accounts/${this.account?.id}/enable`);
+        if (response.status === 200) {
+          this.fetchAccount(this.account?.id!);
         }
       } catch (error: any) {
         console.error(error);
