@@ -101,6 +101,12 @@ class UserServiceJpaTest {
             .id(1L)
             .firstName("John")
             .lastName("Doe")
+            .accounts(List.of(
+                Account.builder()
+                    .id(1L)
+                    .accountType(AccountType.CHECKING)
+                    .build()
+            ))
             .build());
         users.add(User.builder()
             .id(2L)
