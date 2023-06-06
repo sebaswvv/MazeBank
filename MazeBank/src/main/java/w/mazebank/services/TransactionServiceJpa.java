@@ -138,14 +138,6 @@ public class TransactionServiceJpa {
     // method for both deposit and withdrawal
     @Transactional
     public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException, AccountNotFoundException {
-
-        // update account balance depending on transaction type
-        if (transactionType == TransactionType.WITHDRAWAL) {
-            account.setBalance(account.getBalance() - amount);
-        } else if (transactionType == TransactionType.DEPOSIT) {
-            account.setBalance(account.getBalance() + amount);
-        }
-
         // create transaction of type deposit and save it
         Transaction transaction = Transaction.builder()
             .amount(amount)
@@ -159,6 +151,13 @@ public class TransactionServiceJpa {
         // validate transaction
         validateAtmTransaction(transaction);
 
+        // update account balance depending on transaction type
+        if (transactionType == TransactionType.WITHDRAWAL) {
+            account.setBalance(account.getBalance() - amount);
+        } else if (transactionType == TransactionType.DEPOSIT) {
+            account.setBalance(account.getBalance() + amount);
+        }
+
         // save account's new balance
         accountRepository.save(account);
 
@@ -170,7 +169,8 @@ public class TransactionServiceJpa {
         checkIfSenderAndReceiverAreNotTheSame(transaction);
         checkIfAnAccountIsBlocked(transaction);
         checkIfTransactionLimitIsExceeded(transaction);
-        validateSufficientFunds(transaction);
+        checkIfAbsoluteLimitIsReached(transaction);
+        // validateSufficientFunds(transaction);
         checkDayLimitExceeded(transaction);
         checkIfUserIsBlocked(transaction);
     }
@@ -234,6 +234,18 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("Transaction limit exceeded");
     }
 
+    private void checkIfAbsoluteLimitIsReached(Transaction transaction) throws AccountAbsoluteLimitReachedException {
+        if (transaction.getTransactionType() == TransactionType.TRANSFER ||
+            transaction.getTransactionType() == TransactionType.WITHDRAWAL) {
+            Account accountToCheck = transaction.getTransactionType() == TransactionType.WITHDRAWAL
+                ? transaction.getReceiver()
+                : transaction.getSender();
+
+            if ((accountToCheck.getBalance() - transaction.getAmount()) < accountToCheck.getAbsoluteLimit())
+                throw new AccountAbsoluteLimitReachedException("Balance cannot become lower than absolute limit");
+        }
+    }
+
     private void checkDayLimitExceeded(Transaction transaction) throws TransactionFailedException {
         if (dayLimitExceeded(transaction.getSender(), transaction.getAmount()))
             throw new TransactionFailedException("Day limit exceeded");
@@ -247,12 +259,12 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
     }
 
-    private void validateSufficientFunds(Transaction transaction) throws InsufficientFundsException {
-        // TODO: moet dit niet met absolute limit?
-
-        if (transaction.getSender().getBalance() - transaction.getAmount() < 0)
-            throw new InsufficientFundsException("Sender has insufficient funds");
-    }
+    // private void validateSufficientFunds(Transaction transaction) throws InsufficientFundsException {
+    //     // TODO: moet dit niet met absolute limit?
+    //
+    //     if (transaction.getSender().getBalance() - transaction.getAmount() < 0)
+    //         throw new InsufficientFundsException("Sender has insufficient funds");
+    // }
 
     private void checkIfSenderAndReceiverAreNotTheSame(Transaction transaction) throws TransactionFailedException {
         if (transaction.getSender().getId() == transaction.getReceiver().getId())

@@ -175,4 +175,11 @@ public class ApplicationExceptionHandler {
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AccountCreationLimitReachedException.class)
+    public ResponseEntity<Object> handleAccountCreationLimitReachedException(AccountCreationLimitReachedException e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
 }

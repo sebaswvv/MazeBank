@@ -149,6 +149,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
     public void responseStatusCodeIsWithMessage(int statusCode, String errorMessage) {
         // Assert the response status code
         assertEquals(statusCode, lastResponse.getStatusCode().value());
+        System.out.println(lastResponse.getBody());
 
         // Assert the response body
         assertTrue(lastResponse.getBody().contains(errorMessage));
@@ -327,7 +328,7 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
     @And("I have an account with iban {string} and balance {double} and absoluteLimit {double}")
     public void iHaveAnAccountWithIbanAndBalanceAndAbsoluteLimit(String iban, double balance, double absoluteLimit) {
         checkingsAccount = Account.builder()
-            .id(1)
+            .id(8L)
             .iban(iban)
             .accountType(AccountType.CHECKING)
             .balance(balance)
@@ -352,7 +353,9 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
             .amount(amount)
             .build();
 
-        System.out.println(customer.getTransactionLimit());
+        // System.out.println(customer.getTransactionLimit());
+        // System.out.println(customer.getAccounts().get(0).getAbsoluteLimit());
+        // System.out.println(customer.getAccounts().get(0).getBalance());
 
         // call the endpoint /accounts with a POST request
         httpHeaders.clear();

@@ -46,15 +46,18 @@ Feature: Everything Transactions
         When I make a transaction from account 1 to account 4
         Then the result is a successful transaction with given fields
 
-    Scenario: As a bank, I want to prevent an account balance becoming lower than a certain number, referred to as absolute limit.
-        Given I have a valid token for role "customer"
-        And I have an account with iban "NL76INHO0493458014" and balance 1000.00 and absoluteLimit 0.0
-        When I make a transaction from account with iban "NL76INHO0493458014" to account with iban "NL76INHO0493458014" with amount 1001.00
-        Then response status code is 400 with message "Balance cannot be lower than absolute limit"
-
     Scenario: As a bank, I want to limit the maximum amount per transaction by a certain number defined per user, referred to as transaction limit.
         Given I have a valid token for role "customer"
         And I have an account with iban "NL76INHO0493458018" and balance 1000.00 and absoluteLimit 0.0
         And I have a user with transactionLimit 200.0
         When I make a transaction from account with iban "NL76INHO0493458018" to account with iban "NL76INHO0493458014" with amount 201.00
         Then response status code is 400 with message "Transaction limit exceeded"
+
+    Scenario: As a bank, I want to prevent an account balance becoming lower than a certain number, referred to as absolute limit.
+        Given I have a valid token for role "employee"
+        When I call the users endpoint "/users/3" with a patch request and a transactionLimit of 4000.0
+        Then the result is a user with a transactionLimit of 4000.0
+        Given I have a valid token for role "customer"
+        And I have an account with iban "NL76INHO0493458018" and balance 2200.00 and absoluteLimit -1500.0
+        When I make a transaction from account with iban "NL76INHO0493458018" to account with iban "NL76INHO0493458014" with amount 3701.00
+        Then response status code is 400 with message "Balance cannot become lower than absolute limit"
