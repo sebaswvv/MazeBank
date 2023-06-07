@@ -17,6 +17,16 @@
                             ATM</router-link>
                     </li>
                     <li v-if="authenticationStore.getIsLoggedIn" class=" nav-item">
+                            <router-link to="/mijn-account" class="nav-link" active-class="active">
+                                <font-awesome-icon icon="fa-solid fa-user" />
+                                Mijn account</router-link>
+                        </li>
+                        <li v-if="authenticationStore.getIsLoggedIn" class=" nav-item">
+                                <router-link to="/transacties" class="nav-link" active-class="active">
+                                    <font-awesome-icon icon="fa-solid fa-money-bill-transfer" />
+                                    Transacties</router-link>
+                            </li>
+                    <li v-if="authenticationStore.getIsLoggedIn" class=" nav-item">
                         <router-link to="/dashboard" class="nav-link" active-class="active">
                             <font-awesome-icon icon="fa-solid fa-user" />
                             Dashboard</router-link>
