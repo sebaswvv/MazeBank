@@ -37,7 +37,7 @@ const getAccountTypeText = (accountType: any) => {
 };
 
 const formatBalance = (balance: any) => {
-    return balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return balance.toLocaleString('NL-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 </script>

@@ -13,21 +13,18 @@
                 <template v-else>
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
-                <!-- Wilt u u gegevens wijgzigen ga dan naar de <a> mijn-account pagina -->
-                <div class="text-center mt-2">
-                    <p>Wilt u uw gegevens wijzigen? ga dan naar de <router-link to="/mijn-account">mijn-account
-                            pagina</router-link></p>
-                </div>
+                <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance }}</p>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue';
+import { reactive, onMounted, ref } from 'vue';
 import { useCurrentUserStore } from '../stores/CurrentUserStore.js';
 import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import { useAccountStore } from '../stores/AccountStore';
+import axios from './../utils/axios';
 import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
@@ -37,6 +34,8 @@ import { AccountType } from '../enums/AccountType';
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
 const accountStore = useAccountStore();
+
+const totalBalance = ref(0);
 
 const user = reactive<User>({
     id: 0,
@@ -50,6 +49,16 @@ const user = reactive<User>({
     bsn: '',
 });
 
+async function fetchTotalBalance(){
+    try {
+        const response = await axios.get(`/users/${user.id}/balance`);
+        totalBalance.value = response.data.totalBalance.toLocaleString('NL-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 onMounted(async () => {
     // check is user is authenticated
     if (!authenticationStore.isLoggedIn) {
@@ -57,8 +66,8 @@ onMounted(async () => {
     }
     await currentUserStore.fetchUser(authenticationStore.userId);
     await currentUserStore.fetchAccountsOfUser(authenticationStore.userId);
-
     Object.assign(user, currentUserStore.getUser);
+    await fetchTotalBalance();
 });
 
 const handleClickOnAccount = async (id: any) => {
@@ -86,5 +95,10 @@ const handleClickOnAccount = async (id: any) => {
 
 .accounts {
     margin-top: 5vh;
+}
+
+.text-total-balance {
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 </style>
