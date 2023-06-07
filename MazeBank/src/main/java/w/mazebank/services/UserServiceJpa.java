@@ -23,7 +23,10 @@ import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class UserServiceJpa extends BaseServiceJpa {
@@ -34,14 +37,14 @@ public class UserServiceJpa extends BaseServiceJpa {
     private TransactionRepository transactionRepository;
 
     public User getUserById(Long id) throws UserNotFoundException {
-        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
         else
             return userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
+                .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
     public User getUserByIdAndValidate(Long id, User userPerforming) throws UserNotFoundException {
-        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         // check if user id is the same as the user performing the request or if the user performing the request is an employee and not blocked
         if (userPerforming.getId() != id && (!userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.isBlocked())) {
@@ -52,7 +55,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
 
     public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
-        if(userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         // throw exception if user is not an employee and not the user performing the request
         if (!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
@@ -130,7 +133,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public User patchUserById(long id, UserPatchRequest userPatchRequest, User userPerforming) throws UserNotFoundException, DisallowedFieldException {
-        if(id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
 
         User user = userRepository.findById(id).orElse(null);
         if (user == null) throw new UserNotFoundException("user not found with id: " + id);
@@ -155,12 +158,14 @@ public class UserServiceJpa extends BaseServiceJpa {
         if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
 
         // PATCHES AVAILABLE FOR EMPLOYEES
-        if((userPatchRequest.getTransactionLimit()!=null || userPatchRequest.getDayLimit()!=null) && userPerforming.getRole() != RoleType.EMPLOYEE){
+        if ((userPatchRequest.getTransactionLimit() != null || userPatchRequest.getDayLimit() != null) && userPerforming.getRole() != RoleType.EMPLOYEE) {
             throw new UnauthorizedUserAccessException("You are not allowed to update the transaction limit or day limit");
         }
 
-        if(userPatchRequest.getTransactionLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE) user.setTransactionLimit(userPatchRequest.getTransactionLimit());
-        if(userPatchRequest.getDayLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE) user.setDayLimit(userPatchRequest.getDayLimit());
+        if (userPatchRequest.getTransactionLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
+            user.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if (userPatchRequest.getDayLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
+            user.setDayLimit(userPatchRequest.getDayLimit());
 
         userRepository.save(user);
 
@@ -193,8 +198,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         Double minAmount,
         Double amount
     ) throws UserNotFoundException {
-        User requestedUser = userRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User requestedUser = getUserByIdAndValidate(userId, user);
 
         Specification<Transaction> specification = Specification.where(null);
 

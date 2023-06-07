@@ -22,12 +22,13 @@ Feature: Everything Users
     Scenario: As a bank, I want to make sure that other customers cannot access a customer’s account details, transaction history, and user details.
         Given I have a valid token for role "customer"
         When I call the users endpoint "/users/2" with a get request
-        # this message is currently returned when the performing user is not authorized to access this user
+        # this message is returned when the performing user is not authorized to access this
         Then the response status code is 404 with message "user not found with id: 2"
         When I call the users endpoint "/users/2/accounts" with a get request
         Then the response status code is 403 with message "user not allowed to access accounts of user with id: 2"
+        # this message is returned when the performing user is not authorized to access this
         When I call the users endpoint "/users/2/transactions" with a get request
-        Then the response status code is 403 with message "user not allowed to access transactions of user with id: 2"
+        Then the response status code is 404 with message "user not found with id: 2"
 
     Scenario: Patch user daylimit
         Given I have a valid token for role "employee"
