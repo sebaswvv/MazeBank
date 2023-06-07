@@ -26,5 +26,27 @@ export const useTransactionStore = defineStore({
             throw error;
         }
     },
+    async fetchTransactionsFromAccount(id: string, pageNumber: number, pageSize: number, sort = "desc"): Promise<Transaction[]> {
+      try {
+        const response = await axios.get<Transaction[]>(`/accounts/${id}/transactions?pageNumber=${pageNumber}&pageSize=${pageSize}&sort=${sort}`);
+        if (response.status === 200) {
+          return response.data;
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+      return [];
+    },
+    async fetchTransactionsFromUser(id: string, pageNumber: number, pageSize: number, sort = "desc"): Promise<Transaction[]> {
+      try {
+        const response = await axios.get<Transaction[]>(`/users/${id}/transactions?pageNumber=${pageNumber}&pageSize=${pageSize}&sort=${sort}`);
+        if (response.status === 200) {
+          return response.data;
+        }
+      } catch (error: any) {
+        console.error(error);
+      }
+      return [];
+    },
   },
 });
