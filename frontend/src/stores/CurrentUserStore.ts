@@ -20,6 +20,7 @@ export const useCurrentUserStore = defineStore({
     transactionLimit: 0,
     dayLimit: 0,
     blocked: false,
+    amountRemaining: 0,
   }),
   getters: {
     getUser(state) {
@@ -46,6 +47,7 @@ export const useCurrentUserStore = defineStore({
 
         const response = await axios.get(`/users/${id}`);
         if (response.status === 200) {
+          console.log(response.data);
           // create user object with user data
           const user: User = {
             id: response.data.id,
@@ -59,6 +61,7 @@ export const useCurrentUserStore = defineStore({
             dayLimit: response.data.dayLimit,
             blocked: response.data.blocked,
             bsn: response.data.bsn,
+            amountRemaining: response.data.amountRemaining,
           };
           this.setUser(user);
         }
@@ -132,6 +135,7 @@ export const useCurrentUserStore = defineStore({
       this.dayLimit = user.dayLimit;
       this.blocked = user.blocked;
       this.bsn = user.bsn;
+      this.amountRemaining = user.amountRemaining;
     },
     logout() {
       this.id = 0;
@@ -145,6 +149,7 @@ export const useCurrentUserStore = defineStore({
       this.dayLimit = 0;
       this.blocked = false;
       this.bsn = '';
+      this.amountRemaining = 0;
       localStorage.clear();
     },
   },
