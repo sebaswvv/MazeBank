@@ -251,13 +251,13 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return ibanResponses;
     }
 
-    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, User user, Long accountId) throws AccountNotFoundException {
+    public List<TransactionResponse> getTransactionsFromAccount(int pageNumber, int pageSize, String sort, User user, Long accountId) throws AccountNotFoundException {
         if (accountId == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
 
         getAccountAndValidate(accountId, user);
 
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "timestamp");
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sortObject);
 
         List<Transaction> transactions = transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
 
