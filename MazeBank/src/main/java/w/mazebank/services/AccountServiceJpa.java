@@ -67,7 +67,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
                 .balance(account.getBalance())
                 .absoluteLimit(account.getAbsoluteLimit())
                 .active(account.isActive())
-                .timestamp(account.getCreatedAt())
+                .timestamp(account.getCreatedAt().toString())
                 .build();
             accountResponses.add(accountResponse);
         }
@@ -227,6 +227,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<Account> accounts = accountRepository.findAccountsByOneName(name);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         for (Account account : accounts) {
+            if (account.getIban().equals("NL01INHO0000000001")) continue;
             ibanResponses.add(IbanResponse.builder()
                 .iban(account.getIban())
                 .firstName(account.getUser().getFirstName())
@@ -240,6 +241,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         for (Account account : accounts) {
+            if (account.getIban().equals("NL01INHO0000000001")) continue;
             ibanResponses.add(IbanResponse.builder()
                 .iban(account.getIban())
                 .firstName(account.getUser().getFirstName())
@@ -249,13 +251,13 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return ibanResponses;
     }
 
-    public List<TransactionResponse> getTransactionsFromAccount(int offset, int limit, String sort, User user, Long accountId) throws AccountNotFoundException {
+    public List<TransactionResponse> getTransactionsFromAccount(int pageNumber, int pageSize, String sort, User user, Long accountId) throws AccountNotFoundException {
         if (accountId == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
 
         getAccountAndValidate(accountId, user);
 
         Sort sortObject = Sort.by(Sort.Direction.fromString(sort), "timestamp");
-        Pageable pageable = PageRequest.of(offset, limit, sortObject);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sortObject);
 
         List<Transaction> transactions = transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
 
@@ -268,7 +270,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
                 .description(transaction.getDescription())
                 .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
                 .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
-                .type(transaction.getTransactionType().name())
+                .transactionType(transaction.getTransactionType().name())
                 .timestamp(transaction.getTimestamp().toString())
                 .build();
             transactionResponses.add(response);

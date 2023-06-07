@@ -17,7 +17,7 @@
                     <template v-if="filteredAccounts.length > 0">
                         <router-link v-for="account in filteredAccounts" :key="account.id" to="/account"
                             class="single-account-link" @click="handleAccountClick(account.id)">
-                            <SingleAccountPreview :user="account.user" :account="account" />
+                            <SingleAccountPreview :user="account.user!" :account="account" />
                         </router-link>
                     </template>
                     <template v-else>
@@ -42,8 +42,9 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useAccountStore } from '../stores/AccountStore';
 import axios from './../utils/axios';
 import router from '../router';
+import Account from '../interfaces/Account';
 
-const accounts = ref([]);
+const accounts = ref<Account[]>([]);
 const searchQuery = ref('');
 const pageNumber = ref(0);
 const pageSize = ref(10);
@@ -66,7 +67,7 @@ const performSearch = (query) => {
     );
 };
 
-const filteredAccounts = computed(() => {
+const filteredAccounts = computed<Account[]>(() => {
     const lowerCaseQuery = searchQuery.value.toLowerCase();
     if (lowerCaseQuery === '') {
         return accounts.value;

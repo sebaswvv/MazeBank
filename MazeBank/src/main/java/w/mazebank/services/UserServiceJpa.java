@@ -77,7 +77,7 @@ public class UserServiceJpa extends BaseServiceJpa {
                 .accountType(account.getAccountType().getValue())
                 .iban(account.getIban())
                 .balance(account.getBalance())
-                .timestamp(account.getCreatedAt())
+                .timestamp(account.getCreatedAt().toString())
                 .build();
             accountResponses.add(accountResponse);
         }

@@ -10,6 +10,8 @@ import EmployeeDashboard from '../views/EmployeeDashboardView.vue';
 import EditAccountView from '../views/EditAccountView.vue';
 import User from '../views/UserView.vue';
 import MyUserAccountView from '../views/MyUserAccountView.vue';
+import TransferView from '../views/TransferView.vue';
+import AllTransactionsView from "../views/AllTransactionsView.vue"
 
 // Define routes
 const routes = [
@@ -20,6 +22,13 @@ const routes = [
   { path: '/dashboard', component: CustomerDashboard },
   { path: '/employee', component: EmployeeDashboard },
   { path: '/account', component: Account, meta: { requiresAuth: true } },
+  { path: '/transfer', component: TransferView, meta: { requiresAuth: true } },
+  { path: '/employee/transactions', component: AllTransactionsView, meta: { requiresAdmin: true } },
+  { path: '/employee/transfer',
+    component: TransferView,
+    meta: { requiresAdmin: true },
+    props: { employeeView: true },
+  },
   { path: '/users', component: AllUsersView, meta: { requiresAdmin: true } },
   { path: '/accounts', component: AllAccountsView, meta: { requiresAdmin: true } },
   { path: '/edit-account', component: EditAccountView, meta: { requiresAdmin: true } },

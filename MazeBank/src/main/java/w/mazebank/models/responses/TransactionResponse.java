@@ -19,5 +19,5 @@ public class TransactionResponse {
     private String receiver;
     private Long userPerforming;
     private String timestamp;
-    private String type;
+    private String transactionType;
 }

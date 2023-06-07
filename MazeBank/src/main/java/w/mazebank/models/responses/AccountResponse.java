@@ -7,8 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import w.mazebank.enums.AccountType;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -27,7 +25,7 @@ public class AccountResponse {
     @Builder.Default
     private Boolean active = null;
 
-    private LocalDateTime timestamp;
+    private String timestamp;
 
     public void setAccountType(AccountType accountType) {
         this.accountType = accountType.getValue();

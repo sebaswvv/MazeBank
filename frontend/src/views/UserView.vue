@@ -45,7 +45,7 @@
                     <div class="row">
                         <div class="col">
                             <button class="btn-primary" @click="openAddAccountDialog"
-                                :disabled="user.accounts?.length == 2">Rekening toevoegen</button>
+                                :disabled="user.accounts?.length === 2">Rekening toevoegen</button>
                             <dialog id="addAccountDialog">
                                 <button class="close-button" @click="closeAddAccountDialog">&times;</button>
                                 <form @submit.prevent>
@@ -67,6 +67,9 @@
                                     <button @click="handleAddAccount" class="btn-primary">Toevoegen</button>
                                 </form>
                             </dialog>
+                        </div>
+                        <div class="col">
+                            <button class="btn-primary" @click="navigateToTransactions">Transacties inzien</button>
                         </div>
                         <div class="col">
                             <button class="btn-secondary" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
@@ -128,11 +131,15 @@ const closeAddAccountDialog = () => {
     dialog.close();
 };
 
+const navigateToTransactions = () => {
+    router.push(`/employee/transactions?user=${user.id}`);
+};
+
 
 const handleAddAccount = async () => {
     // create new account request
     const newAccountRequest: AccountRequest = {
-        userId: user.id,
+        userId: user.id!,
         accountType: newAccountType.value == 0 ? AccountType.SAVINGS : AccountType.CURRENT,
         active: newAccountIsActive.value,
         absoluteLimit: newAccountAbosulteLimit.value

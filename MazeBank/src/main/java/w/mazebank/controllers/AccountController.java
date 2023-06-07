@@ -103,12 +103,12 @@ public class AccountController {
     @GetMapping("/{accountId}/transactions")
     public ResponseEntity<Object> getAllTransactionsByAccountId(
         @PathVariable Long accountId,
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int pageNumber,
+        @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "desc") String sort,
         @AuthenticationPrincipal User user
     ) throws AccountNotFoundException {
-        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(offset, limit, sort, user, accountId);
+        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(pageNumber, pageSize, sort, user, accountId);
         return ResponseEntity.ok(transactionResponses);
     }
 }

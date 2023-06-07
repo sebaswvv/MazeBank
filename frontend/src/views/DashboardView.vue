@@ -7,7 +7,7 @@
                     <p class="text-center mt-2">Klik op één van uw rekeningen om verder te gaan</p>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === 1 ? 'Betaal' : 'Spaar'" class="account"
+                        :accountType="account.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" class="account"
                         @click="handleClickOnAccount(account.id)" />
                 </template>
                 <template v-else>
@@ -32,6 +32,7 @@ import router from '../router';
 import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import User from '../interfaces/User';
 import { RoleType } from '../enums/RoleType';
+import { AccountType } from '../enums/AccountType';
 
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
