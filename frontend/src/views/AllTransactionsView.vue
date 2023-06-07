@@ -6,8 +6,10 @@
                     <h3>Zoek op IBAN of omschrijving</h3>
                 </div>
                 <div class="col">
-                    <input type="text" class="form-control" placeholder="Zoek op IBAN of omschrijving" v-model="searchQuery" @input="performSearch" />
-                    <button v-if="sort === 'asc'" class="btn btn-secondary btn-sm" @click="performSort('desc')">Sorteer aflopend</button>
+                    <input type="text" class="form-control" placeholder="Zoek op IBAN of omschrijving" v-model="searchQuery"
+                        @input="performSearch" />
+                    <button v-if="sort === 'asc'" class="btn btn-secondary btn-sm" @click="performSort('desc')">Sorteer
+                        aflopend</button>
                     <button v-else class="btn btn-secondary btn-sm" @click="performSort('asc')">Sorteer oplopend</button>
                 </div>
             </div>
