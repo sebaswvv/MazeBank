@@ -84,9 +84,9 @@ export const useAccountStore = defineStore({
     async searchAccount(name: string): Promise<AccountSearch[]> {
       try {
         const query = encodeURIComponent(name);
-        const response = await axios.get(`/accounts/search/${query}`);
+        const response = await axios.get<AccountSearch[]>(`/accounts/search/${query}`);
         if (response.status === 200) {
-          return response.data;
+          return response.data.filter(account => account.iban !== this.account?.iban);
         }
       } catch (error: any) {
         console.error(error);
