@@ -13,7 +13,7 @@
                 <template v-else>
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
-                <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance.toFixed(2) }}</p>
+                <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance }}</p>
             </div>
         </div>
     </div>
@@ -52,7 +52,8 @@ const user = reactive<User>({
 async function fetchTotalBalance(){
     try {
         const response = await axios.get(`/users/${user.id}/balance`);
-        totalBalance.value = response.data.totalBalance;
+        totalBalance.value = response.data.totalBalance.toLocaleString('NL-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     } catch (error) {
         console.log(error);
     }
