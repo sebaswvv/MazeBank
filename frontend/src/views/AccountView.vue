@@ -3,13 +3,13 @@
         <!-- Button voor overboeken -->
         <div class="row">
             <div class="col d-flex justify-content-center">
-                <button class="btn-primary">Overboeken</button>
+                <button class="btn-primary" @click="navigateToTransferPage">Overboeken</button>
             </div>
         </div>
         <!-- Show the current account -->
         <div class="row py-5 rounded">
             <div class="col d-flex justify-content-center">
-                <AccountPreview title="Current account" />
+                <AccountPreview :title="account?.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" />
             </div>
         </div>
 
@@ -22,6 +22,19 @@
                 <p>Deze rekening heeft nog geen transacties.</p>
             </template>
         </div>
+        <nav v-if="transactions.length > 10" class="py-2">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link">Previous</a>
+                </li>
+                <li class="page-item"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </template>
 
@@ -32,18 +45,22 @@ import TransactionComponent from '../components/TransactionComponent.vue';
 import { useAccountStore } from '../stores/AccountStore';
 import router from '../router';
 import { storeToRefs } from 'pinia';
+import { AccountType } from '../enums/AccountType';
 
 const accountStore = useAccountStore();
-const { transactions } = storeToRefs(accountStore);
+const { account, transactions } = storeToRefs(accountStore);
+
+function navigateToTransferPage() {
+    router.push('/transfer');
+}
 
 onMounted(async () => {
-    const account = accountStore.account;
-    if (!account) {
+    if (!account.value) {
         return router.push('/dashboard');
     }
 
     // fetch transactions
-    await accountStore.fetchTransactions(account!.id);
+    await accountStore.fetchTransactions(account.value!.id);
 });
 </script>
 

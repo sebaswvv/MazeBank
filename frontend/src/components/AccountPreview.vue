@@ -7,6 +7,9 @@
         </div>
         <div class="row">
             <div class="col">
+                <p>{{ accountStore.ownerFullName }}</p>
+            </div>
+            <div class="col">
                 <p>{{ accountStore.getIban }}</p>
             </div>
             <div class="col d-flex justify-content-end">
