@@ -13,7 +13,7 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
 }
 
 const instance: CustomAxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/',
+  baseURL: `//${location.hostname}:8080/`,
   headers: {
     'Content-Type': 'application/json',
     Authorization: localStorage.getItem('token')
