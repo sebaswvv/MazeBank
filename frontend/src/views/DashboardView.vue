@@ -14,11 +14,6 @@
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
                 <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance.toFixed(2) }}</p>
-                <!-- Wilt u u gegevens wijgzigen ga dan naar de <a> mijn-account pagina -->
-                <div class="text-center mt-2">
-                    <p>Wilt u uw gegevens wijzigen? ga dan naar de <router-link to="/mijn-account">mijn-account
-                            pagina</router-link></p>
-                </div>
             </div>
         </div>
     </div>
