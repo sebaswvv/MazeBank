@@ -19,6 +19,14 @@
                     </span>
                 </button>
             </div>
+            <div>
+                <button class="btn btn-secondary btn-lg btn-block custom-button" @click="handleNav('employee/transfer')">
+                    <span class="button-text">Overboeken</span>
+                    <span class="button-icon">
+                        <font-awesome-icon icon="fa-solid fa-money-bill-transfer" />
+                    </span>
+                </button>
+            </div>
         </div>
     </div>
 </template>

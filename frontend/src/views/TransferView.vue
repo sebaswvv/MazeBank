@@ -1,12 +1,12 @@
 <template>
     <div class="container py-5">
         <div class="row">
-            <div class="col d-flex justify-content-center">
+            <div class="col d-flex justify-content-center mb-5">
                 <button class="btn-primary" @click="handleBackButton">Terug naar overzicht</button>
             </div>
         </div>
 
-        <div class="row py-5 rounded">
+        <div v-if="!employeeView" class="row mb-5 rounded">
             <div class="col d-flex justify-content-center">
                 <AccountPreview :title="account?.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" />
             </div>
@@ -20,11 +20,21 @@
                     <input type="number" class="form-control" placeholder="0.00" inputmode="decimal" step="0.01" min="0.01" v-model="amount">
                 </div>
 
+                <div v-if="employeeView" class="mb-3">
+                    <label for="senderIban" class="form-label">Rekeningnummer verzender (IBAN)</label>
+                    <input class="form-control" id="senderIban" list="senderIbanSearch" placeholder="Vul een IBAN in of zoek op naam..." v-model="senderIban" @input="e => handleIbanSearch(e, 'sender')">
+                    <datalist id="senderIbanSearch">
+                        <option v-for="result in senderIbanSearchResults" :value="result.iban">
+                            {{ result.firstName }} {{ result.lastName }}
+                        </option>
+                    </datalist>
+                </div>
+
                 <div class="mb-3">
-                    <label for="iban" class="form-label">Rekeningnummer ontvanger (IBAN)</label>
-                    <input class="form-control" id="iban" list="ibanSearch" placeholder="Vul een IBAN in of zoek op naam..." v-model="iban" @input="handleIbanSearch">
-                    <datalist id="ibanSearch">
-                        <option v-for="result in ibanSearchResults" :value="result.iban">
+                    <label for="receiverIban" class="form-label">Rekeningnummer ontvanger (IBAN)</label>
+                    <input class="form-control" id="receiverIban" list="receiverIbanSearch" placeholder="Vul een IBAN in of zoek op naam..." v-model="receiverIban" @input="e => handleIbanSearch(e, 'receiver')">
+                    <datalist id="receiverIbanSearch">
+                        <option v-for="result in receiverIbanSearchResults" :value="result.iban">
                             {{ result.firstName }} {{ result.lastName }}
                         </option>
                     </datalist>
@@ -45,43 +55,56 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { AxiosError } from 'axios';
 import AccountPreview from '../components/AccountPreview.vue';
 import { useAccountStore } from '../stores/AccountStore';
 import { useTransactionStore } from '../stores/TransactionStore';
 import router from '../router';
 import AccountSearch from '../interfaces/AccountSearch';
 import { AccountType } from '../enums/AccountType';
-import { AxiosError } from 'axios';
+
+const { employeeView } = defineProps({
+    employeeView: {
+        type: Boolean,
+        required: false,
+        default: false,
+    },
+});
 
 const accountStore = useAccountStore();
 const { account } = storeToRefs(accountStore);
 const transactionStore = useTransactionStore();
-const ibanSearchResults = ref<AccountSearch[]>([]);
 
+const senderIbanSearchResults = ref<AccountSearch[]>([]);
+const receiverIbanSearchResults = ref<AccountSearch[]>([]);
 const amount = ref<number | null>();
-const iban = ref('');
+const senderIban = ref('');
+const receiverIban = ref('');
 const description = ref('');
 const submitMessage = ref('');
 
 function handleBackButton() {
-    router.push('/account');
+    router.push(employeeView ? '/employee' : '/account');
 }
 
-async function handleIbanSearch({ target }: Event) {
+async function handleIbanSearch({ target }: Event, type: 'sender' | 'receiver') {
     const query = (target as HTMLInputElement).value.trim();
     const results = query ? await accountStore.searchAccount(query) : [];
-    ibanSearchResults.value = results.slice(0, 20);
+    const searchResults = type === 'sender' ? senderIbanSearchResults : receiverIbanSearchResults;
+    searchResults.value = results.slice(0, 20);
 }
 
 async function handleSubmit(e: Event) {
     e.preventDefault();
 
     try {
+        const sender = employeeView ? senderIban.value : account.value!.iban;
+
         await transactionStore.createTransaction({
             amount: amount.value!,
             description: description.value,
-            senderIban: account.value!.iban,
-            receiverIban: iban.value,
+            senderIban: sender,
+            receiverIban: receiverIban.value,
         });
     } catch (err) {
         if (err instanceof AxiosError)
@@ -93,7 +116,8 @@ async function handleSubmit(e: Event) {
 }
 
 onMounted(async () => {
-    if (!account.value) {
+    // redirect to dashboard if no account is selected
+    if (!employeeView && !account.value) {
         return router.push('/dashboard');
     }
 });
