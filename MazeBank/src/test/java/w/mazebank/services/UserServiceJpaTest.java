@@ -476,7 +476,7 @@ class UserServiceJpaTest {
 
 
         // Call the method
-        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null);
+        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null, null);
 
         // Test results
         assertEquals(2, transactions.size());
@@ -502,7 +502,7 @@ class UserServiceJpaTest {
         //should get UserNotFoundException
         Exception exception = assertThrows(UserNotFoundException.class, () -> {
             // call the method
-            userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null);
+            userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null, null);
         });
 
         // test results
