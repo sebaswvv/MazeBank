@@ -1,8 +1,9 @@
 <template>
     <div class="container py-5 d-flex justify-content-center flex-column">
         <div class="row pb-3">
-            <div class="col d-flex justify-content-center align-items-center">
+            <div class="col d-flex justify-content-center align-items-center flex-column">
                 <h1>ATM</h1>
+                <h3>Saldo: €{{ totalBalance(atmStore.account?.balance) }}</h3>
             </div>
         </div>
         <!-- Select atm option -->
@@ -38,6 +39,7 @@ onMounted(async () => {
     await currentUserStore.fetchUser(Number(userId));
     await currentUserStore.fetchAccountsOfUser(Number(userId));
     atmStore.setAccountId(Number(localStorage.getItem('currentAccountId')));
+    await atmStore.fetchAccount();
 });
 
 
@@ -50,6 +52,10 @@ onMounted(async () => {
 function handleChangeScene(scene: AtmScenes) {
     atmStore.setSceneState(scene);
 }
+
+const totalBalance = (balance: any) => {
+    return balance.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 </script>
 
