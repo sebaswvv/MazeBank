@@ -6,7 +6,7 @@
                 <div class="amount-box d-flex justify-content-center align-items-center pt-2"
                     :class="{ 'green-box': accountStore.getIban === transaction.receiver, 'red-box': accountStore.getIban !== transaction.receiver }">
                     <p v-if="accountStore.getIban === transaction.receiver">+</p>
-                    <p v-else>-</p>
+                    <p v-else>-</p>&nbsp;
                     <p class="text-center">€ {{ transaction.amount }}</p>
                 </div>
             </div>

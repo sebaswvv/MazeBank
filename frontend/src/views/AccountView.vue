@@ -15,8 +15,8 @@
 
         <!-- Show transactions of this account -->
         <div class="row rounded bg-light py-2 d-flex justify-content-center">
-            <template v-if="accountStore.getTransactions.length > 0">
-                <TransactionComponent v-for="transaction in accountStore.getTransactions" :transaction="transaction" />
+            <template v-if="transactions.length > 0">
+                <TransactionComponent v-for="transaction in transactions" :transaction="transaction" />
             </template>
             <template v-else>
                 <p>Deze rekening heeft nog geen transacties.</p>
@@ -26,22 +26,29 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import AccountPreview from '../components/AccountPreview.vue';
 import TransactionComponent from '../components/TransactionComponent.vue';
 import { useAccountStore } from '../stores/AccountStore';
+import router from '../router';
+import { storeToRefs } from 'pinia';
 
 const accountStore = useAccountStore();
+const { transactions } = storeToRefs(accountStore);
 
-accountStore.fetchTransactions();
+onMounted(async () => {
+    const account = accountStore.account;
+    if (!account) {
+        return router.push('/dashboard');
+    }
 
-
-// fetch transactions
-
+    // fetch transactions
+    await accountStore.fetchTransactions(account!.id);
+});
 </script>
 
 <style>
 .transactions-container {
     border-radius: 5px;
-
 }
 </style>
