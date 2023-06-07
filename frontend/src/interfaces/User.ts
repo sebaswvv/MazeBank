@@ -13,6 +13,7 @@ interface User {
   transactionLimit?: number;
   dayLimit?: number;
   blocked: boolean;
+  amountRemaining?: number;
 }
 
 export default User;

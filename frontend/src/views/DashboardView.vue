@@ -7,13 +7,19 @@
                     <p class="text-center mt-2">Klik op één van uw rekeningen om verder te gaan</p>
                     <AccountPreviewDashboard v-for="account in user.accounts?.sort((a, b) => a.accountType - b.accountType)"
                         :key="account.id" :iban="account.iban" :balance="account.balance"
-                        :accountType="account.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" class="account"
-                        @click="handleClickOnAccount(account.id)" />
+                        :accountType="account.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'"
+                        class="account" @click="handleClickOnAccount(account.id)" />
                 </template>
                 <template v-else>
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
                 <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance }}</p>
+                <p class="text-total-balance mt-3">Resterend transactie limiet voor vandaags: €{{
+                    currentUserStore.amountRemaining.toLocaleString('NL-NL', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }) }}</p>
+
             </div>
         </div>
     </div>
@@ -47,9 +53,10 @@ const user = reactive<User>({
     accounts: [],
     blocked: false,
     bsn: '',
+
 });
 
-async function fetchTotalBalance(){
+async function fetchTotalBalance() {
     try {
         const response = await axios.get(`/users/${user.id}/balance`);
         totalBalance.value = response.data.totalBalance.toLocaleString('NL-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

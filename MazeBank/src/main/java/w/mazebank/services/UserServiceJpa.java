@@ -191,7 +191,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         int pageNumber,
         int pageSize,
         String sort,
-        String iban,
+        String fromIban,
+        String toIban,
         LocalDate startDate,
         LocalDate endDate,
         Double maxAmount,
@@ -202,26 +203,39 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         Specification<Transaction> specification = Specification.where(null);
 
-        if (iban != null) {
+        if (fromIban != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.or(
-                    criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("sender").get("iban")),
-                        "%" + iban.toLowerCase() + "%"
-                    ),
-                    criteriaBuilder.like(
-                        criteriaBuilder.lower(root.get("receiver").get("iban")),
-                        "%" + iban.toLowerCase() + "%"
-                    )
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("sender").get("iban")),
+                    "%" + fromIban.toLowerCase() + "%"
                 )
             );
         }
 
-        if (startDate != null && endDate != null) {
+        if (toIban != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("receiver").get("iban")),
+                    "%" + toIban.toLowerCase() + "%"
+                )
             );
         }
+
+        // if (startDate != null && endDate != null) {
+        //     specification = specification.and((root, query, criteriaBuilder) ->
+        //         criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
+        //     );
+        // }
+
+        if (startDate != null)
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
+            );
+
+        if (endDate != null)
+            specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
+            );
 
         if (maxAmount != null) {
             specification = specification.and((root, query, criteriaBuilder) ->
