@@ -227,6 +227,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<Account> accounts = accountRepository.findAccountsByOneName(name);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         for (Account account : accounts) {
+            if (account.getIban().equals("NL01INHO0000000001")) continue;
             ibanResponses.add(IbanResponse.builder()
                 .iban(account.getIban())
                 .firstName(account.getUser().getFirstName())
@@ -240,6 +241,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         for (Account account : accounts) {
+            if (account.getIban().equals("NL01INHO0000000001")) continue;
             ibanResponses.add(IbanResponse.builder()
                 .iban(account.getIban())
                 .firstName(account.getUser().getFirstName())
