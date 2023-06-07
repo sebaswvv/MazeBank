@@ -1,5 +1,4 @@
 import User from './User';
-import Account from './Account';
 import { TransactionType } from './../enums/TransactionType';
 
 interface Transaction {
@@ -7,8 +6,8 @@ interface Transaction {
   description: string;
   amount: number;
   userPerforming: User;
-  sender: Account | null;
-  receiver: Account | null;
+  sender: string;
+  receiver: string;
   transactionType: TransactionType;
   timestamp: string;
 }

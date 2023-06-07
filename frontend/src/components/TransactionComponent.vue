@@ -3,13 +3,16 @@
         <div class="row">
             <div class="col d-flex justify-content-between align-items-center">
                 <p>{{ new Date(transaction.timestamp).toLocaleString("nl-NL") }}</p>
-                <h5>{{ transaction.description }}</h5>
-                <div class="amount-box d-flex justify-content-center align-items-center pt-2"
-                    :class="{ 'green-box': accountStore.getIban === transaction.receiver, 'red-box': accountStore.getIban !== transaction.receiver }">
-                    <p v-if="accountStore.getIban === transaction.receiver">+</p>
-                    <p v-else>-</p>&nbsp;
-                    <p class="text-center">€ {{ transaction.amount }}</p>
-                </div>
+                <p v-if="accountStore.getIban === transaction.receiver">{{ transaction.sender }}</p>
+                <p v-else>{{ transaction.receiver }}</p>&nbsp;
+                <h6 class="d-inline-block flex-lg-fill">{{ transaction.description }}</h6>
+
+            </div>
+            <div class="amount-box d-flex justify-content-center align-items-center pt-2"
+                :class="{ 'green-box': accountStore.getIban === transaction.receiver, 'red-box': accountStore.getIban !== transaction.receiver }">
+                <p v-if="accountStore.getIban === transaction.receiver">+</p>
+                <p v-else>-</p>&nbsp;
+                <p class="text-center">€ {{ transaction.amount }}</p>
             </div>
         </div>
     </div>
@@ -34,6 +37,10 @@ const { transaction } = defineProps({
 .outer {
     width: 95%;
     border-bottom: 1px solid #dee2e6;
+}
+
+.col {
+    gap: 20px;
 }
 
 .amount-box {
