@@ -270,7 +270,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
                 .description(transaction.getDescription())
                 .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
                 .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
-                .type(transaction.getTransactionType().name())
+                .transactionType(transaction.getTransactionType().name())
                 .timestamp(transaction.getTimestamp().toString())
                 .build();
             transactionResponses.add(response);
