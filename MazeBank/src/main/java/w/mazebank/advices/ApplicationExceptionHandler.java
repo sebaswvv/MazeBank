@@ -53,7 +53,6 @@ public class ApplicationExceptionHandler {
             errors.put("message", error.getDefaultMessage());
         });
 
-        System.out.println(" HIERERNJEKFJHJAKWFNJKWAHFKAHKJ");
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
     }
 
