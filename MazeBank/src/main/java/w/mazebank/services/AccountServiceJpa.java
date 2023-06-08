@@ -1,7 +1,6 @@
 package w.mazebank.services;
 
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,124 +42,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    public void addAccount(Account account) {
-        accountRepository.save(account);
-    }
-
-    public List<AccountResponse> getAllAccounts(int pageNumber, int pageSize, String sort, String search) {
-        //
-        List<Account> accounts = findAllPaginationAndSort(pageNumber, pageSize, sort, search, accountRepository);
-
-        // map all accounts to account responses
-        List<AccountResponse> accountResponses = new ArrayList<>(accounts.size());
-        for (Account account : accounts) {
-            AccountResponse accountResponse = createAccountResponse(account);
-            accountResponses.add(accountResponse);
-        }
-
-        return accountResponses;
-    }
-
-    private Account buildAccount(AccountType accountType, User user, boolean isActive, Double absoluteLimit) {
-        return Account.builder()
-            .accountType(accountType)
-            .iban(IbanGenerator.generate())
-            .isActive(isActive)
-            .user(user)
-            .absoluteLimit(absoluteLimit)
-            .balance(0.0)
-            .build();
-    }
-
-    private AccountResponse createAccountResponse(Account account) {
-        return AccountResponse.builder()
-            .id(account.getId())
-            .accountType(account.getAccountType().getValue())
-            .iban(account.getIban())
-            .user(createUserResponse(account.getUser()))
-            .balance(account.getBalance())
-            .absoluteLimit(account.getAbsoluteLimit())
-            .active(account.isActive())
-            .timestamp(account.getCreatedAt().toString())
-            .build();
-    }
-
-    private UserResponse createUserResponse(User user) {
-        return UserResponse.builder()
-            .id(user.getId())
-            .firstName(user.getFirstName())
-            .lastName(user.getLastName())
-            .build();
-    }
-
-    private  List<IbanResponse> createListOfIbanResponses(List<Account> accounts) {
-        List<IbanResponse> ibanResponses = new ArrayList<>();
-        for (Account account : accounts) {
-            // Skip bank account
-            if (account.getIban().equals("NL01INHO0000000001")) {
-                continue;
-            }
-
-            IbanResponse ibanResponse = createIbanResponse(account);
-            ibanResponses.add(ibanResponse);
-        }
-        return ibanResponses;
-    }
-
-    public Account getAccountById(Long id) throws AccountNotFoundException {
-        return accountRepository.findById(id)
-            .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
-    }
-
-    public Account getAccountByIban(String iban) throws AccountNotFoundException {
-        return accountRepository.findByIban(iban)
-            .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
-    }
-
-    public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
-        Account account = getAccountById(id);
-
-        // Check if the account is a bank account
-        if (account.getIban().equals("NL01INHO0000000001")) {
-            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-        }
-
-        if (body.getAbsoluteLimit() != null) {
-            account.setAbsoluteLimit(body.getAbsoluteLimit());
-        }
-
-        Account updatedAccount = accountRepository.save(account);
-
-        // Map account to account response
-        AccountResponse accountResponse = mapper.map(updatedAccount, AccountResponse.class);
-        return accountResponse;
-    }
-
-    private List<IbanResponse> getAccountsByOneName(String name) {
-        List<Account> accounts = accountRepository.findAccountsByOneName(name);
-        return createListOfIbanResponses(accounts);
-    }
-
-    private IbanResponse createIbanResponse(Account account){
-        return IbanResponse.builder()
-            .iban(account.getIban())
-            .firstName(account.getUser().getFirstName())
-            .lastName(account.getUser().getLastName())
-            .build();
-    }
-
-    private TransactionResponse createTransactionResponse(Transaction transaction){
-        return TransactionResponse.builder()
-            .id(transaction.getId())
-            .amount(transaction.getAmount())
-            .description(transaction.getDescription())
-            .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
-            .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
-            .transactionType(transaction.getTransactionType().name())
-            .timestamp(transaction.getTimestamp().toString())
-            .build();
-    }
-
     public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
         // Get user and account type from request body
         User user = userServiceJpa.getUserById(body.getUserId());
@@ -201,10 +82,78 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
+    private Account buildAccount(AccountType accountType, User user, boolean isActive, Double absoluteLimit) {
+        return Account.builder()
+            .accountType(accountType)
+            .iban(IbanGenerator.generate())
+            .isActive(isActive)
+            .user(user)
+            .absoluteLimit(absoluteLimit)
+            .balance(0.0)
+            .build();
+    }
+
+    public List<AccountResponse> getAllAccounts(int pageNumber, int pageSize, String sort, String search) {
+        //
+        List<Account> accounts = findAllPaginationAndSort(pageNumber, pageSize, sort, search, accountRepository);
+
+        // map all accounts to account responses
+        List<AccountResponse> accountResponses = new ArrayList<>(accounts.size());
+        for (Account account : accounts) {
+            AccountResponse accountResponse = createAccountResponse(account);
+            accountResponses.add(accountResponse);
+        }
+
+        return accountResponses;
+    }
+
+    public Account getAccountById(Long id) throws AccountNotFoundException {
+        return accountRepository.findById(id)
+            .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
+    }
+
+    public Account getAccountByIban(String iban) throws AccountNotFoundException {
+        return accountRepository.findByIban(iban)
+            .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
+    }
+
+    public List<IbanResponse> getAccountsByName(String name) {
+        String[] names = name.split(" ");
+        if (names.length == 2) {
+            return getAccountsByFirstNameAndLastName(names[0], names[1]);
+        } else {
+            return getAccountsByOneName(name);
+        }
+    }
+
+    private List<IbanResponse> getAccountsByOneName(String name) {
+        List<Account> accounts = accountRepository.findAccountsByOneName(name);
+        return createListOfIbanResponses(accounts);
+    }
+
     private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
         List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
         List<IbanResponse> ibanResponses = new ArrayList<>();
         return createListOfIbanResponses(accounts);
+    }
+
+    public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
+        Account account = getAccountById(id);
+
+        // Check if the account is a bank account
+        if (account.getIban().equals("NL01INHO0000000001")) {
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+        }
+
+        if (body.getAbsoluteLimit() != null) {
+            account.setAbsoluteLimit(body.getAbsoluteLimit());
+        }
+
+        Account updatedAccount = accountRepository.save(account);
+
+        // Map account to account response
+        AccountResponse accountResponse = mapper.map(updatedAccount, AccountResponse.class);
+        return accountResponse;
     }
 
     public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException, UnauthorizedAccountAccessException {
@@ -237,6 +186,17 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return account;
     }
 
+    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        Account account = getAccountAndValidate(accountId, userDetails);
+        return performAtmTransaction(account, amount, TransactionType.DEPOSIT, userDetails);
+    }
+
+    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        Account account = getAccountAndValidate(accountId, userDetails);
+        validateCheckingAccount(account);
+        return performAtmTransaction(account, amount, TransactionType.WITHDRAWAL, userDetails);
+    }
+
     public List<TransactionResponse> getTransactionsFromAccount(int pageNumber, int pageSize, String sort, User user, Long accountId) throws AccountNotFoundException {
         // check if the user has access to the account - employee or the right customer
         validateAccountAccess(accountId);
@@ -249,6 +209,79 @@ public class AccountServiceJpa extends BaseServiceJpa {
         // get the transactions and map them to transaction responses
         List<Transaction> transactions = getTransactions(accountId, pageable);
         return mapToTransactionResponses(transactions);
+    }
+
+    private List<Transaction> getTransactions(Long accountId, Pageable pageable) {
+        return transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
+    }
+
+    private List<TransactionResponse> mapToTransactionResponses(List<Transaction> transactions) {
+        List<TransactionResponse> transactionResponses = new ArrayList<>();
+        for (Transaction transaction : transactions) {
+            TransactionResponse response = createTransactionResponse(transaction);
+            transactionResponses.add(response);
+        }
+        return transactionResponses;
+    }
+
+    private TransactionResponse createTransactionResponse(Transaction transaction){
+        return TransactionResponse.builder()
+            .id(transaction.getId())
+            .amount(transaction.getAmount())
+            .description(transaction.getDescription())
+            .sender(transaction.getSender() != null ? transaction.getSender().getIban() : null)
+            .receiver(transaction.getReceiver() != null ? transaction.getReceiver().getIban() : null)
+            .transactionType(transaction.getTransactionType().name())
+            .timestamp(transaction.getTimestamp().toString())
+            .build();
+    }
+
+    private AccountResponse createAccountResponse(Account account) {
+        return AccountResponse.builder()
+            .id(account.getId())
+            .accountType(account.getAccountType().getValue())
+            .iban(account.getIban())
+            .user(createUserResponse(account.getUser()))
+            .balance(account.getBalance())
+            .absoluteLimit(account.getAbsoluteLimit())
+            .active(account.isActive())
+            .timestamp(account.getCreatedAt().toString())
+            .build();
+    }
+
+    private UserResponse createUserResponse(User user) {
+        return UserResponse.builder()
+            .id(user.getId())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .build();
+    }
+
+    private  List<IbanResponse> createListOfIbanResponses(List<Account> accounts) {
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            // Skip bank account
+            if (account.getIban().equals("NL01INHO0000000001")) {
+                continue;
+            }
+
+            IbanResponse ibanResponse = createIbanResponse(account);
+            ibanResponses.add(ibanResponse);
+        }
+        return ibanResponses;
+    }
+
+    public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
+        Account account = getAccountById(accountId);
+        validateAccountOwner(user, account);
+        return account;
+    }
+
+    private void validateAccountOwner(User user, Account account) {
+        // check if current user is the same as account owner or if current user is an employee
+        if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
+            throw new UnauthorizedAccountAccessException("You are not authorized to access this account");
+        }
     }
 
     private void validateAccountAccess(Long accountId) throws UnauthorizedAccountAccessException {
@@ -265,53 +298,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return PageRequest.of(pageNumber, pageSize, sortObject);
     }
 
-    private List<Transaction> getTransactions(Long accountId, Pageable pageable) {
-        return transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
-    }
-
-    private List<TransactionResponse> mapToTransactionResponses(List<Transaction> transactions) {
-        List<TransactionResponse> transactionResponses = new ArrayList<>();
-        for (Transaction transaction : transactions) {
-            TransactionResponse response = createTransactionResponse(transaction);
-            transactionResponses.add(response);
-        }
-        return transactionResponses;
-    }
-
-    public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
-        Account account = getAccountById(accountId);
-        validateAccountOwner(user, account);
-        return account;
-    }
-
-    public List<IbanResponse> getAccountsByName(String name) {
-        String[] names = name.split(" ");
-        if (names.length == 2) {
-            return getAccountsByFirstNameAndLastName(names[0], names[1]);
-        } else {
-            return getAccountsByOneName(name);
-        }
-    }
-
-    private void validateAccountOwner(User user, Account account) {
-        // check if current user is the same as account owner or if current user is an employee
-        if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
-            throw new UnauthorizedAccountAccessException("You are not authorized to access this account");
-        }
-    }
-
-    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        Account account = getAccountAndValidate(accountId, userDetails);
-        return performTransaction(account, amount, TransactionType.DEPOSIT, userDetails);
-    }
-
-    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        Account account = getAccountAndValidate(accountId, userDetails);
-        validateCheckingAccount(account);
-        return performTransaction(account, amount, TransactionType.WITHDRAWAL, userDetails);
-    }
-
-    private TransactionResponse performTransaction(Account account, double amount, TransactionType transactionType, User userDetails) throws TransactionFailedException, AccountNotFoundException {
+    private TransactionResponse performAtmTransaction(Account account, double amount, TransactionType transactionType, User userDetails) throws TransactionFailedException, AccountNotFoundException {
         return transactionServiceJpa.atmAction(account, amount, transactionType, userDetails);
     }
 
@@ -321,38 +308,18 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
+    private IbanResponse createIbanResponse(Account account){
+        return IbanResponse.builder()
+            .iban(account.getIban())
+            .firstName(account.getUser().getFirstName())
+            .lastName(account.getUser().getLastName())
+            .build();
+    }
 
-
-
-
-
-
-    // TODO
-
-
-
-
-
-    // public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-    //     // get account from database and validate owner
-    //     Account account = getAccountAndValidate(accountId, userDetails);
-    //
-    //     // use transaction service to deposit money
-    //     return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
-    // }
-    //
-    //
-    // public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-    //     // get account from database and validate owner
-    //     Account account = getAccountAndValidate(accountId, userDetails);
-    //
-    //
-    //     // CHECKS:
-    //     // check if it is a checking account
-    //
-    //     // use transaction service to withdraw money
-    //     return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
-    // }
+    // for the dataseeder
+    public void addAccount(Account account) {
+        accountRepository.save(account);
+    }
 
 
 }
