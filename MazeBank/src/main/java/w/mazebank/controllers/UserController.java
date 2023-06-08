@@ -105,17 +105,15 @@ public class UserController {
         @RequestParam(defaultValue = "0") int pageNumber,
         @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) Optional<String> fromIban,
-        @RequestParam(required = false) Optional<String> toIban,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate,
-        @RequestParam(required = false) Optional<Double> maxAmount,
-        @RequestParam(required = false) Optional<Double> minAmount,
-        @RequestParam(required = false) Optional<Double> amount
+        @RequestParam(required = false) String fromIban,
+        @RequestParam(required = false) String toIban,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+        @RequestParam(required = false) Double maxAmount,
+        @RequestParam(required = false) Double minAmount,
+        @RequestParam(required = false) Double amount
     ) throws UserNotFoundException {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(
-            userId, user, pageNumber, pageSize, sort, fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount
-        );
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, pageNumber, pageSize, sort, fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount);
         return ResponseEntity.ok(transactionResponses);
     }
 

@@ -33,6 +33,8 @@ public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    private Specification<Transaction> specification = Specification.where(null);
+
     public User getUserById(Long id) throws UserNotFoundException {
         if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
         else
@@ -182,23 +184,11 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
 
-    public List<TransactionResponse> getTransactionsByUserId(Long userId, User user, int pageNumber, int pageSize, String sort, Optional<String> fromIban, Optional<String> toIban, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<Double> maxAmount, Optional<Double> minAmount, Optional<Double> amount
+    public List<TransactionResponse> getTransactionsByUserId(Long userId, User user, int pageNumber, int pageSize, String sort, String fromIban, String toIban, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount
     ) throws UserNotFoundException {
         User requestedUser = getUserByIdAndValidate(userId, user);
-        // initial empty Specification to build the dynamic query conditions.
-        Specification<Transaction> specification = Specification.where(null);
 
-        // If present, it adds conditions to filter transactions
-        fromIban.ifPresent(value -> addFromIbanCondition(specification, value));
-        toIban.ifPresent(value -> addToIbanCondition(specification, value));
-        startDate.ifPresent(value -> addStartDateCondition(specification, value));
-        endDate.ifPresent(value -> addEndDateCondition(specification, value));
-        maxAmount.ifPresent(value -> addMaxAmountCondition(specification, value));
-        minAmount.ifPresent(value -> addMinAmountCondition(specification, value));
-        amount.ifPresent(value -> addAmountCondition(specification, value));
-
-        // adds a condition to filter transactions by the requested user.
-        addRequestedUserCondition(specification, requestedUser);
+        buildQueryFromParameters(fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount, requestedUser);
 
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(direction, "timestamp"));
@@ -209,62 +199,89 @@ public class UserServiceJpa extends BaseServiceJpa {
         return mapTransactionsToResponses(transactions);
     }
 
-    private void addFromIbanCondition(Specification<Transaction> specification, String fromIban) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("sender").get("iban")),
-                "%" + fromIban.toLowerCase() + "%"
-            )
-        );
+    private void buildQueryFromParameters(String fromIban, String toIban, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount, User requestedUser) {
+        this.specification = Specification.where(null);
+        addFromIbanCondition(fromIban);
+        addToIbanCondition(toIban);
+        addStartDateCondition(startDate);
+        addEndDateCondition(endDate);
+        addMaxAmountCondition(maxAmount);
+        addMinAmountCondition(minAmount);
+        addAmountCondition(amount);
+        addRequestedUserCondition(requestedUser);
     }
 
-    private void addToIbanCondition(Specification<Transaction> specification, String toIban) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.like(
-                criteriaBuilder.lower(root.get("receiver").get("iban")),
-                "%" + toIban.toLowerCase() + "%"
-            )
-        );
+    private void addFromIbanCondition(String fromIban) {
+        if (fromIban != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("sender").get("iban")),
+                    "%" + fromIban.toLowerCase() + "%"
+                )
+            );
+        }
     }
 
-    private void addStartDateCondition(Specification<Transaction> specification, LocalDate startDate) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
-        );
+    private void addToIbanCondition(String toIban) {
+        if (toIban != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("receiver").get("iban")),
+                    "%" + toIban.toLowerCase() + "%"
+                )
+            );
+        }
     }
 
-    private void addEndDateCondition(Specification<Transaction> specification, LocalDate endDate) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
-        );
+    private void addStartDateCondition(LocalDate startDate) {
+        if (startDate != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
+            );
+        }
     }
 
-    private void addMaxAmountCondition(Specification<Transaction> specification, Double maxAmount) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
-        );
+    private void addEndDateCondition(LocalDate endDate) {
+        if (endDate != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
+            );
+        }
     }
 
-    private void addMinAmountCondition(Specification<Transaction> specification, Double minAmount) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
-        );
+    private void addMaxAmountCondition(Double maxAmount) {
+        if (maxAmount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
+            );
+        }
     }
 
-    private void addAmountCondition(Specification<Transaction> specification, Double amount) {
-        specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.equal(root.get("amount"), amount)
-        );
+    private void addMinAmountCondition(Double minAmount) {
+        if (minAmount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
+            );
+        }
     }
 
-    private void addRequestedUserCondition(Specification<Transaction> specification, User requestedUser) {
-       specification.and((root, query, criteriaBuilder) ->
+    private void addAmountCondition(Double amount) {
+        if (amount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("amount"), amount)
+            );
+        }
+    }
+
+    private void addRequestedUserCondition(User requestedUser) {
+        this.specification = specification.and((root, query, criteriaBuilder) ->
             criteriaBuilder.or(
                 criteriaBuilder.equal(root.get("sender"), requestedUser),
                 criteriaBuilder.equal(root.get("receiver"), requestedUser)
             )
         );
     }
+
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();

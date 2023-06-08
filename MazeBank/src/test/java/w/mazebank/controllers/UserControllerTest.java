@@ -437,7 +437,7 @@ class UserControllerTest extends BaseControllerTest {
     // get transactions by user id
     @Test
     void getTransactionsByUserIdShouldGive200AndObject() throws Exception {
-        when(userServiceJpa.getTransactionsByUserId(eq(1L), eq(authCustomer), eq(0), eq(10), eq("asc"), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()))).thenReturn(transactionResponses);
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null, null, null, null, null, null, null)).thenReturn(transactionResponses);
 
         mockMvc.perform(get("/users/1/transactions")
                 .header("Authorization", "Bearer " + customerToken)
@@ -458,19 +458,12 @@ class UserControllerTest extends BaseControllerTest {
 
     @Test
     void getTransactionsByUserIdShouldThrow401WhenUserIsNotEmployeeAndNotOwner() throws Exception {
-        when(userServiceJpa.getTransactionsByUserId(
-            eq(1L), eq(authCustomer), eq(0), eq(10), eq("asc"),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
-            eq(Optional.empty()), eq(Optional.empty()), eq(Optional.empty()),
-            eq(Optional.empty())
-        ))
-            .thenThrow(new UnauthorizedTransactionAccessException("user not allowed to access transactions of user with id: 1"));
+        when(userServiceJpa.getTransactionsByUserId(1L, authCustomer, 0, 10, "asc", null, null, null, null, null, null, null)).thenThrow(new UnauthorizedTransactionAccessException("user not allowed to access transactions of user with id: 1"));
 
         mockMvc.perform(get("/users/1/transactions")
                 .header("Authorization", "Bearer " + customerToken)
                 .with(user(authCustomer))
-            )
-            .andDo(print())
+            ).andDo(print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("user not allowed to access transactions of user with id: 1"));
     }
