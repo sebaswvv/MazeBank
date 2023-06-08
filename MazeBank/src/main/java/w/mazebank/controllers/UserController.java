@@ -1,5 +1,6 @@
 package w.mazebank.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<FullUserResponse> patchUserById(@PathVariable long id, @RequestBody UserPatchRequest userPatchRequest, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException, DisallowedFieldException {
+    public ResponseEntity<FullUserResponse> patchUserById(@PathVariable long id, @RequestBody @Valid UserPatchRequest userPatchRequest, @AuthenticationPrincipal User userPerforming) throws UserNotFoundException, DisallowedFieldException {
         User user = userService.patchUserById(id, userPatchRequest, userPerforming);
         return parseUserToFullUserResponse(user);
     }

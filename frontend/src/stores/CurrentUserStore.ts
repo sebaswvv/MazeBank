@@ -98,10 +98,10 @@ export const useCurrentUserStore = defineStore({
     async editUser(user: User) {
       try {
         const userPatchRequest: UserPatchRequest = {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.phoneNumber,
+          email: user.email == '' ? undefined : user.email,
+          firstName: user.firstName == '' ? undefined : user.firstName,
+          lastName: user.lastName == '' ? undefined : user.lastName,
+          phoneNumber: user.phoneNumber == '' ? undefined : user.phoneNumber,
         };
 
         const response = await axios.patch(

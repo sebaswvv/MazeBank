@@ -19,7 +19,11 @@
                 <input v-model="user.phoneNumber" id="phoneNumber" placeholder="Phone Number" />
             </div>
             <button @click="saveUser" class="btn-primary mt-3">Opslaan</button>
+            <!-- Error message -->
             <p id="message">{{ message }}</p>
+            <div v-if="errorMessage" class="alert alert-danger mt-3">
+                {{ errorMessage }}
+            </div>
         </div>
     </div>
 </template>
@@ -36,6 +40,8 @@ const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
 
 const message = ref('');
+const errorMessage = ref<string | null>(null);
+
 
 const user = reactive<User>({
     id: 0,
@@ -63,13 +69,15 @@ onMounted(async () => {
     Object.assign(user, currentUserStore.getUser);
 });
 
+
+
 const saveUser = async () => {
     message.value = '';
     // Save the updated user data
     if (await currentUserStore.editUser(user)) {
         message.value = 'Uw gegevens zijn succesvol aangepast';
     } else {
-        message.value = 'Er is iets misgegaan';
+        errorMessage.value = 'Er is iets misgegaan bij het aanpassen van uw gegevens';
     }
 };
 </script>
