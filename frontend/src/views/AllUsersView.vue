@@ -35,8 +35,8 @@
             <div class="row d-flex justify-content-center align-items-center mt-3">
                 <div class="col-md-8">
 
-                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Previous</button>
-                    <button class="btn-secondary" @click="nextPage">Next</button>
+                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Vorige</button>
+                    <button class="btn-secondary" @click="nextPage">Volgende</button>
                 </div>
             </div>
         </div>

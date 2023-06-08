@@ -64,7 +64,7 @@ export const useAtmStore = defineStore({
       );
 
       // Check the response status and handle accordingly
-      if (response.status !== 200) {
+      if (response.status !== 201) {
         throw new Error(response.data.message);
       } else {
         this.fetchAccount();

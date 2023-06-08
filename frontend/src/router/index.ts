@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/HomeView.vue';
 import Atm from '../views/AtmView.vue';
 import Account from '../views/AccountView.vue';
 import Login from '../views/LoginView.vue';
@@ -17,7 +16,6 @@ import AllTransactionsView from "../views/AllTransactionsView.vue"
 // Define routes
 const routes = [
   { path: '/', component: Login },
-  { path: '/home', component: Home },
   { path: '/atm', component: Atm },
   { path: '/login', component: Login },
   { path: '/dashboard', component: CustomerDashboard },

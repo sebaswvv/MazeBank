@@ -28,8 +28,8 @@
             <div class="row d-flex justify-content-center align-items-center mt-3">
                 <div class="col-md-8">
 
-                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Previous</button>
-                    <button class="btn-secondary" @click="nextPage">Next</button>
+                    <button class="btn-secondary" @click="previousPage" v-if="pageNumber !== 0">Vorige</button>
+                    <button class="btn-secondary" @click="nextPage">Volgende</button>
                 </div>
             </div>
         </div>
@@ -57,13 +57,13 @@ const fetchAccounts = async () => {
     accounts.value = res.data;
 };
 
-const performSearch = (query) => {
+const performSearch = (query: any) => {
     const lowerCaseQuery = query.toLowerCase();
     filteredAccounts.value = accounts.value.filter(
         (account) =>
             account.iban.toLowerCase().includes(lowerCaseQuery) ||
-            account.user.firstName.toLowerCase().includes(lowerCaseQuery) ||
-            account.user.lastName.toLowerCase().includes(lowerCaseQuery)
+            account.user?.firstName.toLowerCase().includes(lowerCaseQuery) ||
+            account.user?.lastName.toLowerCase().includes(lowerCaseQuery)
     );
 };
 
@@ -75,8 +75,8 @@ const filteredAccounts = computed<Account[]>(() => {
         return accounts.value.filter(
             (account) =>
                 account.iban.toLowerCase().includes(lowerCaseQuery) ||
-                account.user.firstName.toLowerCase().includes(lowerCaseQuery) ||
-                account.user.lastName.toLowerCase().includes(lowerCaseQuery)
+                account.user?.firstName.toLowerCase().includes(lowerCaseQuery) ||
+                account.user?.lastName.toLowerCase().includes(lowerCaseQuery)
         );
     }
 });

@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { useAccountStore } from '../stores/AccountStore';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import AccountPatchRequest from './../interfaces/requests/AccountPatchRequest';
 import router from '../router';
 
@@ -50,9 +50,6 @@ import router from '../router';
 const accountStore = useAccountStore();
 const newAbsoluteLimit = ref(0);
 const errorMessage = ref('');
-// const isBlocked = computed(() => {
-//     return accountStore.account?.active ?? false;
-// });
 
 async function handleUpdateNewAbsoluteLimit() {
     const request: AccountPatchRequest = {

@@ -10,7 +10,10 @@
                 <p>{{ iban }}</p>
             </div>
             <div class="col d-flex justify-content-end">
-                <p>€ {{ balance }}</p>
+                <p>€ {{ balance.toLocaleString('NL-NL', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) }}</p>
             </div>
         </div>
     </div>

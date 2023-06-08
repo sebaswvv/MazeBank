@@ -4,14 +4,12 @@ import User from '../interfaces/User';
 import AccountCompact from '../interfaces/AccountCompact';
 import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
 import AccountRequest from '../interfaces/requests/AccountRequest';
-// import AccountCompact from '../interfaces/User';
 
 // STORE
 export const useUserStore = defineStore({
   id: 'user',
   state: () => ({
     user: null as User | null,
-    // accounts: [] as AccountCompact[],
   }),
   getters: {
     getUser(state) {

@@ -109,7 +109,6 @@ import AccountPreviewDashboard from '../components/AccountPreviewDashboard.vue';
 import { RoleType } from '../enums/RoleType';
 import { AccountType } from '../enums/AccountType';
 import AccountRequest from '../interfaces/requests/AccountRequest';
-// import axios from 'axios';
 
 const userStore = useUserStore();
 const authenticationStore = useAuthenticationStore();

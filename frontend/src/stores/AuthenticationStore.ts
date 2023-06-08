@@ -13,10 +13,6 @@ export const useAuthenticationStore = defineStore({
     isLoggedIn: localStorage.getItem('token') !== null,
   }),
   getters: {
-    // Deze implementeren met /users/:id ??
-    // getUser(state) {
-    //   return state.user;
-    // },
     getUserId(state) {
       return state.userId;
     },
@@ -59,18 +55,6 @@ export const useAuthenticationStore = defineStore({
         console.error(error);
       }
     },
-    // async updateUser(updateUser: User) {
-    //   this.user = updateUser;
-    //   try {
-    //     const response = await axios.put(`/users/${updateUser.id}`, updateUser);
-    //     this.user.password = undefined;
-    //     console.log(response);
-    //     if (response.status === 200) return true;
-    //   } catch (error: any) {
-    //     console.error(error);
-    //     return false;
-    //   }
-    // },
     setUser(token: string) {
       // set token in local storage
       localStorage.setItem('token', token);
