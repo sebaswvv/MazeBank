@@ -297,10 +297,12 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     private void addRequestedUserCondition(User requestedUser) {
+        List<Account> userAccounts = requestedUser.getAccounts();
+
         this.specification = specification.and((root, query, criteriaBuilder) ->
             criteriaBuilder.or(
-                criteriaBuilder.equal(root.get("sender"), requestedUser),
-                criteriaBuilder.equal(root.get("receiver"), requestedUser)
+                root.get("sender").in(userAccounts),
+                root.get("receiver").in(userAccounts)
             )
         );
     }
