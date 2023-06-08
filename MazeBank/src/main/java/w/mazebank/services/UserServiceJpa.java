@@ -23,10 +23,7 @@ import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceJpa extends BaseServiceJpa {
@@ -36,15 +33,16 @@ public class UserServiceJpa extends BaseServiceJpa {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    private Specification<Transaction> specification = Specification.where(null);
+
     public User getUserById(Long id) throws UserNotFoundException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
-        else
-            return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
+        checkIfUserIsNotTheBank(id);
+        return userRepository.findById(id)
+            .orElseThrow(() -> new UserNotFoundException("user not found with id: " + id));
     }
 
     public User getUserByIdAndValidate(Long id, User userPerforming) throws UserNotFoundException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        checkIfUserIsNotTheBank(id);
 
         // check if user id is the same as the user performing the request or if the user performing the request is an employee and not blocked
         if (userPerforming.getId() != id && (!userPerforming.getRole().equals(RoleType.EMPLOYEE) || userPerforming.isBlocked())) {
@@ -52,15 +50,19 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
         return getUserById(id);
     }
-
-
-    public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+    private void checkIfUserIsNotTheBank(Long userId) {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
-
+    }
+    private void checkIfUserIsAllowedToAccessAccount(Long userId, User userPerforming) {
         // throw exception if user is not an employee and not the user performing the request
         if (!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
             throw new UnauthorizedAccountAccessException("user not allowed to access accounts of user with id: " + userId);
         }
+    }
+
+    public List<AccountResponse> getAccountsByUserId(Long userId, User userPerforming) throws UserNotFoundException, UnauthorizedAccountAccessException {
+        checkIfUserIsNotTheBank(userId);
+        checkIfUserIsAllowedToAccessAccount(userId, userPerforming);
 
         // get user
         User user = getUserById(userId);
@@ -69,6 +71,10 @@ public class UserServiceJpa extends BaseServiceJpa {
         List<Account> accounts = user.getAccounts();
         if (accounts == null) return new ArrayList<>();
 
+        return buildAccountResponse(accounts);
+    }
+
+    private List<AccountResponse> buildAccountResponse(List<Account> accounts) {
         // parse accounts to account responses
         List<AccountResponse> accountResponses = new ArrayList<>();
         for (Account account : accounts) {
@@ -85,6 +91,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         return accountResponses;
     }
 
+
+
     public List<UserResponse> getAllUsers(int pageNumber, int pageSize, String sort, String search, boolean withoutAccounts) {
         List<User> users = findAllPaginationAndSort(pageNumber, pageSize, sort, search, userRepository);
 
@@ -95,6 +103,10 @@ public class UserServiceJpa extends BaseServiceJpa {
             filteredUsers.removeIf(user -> user.getAccounts() != null && !user.getAccounts().isEmpty());
         }
 
+        return buildUserResponse(filteredUsers);
+    }
+
+    private List<UserResponse> buildUserResponse(List<User> filteredUsers) {
         // Parse users to user responses
         List<UserResponse> userResponses = new ArrayList<>();
         for (User user : filteredUsers) {
@@ -105,7 +117,6 @@ public class UserServiceJpa extends BaseServiceJpa {
                 .build();
             userResponses.add(userResponse);
         }
-
         return userResponses;
     }
 
@@ -115,7 +126,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public void blockUser(Long id) throws UserNotFoundException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        checkIfUserIsNotTheBank(id);
 
         User user = getUserById(id);
         user.setBlocked(true);
@@ -124,7 +135,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public void unblockUser(Long id) throws UserNotFoundException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        checkIfUserIsNotTheBank(id);
 
         User user = getUserById(id);
         user.setBlocked(false);
@@ -133,16 +144,43 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public User patchUserById(long id, UserPatchRequest userPatchRequest, User userPerforming) throws UserNotFoundException, DisallowedFieldException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
-
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) throw new UserNotFoundException("user not found with id: " + id);
-
-        // check if user is the same as the user performing the request or if the user performing the request is an employee
+        checkIfUserIsNotTheBank(id);
+        User userToPatch = getUserById(id);
         if (userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
             throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
         }
 
+        checkAllowedFields(userPatchRequest);
+
+        patchesAllowedForCustomer(userPatchRequest, userToPatch);
+        patchesAllowedForEmployee(userPatchRequest, userPerforming, userToPatch);
+
+        userRepository.save(userToPatch);
+
+        return userToPatch;
+    }
+
+    private void patchesAllowedForEmployee(UserPatchRequest userPatchRequest, User userPerforming, User userToPatch) {
+        // PATCHES AVAILABLE FOR EMPLOYEES
+        if ((userPatchRequest.getTransactionLimit() != null || userPatchRequest.getDayLimit() != null) && userPerforming.getRole() != RoleType.EMPLOYEE) {
+            throw new UnauthorizedUserAccessException("You are not allowed to update the transaction limit or day limit");
+        }
+
+        if (userPatchRequest.getTransactionLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
+            userToPatch.setTransactionLimit(userPatchRequest.getTransactionLimit());
+        if (userPatchRequest.getDayLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
+            userToPatch.setDayLimit(userPatchRequest.getDayLimit());
+    }
+
+    private void patchesAllowedForCustomer(UserPatchRequest userPatchRequest, User userToPatch) {
+        // PATCHES AVAILABLE FOR CUSTOMERS
+        if (userPatchRequest.getEmail() != null) userToPatch.setEmail(userPatchRequest.getEmail());
+        if (userPatchRequest.getFirstName() != null) userToPatch.setFirstName(userPatchRequest.getFirstName());
+        if (userPatchRequest.getLastName() != null) userToPatch.setLastName(userPatchRequest.getLastName());
+        if (userPatchRequest.getPhoneNumber() != null) userToPatch.setPhoneNumber(userPatchRequest.getPhoneNumber());
+    }
+
+    private void checkAllowedFields(UserPatchRequest userPatchRequest) {
         List<String> allowedFields = Arrays.asList("email", "firstName", "lastName", "phoneNumber");
 
         // check if fields are allowed
@@ -150,117 +188,30 @@ public class UserServiceJpa extends BaseServiceJpa {
             if (!allowedFields.contains(field))
                 throw new DisallowedFieldException("field not allowed to update: " + field);
         }
-
-        // PATCHES AVAILABLE FOR CUSTOMERS
-        if (userPatchRequest.getEmail() != null) user.setEmail(userPatchRequest.getEmail());
-        if (userPatchRequest.getFirstName() != null) user.setFirstName(userPatchRequest.getFirstName());
-        if (userPatchRequest.getLastName() != null) user.setLastName(userPatchRequest.getLastName());
-        if (userPatchRequest.getPhoneNumber() != null) user.setPhoneNumber(userPatchRequest.getPhoneNumber());
-
-        // PATCHES AVAILABLE FOR EMPLOYEES
-        if ((userPatchRequest.getTransactionLimit() != null || userPatchRequest.getDayLimit() != null) && userPerforming.getRole() != RoleType.EMPLOYEE) {
-            throw new UnauthorizedUserAccessException("You are not allowed to update the transaction limit or day limit");
-        }
-
-        if (userPatchRequest.getTransactionLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
-            user.setTransactionLimit(userPatchRequest.getTransactionLimit());
-        if (userPatchRequest.getDayLimit() != null && userPerforming.getRole() == RoleType.EMPLOYEE)
-            user.setDayLimit(userPatchRequest.getDayLimit());
-
-        userRepository.save(user);
-
-        return user;
     }
 
     public void deleteUserById(Long id)
         throws UserNotFoundException, UserHasAccountsException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to delete the bank");
+       checkIfUserIsNotTheBank(id);
         User user = getUserById(id);
 
-        // if user has accounts, cannot delete user
-        if (user.getAccounts() != null && !user.getAccounts().isEmpty())
-            throw new UserHasAccountsException("user has accounts, cannot delete user");
+        checkIfUserHasAccounts(user);
 
         userRepository.delete(user);
     }
 
+    private void checkIfUserHasAccounts(User user) throws UserHasAccountsException {
+        // if user has accounts, cannot delete user
+        if (user.getAccounts() != null && !user.getAccounts().isEmpty())
+            throw new UserHasAccountsException("user has accounts, cannot delete user");
+    }
 
-    public List<TransactionResponse> getTransactionsByUserId(
-        Long userId,
-        User user,
-        int pageNumber,
-        int pageSize,
-        String sort,
-        String fromIban,
-        String toIban,
-        LocalDate startDate,
-        LocalDate endDate,
-        Double maxAmount,
-        Double minAmount,
-        Double amount
+
+    public List<TransactionResponse> getTransactionsByUserId(Long userId, User user, int pageNumber, int pageSize, String sort, String fromIban, String toIban, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount
     ) throws UserNotFoundException {
         User requestedUser = getUserByIdAndValidate(userId, user);
 
-        Specification<Transaction> specification = Specification.where(null);
-
-        if (fromIban != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("sender").get("iban")),
-                    "%" + fromIban.toLowerCase() + "%"
-                )
-            );
-        }
-
-        if (toIban != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("receiver").get("iban")),
-                    "%" + toIban.toLowerCase() + "%"
-                )
-            );
-        }
-
-        // if (startDate != null && endDate != null) {
-        //     specification = specification.and((root, query, criteriaBuilder) ->
-        //         criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
-        //     );
-        // }
-
-        if (startDate != null)
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
-            );
-
-        if (endDate != null)
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
-            );
-
-        if (maxAmount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
-            );
-        }
-
-        if (minAmount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
-            );
-        }
-
-        if (amount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("amount"), amount)
-            );
-        }
-
-        specification = specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.or(
-                criteriaBuilder.equal(root.get("sender"), requestedUser),
-                criteriaBuilder.equal(root.get("receiver"), requestedUser)
-            )
-        );
+        buildQueryFromParameters(fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount, requestedUser);
 
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(direction, "timestamp"));
@@ -270,6 +221,90 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         return mapTransactionsToResponses(transactions);
     }
+
+    private void buildQueryFromParameters(String fromIban, String toIban, LocalDate startDate, LocalDate endDate, Double maxAmount, Double minAmount, Double amount, User requestedUser) {
+        this.specification = Specification.where(null);
+        addFromIbanCondition(fromIban);
+        addToIbanCondition(toIban);
+        addStartDateCondition(startDate);
+        addEndDateCondition(endDate);
+        addMaxAmountCondition(maxAmount);
+        addMinAmountCondition(minAmount);
+        addAmountCondition(amount);
+        addRequestedUserCondition(requestedUser);
+    }
+
+    private void addFromIbanCondition(String fromIban) {
+        if (fromIban != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("sender").get("iban")),
+                    "%" + fromIban.toLowerCase() + "%"
+                )
+            );
+        }
+    }
+
+    private void addToIbanCondition(String toIban) {
+        if (toIban != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("receiver").get("iban")),
+                    "%" + toIban.toLowerCase() + "%"
+                )
+            );
+        }
+    }
+
+    private void addStartDateCondition(LocalDate startDate) {
+        if (startDate != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
+            );
+        }
+    }
+
+    private void addEndDateCondition(LocalDate endDate) {
+        if (endDate != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
+            );
+        }
+    }
+
+    private void addMaxAmountCondition(Double maxAmount) {
+        if (maxAmount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
+            );
+        }
+    }
+
+    private void addMinAmountCondition(Double minAmount) {
+        if (minAmount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
+            );
+        }
+    }
+
+    private void addAmountCondition(Double amount) {
+        if (amount != null) {
+            this.specification = specification.and((root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("amount"), amount)
+            );
+        }
+    }
+
+    private void addRequestedUserCondition(User requestedUser) {
+        this.specification = specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.or(
+                criteriaBuilder.equal(root.get("sender"), requestedUser),
+                criteriaBuilder.equal(root.get("receiver"), requestedUser)
+            )
+        );
+    }
+
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
         List<TransactionResponse> transactionResponses = new ArrayList<>();
@@ -288,7 +323,7 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
     public BalanceResponse getBalanceByUserId(Long userId, User userPerforming) throws UserNotFoundException {
-        if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
+        checkIfUserIsNotTheBank(userId);
 
         // check if userId is from a user that is a existing user
         // and validate if the performing user has the rights to access the user
@@ -296,6 +331,10 @@ public class UserServiceJpa extends BaseServiceJpa {
         BalanceResponse balanceResponse = new BalanceResponse();
         balanceResponse.setUserId(userId);
 
+        return getBalanceResponse(user, balanceResponse);
+    }
+
+    private BalanceResponse getBalanceResponse(User user, BalanceResponse balanceResponse) {
         // calculate total balance and set checking and savings balance if account exists
         for (Account account : user.getAccounts()) {
             if (account.getAccountType() == AccountType.CHECKING) {

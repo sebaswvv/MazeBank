@@ -485,6 +485,7 @@ class UserServiceJpaTest {
     }
 
 
+
     @Test
     void getTransactionsByUserIdWithNoExistingUser() {
         // create a user
@@ -617,6 +618,7 @@ class UserServiceJpaTest {
 
         // mock the findById method and return null
         when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
+
 
         // test results
         UnauthorizedUserAccessException exception = assertThrows(UnauthorizedUserAccessException.class, () -> {
