@@ -33,26 +33,26 @@ public class TransactionServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException, AccountNotFoundException {
-        // get transaction by id
+    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
         Transaction transaction = getTransactionById(id);
+        validateTransactionSender(transaction);
+        checkIfUserIsTransactionParticipant(user, transaction);
+        return mapTransactionToResponse(transaction);
+    }
 
-        // if the transaction sender is the bank then throw error
-        if (transaction.getSender().getIban().equals("NL01INHO0000000001")) {
+    private void validateTransactionSender(Transaction transaction) throws UnauthorizedTransactionAccessException {
+        String bankIban = "NL01INHO0000000001";
+        if (transaction.getSender().getIban().equals(bankIban)) {
             throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
         }
+    }
 
-        // check if the user is allowed to access the transaction
-        checkIfUserIsTransactionParticipant(user, transaction);
-
-        // moddelmapper configuration because the fields dont match
+    private TransactionResponse mapTransactionToResponse(Transaction transaction) {
         mapper.typeMap(Transaction.class, TransactionResponse.class)
             .addMappings(mapper -> {
                 mapper.map(src -> src.getSender().getIban(), TransactionResponse::setSender);
                 mapper.map(src -> src.getReceiver().getIban(), TransactionResponse::setReceiver);
             });
-
-        // map the transaction to a transaction response
         return mapper.map(transaction, TransactionResponse.class);
     }
 
