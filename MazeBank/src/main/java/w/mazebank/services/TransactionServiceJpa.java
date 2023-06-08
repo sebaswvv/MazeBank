@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import w.mazebank.enums.AccountType;
 import w.mazebank.enums.RoleType;
@@ -18,6 +19,7 @@ import w.mazebank.repositories.AccountRepository;
 import w.mazebank.repositories.TransactionRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class TransactionServiceJpa {
@@ -161,7 +163,7 @@ public class TransactionServiceJpa {
         checkIfSenderIsBlocked(transaction);
     }
 
-    // to validate a atm transaction
+    // to validate an atm transaction
     private void validateAtmTransaction(Transaction transaction) throws TransactionFailedException {
         validateTransaction(transaction);
 
@@ -271,5 +273,9 @@ public class TransactionServiceJpa {
         }
 
         accountRepository.save(account);
+    }
+
+    public List<Transaction> getTransactionsByUser(Long accountId, Pageable pageable) {
+        return transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
     }
 }
