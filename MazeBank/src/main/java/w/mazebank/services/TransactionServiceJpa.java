@@ -33,7 +33,7 @@ public class TransactionServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    static final String BANK_IBAN = "NL01INHO0000000001";
+    private static final String BANK_IBAN = "NL01INHO0000000001";
 
     public TransactionResponse getTransactionAndValidate(Long id, User userPerforming) throws TransactionNotFoundException {
         Transaction transaction = getTransactionById(id);
