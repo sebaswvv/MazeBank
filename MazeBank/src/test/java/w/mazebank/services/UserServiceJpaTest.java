@@ -619,6 +619,7 @@ class UserServiceJpaTest {
         // mock the findById method and return null
         when(userRepository.findById(2L)).thenReturn(Optional.ofNullable(user));
 
+
         // test results
         UnauthorizedUserAccessException exception = assertThrows(UnauthorizedUserAccessException.class, () -> {
             userServiceJpa.patchUserById(2L, requestBody, performingUser);
