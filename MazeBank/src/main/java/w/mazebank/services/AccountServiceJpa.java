@@ -207,12 +207,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
         Pageable pageable = createPageable(pageNumber, pageSize, sortObject);
 
         // get the transactions and map them to transaction responses
-        List<Transaction> transactions = getTransactions(accountId, pageable);
+        List<Transaction> transactions = transactionServiceJpa.getTransactionsByUser(accountId, pageable);
         return mapToTransactionResponses(transactions);
-    }
-
-    private List<Transaction> getTransactions(Long accountId, Pageable pageable) {
-        return transactionRepository.findBySenderIdOrReceiverId(accountId, accountId, pageable);
     }
 
     private List<TransactionResponse> mapToTransactionResponses(List<Transaction> transactions) {
