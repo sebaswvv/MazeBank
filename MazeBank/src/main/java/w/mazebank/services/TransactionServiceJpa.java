@@ -87,21 +87,25 @@ public class TransactionServiceJpa {
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
         // create the transaction
-        Transaction transaction = Transaction.builder()
-            .amount(transactionRequest.getAmount())
-            .description(transactionRequest.getDescription())
-            .transactionType(TransactionType.TRANSFER)
-            .userPerforming(userPerforming)
-            .sender(senderAccount)
-            .receiver(receiverAccount)
-            .timestamp(LocalDateTime.now())
-            .build();
+        Transaction transaction = buildTransaction(transactionRequest, userPerforming, senderAccount, receiverAccount, TransactionType.TRANSFER);
 
         validateRegularTransaction(transaction);
 
         updateAccountBalances(senderAccount, receiverAccount, transactionRequest.getAmount());
 
         return performTransaction(transaction);
+    }
+
+    private Transaction buildTransaction(TransactionRequest request, User userPerforming, Account senderAccount, Account receiverAccount, TransactionType transactionType) {
+        return Transaction.builder()
+            .amount(request.getAmount())
+            .description(request.getDescription())
+            .transactionType(transactionType)
+            .userPerforming(userPerforming)
+            .sender(senderAccount)
+            .receiver(receiverAccount)
+            .timestamp(LocalDateTime.now())
+            .build();
     }
 
     private Transaction getTransactionById(Long id) throws TransactionNotFoundException {
@@ -121,33 +125,34 @@ public class TransactionServiceJpa {
     private TransactionResponse performTransaction(Transaction transaction) {
         saveTransaction(transaction);
 
-        return new TransactionResponse(
-            transaction.getId(),
-            transaction.getAmount(),
-            transaction.getDescription(),
-            transaction.getSender().getIban(),
-            transaction.getReceiver().getIban(),
-            transaction.getUserPerforming().getId(),
-            transaction.getTimestamp().toString(),
-            transaction.getTransactionType().toString());
+        return buildTransactionResponse(transaction);
+    }
+
+    private TransactionResponse buildTransactionResponse(Transaction transaction) {
+        return  TransactionResponse.builder()
+            .id(transaction.getId())
+            .amount(transaction.getAmount())
+            .description(transaction.getDescription())
+            .sender(transaction.getSender().getIban())
+            .receiver(transaction.getReceiver().getIban())
+            .userPerforming(transaction.getUserPerforming().getId())
+            .timestamp(transaction.getTimestamp().toString())
+            .transactionType(transaction.getTransactionType().toString())
+            .build();
     }
 
     @Transactional
-    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming)
-        throws TransactionFailedException, AccountNotFoundException {
-
-        // create the transaction
-        Transaction transaction = Transaction.builder()
+    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException, AccountNotFoundException {
+        // create the transaction request from the parameters
+        TransactionRequest request = TransactionRequest.builder()
             .amount(amount)
-            .transactionType(transactionType)
-            .userPerforming(userPerforming)
-            .sender(getBankAccount())
-            .receiver(account)
-            .timestamp(java.time.LocalDateTime.now())
             .build();
 
-        validateAtmTransaction(transaction);
+        // create the transaction
+        Transaction transaction = buildTransaction(request, userPerforming, getBankAccount(), account, transactionType);
 
+        // validate the transaction and update the account balance
+        validateAtmTransaction(transaction);
         updateAccountBalanceForAtmAction(account, amount, transactionType);
 
         return performTransaction(transaction);
@@ -165,15 +170,17 @@ public class TransactionServiceJpa {
 
     // to validate an atm transaction
     private void validateAtmTransaction(Transaction transaction) throws TransactionFailedException {
+        // validate all transaction validations
         validateTransaction(transaction);
 
+        // validate ATM transaction validations
         if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS) {
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
         }
     }
 
-    // to validate a regular transaction
     private void validateRegularTransaction(Transaction transaction) throws TransactionFailedException, InsufficientFundsException {
+        // validate all transaction validations
         validateTransaction(transaction);
         savingsAccountCheckSend(transaction);
         checkIfUserIsAuthorized(transaction);
