@@ -39,6 +39,9 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Mock
+    private UserServiceJpa userServiceJpa;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -156,6 +159,7 @@ class AuthServiceTest {
         // mock methods
         when(userRepository.findByEmail(any())).thenReturn(Optional.ofNullable(user));
         when(authenticationManager.authenticate(any())).thenReturn(null);
+        when(userServiceJpa.getUserByEmail(any())).thenReturn(user);
         when(jwtService.generateToken(any(User.class))).thenReturn("THISISAFAKETOKEN");
 
         // call the login method

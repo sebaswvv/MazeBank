@@ -350,4 +350,8 @@ public class UserServiceJpa extends BaseServiceJpa {
 
         return balanceResponse;
     }
+
+    public User getUserByEmail(String email) throws UserNotFoundException {
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("user not found"));
+    }
 }

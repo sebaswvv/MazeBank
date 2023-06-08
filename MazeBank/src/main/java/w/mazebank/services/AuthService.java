@@ -29,6 +29,9 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private UserServiceJpa userServiceJpa;
+
     public boolean checkIfUserIsBlocked(String email) throws UserNotFoundException {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadCredentialsException("User not found"));
@@ -40,7 +43,23 @@ public class AuthService {
         checkRegisterRequest(request);
 
         // create user
-        User user = User.builder()
+        User user = buildUser(request);
+
+        // save the user to the db
+        userRepository.save(user);
+
+        return buildAuthenticationResponse(user);
+    }
+
+    private AuthenticationResponse buildAuthenticationResponse(User user) {
+        String jwt = jwtService.generateToken(user);
+        return AuthenticationResponse.builder()
+            .authenticationToken(jwt)
+            .build();
+    }
+
+    private User buildUser(RegisterRequest request) {
+        return User.builder()
             .email(request.getEmail())
             .bsn(request.getBsn())
             .firstName(request.getFirstName())
@@ -48,17 +67,6 @@ public class AuthService {
             .password(passwordEncoder.encode(request.getPassword()))
             .phoneNumber(request.getPhoneNumber())
             .dateOfBirth(request.getDateOfBirth())
-            .build();
-
-        // save the user to the db
-        userRepository.save(user);
-
-        // generate a token
-        String jwt = jwtService.generateToken(user);
-
-        // return the token
-        return AuthenticationResponse.builder()
-            .authenticationToken(jwt)
             .build();
     }
 
@@ -68,6 +76,7 @@ public class AuthService {
             throw new UnauthorizedAccountAccessException("User is blocked");
         }
 
+        // authenticate user
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getEmail(),
@@ -75,15 +84,9 @@ public class AuthService {
             )
         );
 
-        // get user
-        var user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new BadCredentialsException("User not found"));
-
-        // generate a token and return response
-        String jwt = jwtService.generateToken(user);
-        return AuthenticationResponse.builder()
-            .authenticationToken(jwt)
-            .build();
+        // get the user
+        User user = userServiceJpa.getUserByEmail(request.getEmail());
+        return buildAuthenticationResponse(user);
     }
 
     private void checkRegisterRequest(RegisterRequest request) throws UserNotOldEnoughException, BsnAlreadyUsedException, EmailAlreadyUsedException {
@@ -93,7 +96,6 @@ public class AuthService {
     }
 
     private static void checkIfUserIs18(RegisterRequest request) throws UserNotOldEnoughException {
-        // TODO: uitzoeken of deze check echt moest
         if (request.getDateOfBirth().plusYears(18).isAfter(java.time.LocalDate.now())) {
             throw new UserNotOldEnoughException("User is not 18 years or older");
         }

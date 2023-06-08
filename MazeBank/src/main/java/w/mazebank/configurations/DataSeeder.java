@@ -79,7 +79,7 @@ public class DataSeeder implements ApplicationRunner {
         Account account4 = new Account(5, "NL29INHO0165148974", AccountType.SAVINGS, 10000.0, user2, true, LocalDateTime.now(), -5000.0, null, null);
 
         Account account5 = new Account(6, "NL45INHO0328598536", AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
-        Account account6 = new Account(6, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
+        Account account6 = new Account(7, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
 
         accountService.addAccount(account3);
         accountService.addAccount(account4);
