@@ -173,9 +173,7 @@ public class TransactionServiceJpa {
     // to validate a regular transaction
     private void validateRegularTransaction(Transaction transaction) throws TransactionFailedException, InsufficientFundsException {
         validateTransaction(transaction);
-
         savingsAccountCheckSend(transaction);
-
         checkIfUserIsAuthorized(transaction);
     }
 
