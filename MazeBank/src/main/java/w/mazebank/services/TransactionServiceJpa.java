@@ -33,26 +33,42 @@ public class TransactionServiceJpa {
 
     private final ModelMapper mapper = new ModelMapper();
 
-    public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException, AccountNotFoundException {
-        // get transaction by id
+    private static final String BANK_IBAN = "NL01INHO0000000001";
+
+    public TransactionResponse getTransactionAndValidate(Long id, User userPerforming) throws TransactionNotFoundException {
         Transaction transaction = getTransactionById(id);
 
-        // if the transaction sender is the bank then throw error
-        if (transaction.getSender().getIban().equals("NL01INHO0000000001")) {
+        // validate the transaction
+        checkIfSenderIsBankAccount(transaction);
+        checkIfUserPerformingIsTransactionParticipant(userPerforming, transaction);
+        return mapTransactionToResponse(transaction);
+    }
+
+    private void checkIfSenderIsBankAccount(Transaction transaction) throws UnauthorizedTransactionAccessException {
+        if (transaction.getSender().getIban().equals(BANK_IBAN)) {
             throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
         }
+    }
 
-        // check if the user is allowed to access the transaction
-        checkIfUserIsTransactionParticipant(user, transaction);
+    private void checkIfUserPerformingIsTransactionParticipant(User user, Transaction transaction) {
+        // if the user is an employee, he is allowed to access all transactions
+        if (user.getRole() == RoleType.EMPLOYEE) {
+            return;
+        }
+        // if the user is a customer, he is only allowed to access transactions he is a participant of
+        if (transaction.getSender().getUser().getId() == user.getId()
+            || transaction.getReceiver().getUser().getId() == user.getId()) {
+            return;
+        }
+        throw new UnauthorizedTransactionAccessException("User with id: " + user.getId() + " is not authorized to access transaction with id: " + transaction.getId());
+    }
 
-        // moddelmapper configuration because the fields dont match
+    private TransactionResponse mapTransactionToResponse(Transaction transaction) {
         mapper.typeMap(Transaction.class, TransactionResponse.class)
             .addMappings(mapper -> {
                 mapper.map(src -> src.getSender().getIban(), TransactionResponse::setSender);
                 mapper.map(src -> src.getReceiver().getIban(), TransactionResponse::setReceiver);
             });
-
-        // map the transaction to a transaction response
         return mapper.map(transaction, TransactionResponse.class);
     }
 
@@ -60,15 +76,15 @@ public class TransactionServiceJpa {
     public TransactionResponse postTransaction(TransactionRequest transactionRequest, User userPerforming)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
 
-        // deny acces if senderAccount is of the bank
-        if (transactionRequest.getSenderIban().equals("NL01INHO0000000001")) {
+        if (transactionRequest.getSenderIban().equals(BANK_IBAN)) {
             throw new UnauthorizedAccountAccessException("You are not allowed to perform transactions for the bank's bank account");
         }
 
+        // get the 2 accounts involved in the transaction
         Account senderAccount = accountServiceJpa.getAccountByIban(transactionRequest.getSenderIban());
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
-        // create transaction from the transaction request
+        // create the transaction
         Transaction transaction = Transaction.builder()
             .amount(transactionRequest.getAmount())
             .description(transactionRequest.getDescription())
@@ -81,49 +97,28 @@ public class TransactionServiceJpa {
 
         validateRegularTransaction(transaction);
 
-        // update account balance sender and receiver
-        senderAccount.setBalance(senderAccount.getBalance() - transactionRequest.getAmount());
-        accountRepository.save(senderAccount);
-        receiverAccount.setBalance(receiverAccount.getBalance() + transactionRequest.getAmount());
-        accountRepository.save(receiverAccount);
+        updateAccountBalances(senderAccount, receiverAccount, transactionRequest.getAmount());
 
         return performTransaction(transaction);
     }
 
     private Transaction getTransactionById(Long id) throws TransactionNotFoundException {
-        Transaction transaction = transactionRepository.findById(id).orElse(null);
-        if (transaction == null) throw new TransactionNotFoundException("Transaction with id: " + id + " not found");
-        return transaction;
+        return transactionRepository.findById(id)
+            .orElseThrow(() -> new TransactionNotFoundException("Transaction with id: " + id + " not found"));
     }
 
-    private void checkIfUserIsTransactionParticipant(User user, Transaction transaction) {
-        // allow if user is of type employee
-        if (user.getRole() == RoleType.EMPLOYEE) return;
-
-        // if user is sender or receiver of transaction, allow
-        if (transaction.getSender().getUser().getId() == user.getId()
-            || transaction.getReceiver().getUser().getId() == user.getId()) return;
-
-        // else throw exception
-        throw new UnauthorizedTransactionAccessException("User with id: " + user.getId() + " is not authorized to access transaction with id: " + transaction.getId());
-    }
-
-    // return the bankaccount of the Bank
     private Account getBankAccount() throws AccountNotFoundException {
-        //return accountRepository.findAll().get(0);
-        return accountServiceJpa.getAccountByIban("NL01INHO0000000001");
+        return accountServiceJpa.getAccountByIban(BANK_IBAN);
     }
 
+    // used for database seeding
     public void saveTransaction(Transaction transaction) {
         transactionRepository.save(transaction);
     }
 
-    // add transaction to the dataabase
     private TransactionResponse performTransaction(Transaction transaction) {
-        // save transaction to the db
-        transactionRepository.save(transaction);
+        saveTransaction(transaction);
 
-        // return transaction response
         return new TransactionResponse(
             transaction.getId(),
             transaction.getAmount(),
@@ -135,10 +130,11 @@ public class TransactionServiceJpa {
             transaction.getTransactionType().toString());
     }
 
-    // method for both deposit and withdrawal
     @Transactional
-    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming) throws TransactionFailedException, AccountNotFoundException {
-        // create transaction of type deposit and save it
+    public TransactionResponse atmAction(Account account, double amount, TransactionType transactionType, User userPerforming)
+        throws TransactionFailedException, AccountNotFoundException {
+
+        // create the transaction
         Transaction transaction = Transaction.builder()
             .amount(amount)
             .transactionType(transactionType)
@@ -148,66 +144,40 @@ public class TransactionServiceJpa {
             .timestamp(java.time.LocalDateTime.now())
             .build();
 
-        // validate transaction
         validateAtmTransaction(transaction);
 
-        // update account balance depending on transaction type
-        if (transactionType == TransactionType.WITHDRAWAL) {
-            account.setBalance(account.getBalance() - amount);
-        } else if (transactionType == TransactionType.DEPOSIT) {
-            account.setBalance(account.getBalance() + amount);
-        }
-
-        // save account's new balance
-        accountRepository.save(account);
+        updateAccountBalanceForAtmAction(account, amount, transactionType);
 
         return performTransaction(transaction);
     }
 
-    // validation for all types of transactions
+    // to validate any transaction
     private void validateTransaction(Transaction transaction) throws TransactionFailedException {
         checkIfSenderAndReceiverAreNotTheSame(transaction);
-        checkIfAnAccountIsBlocked(transaction);
+        checkIfOneOfTheAccountsIsBlocked(transaction);
         checkIfTransactionLimitIsExceeded(transaction);
         checkIfAbsoluteLimitIsReached(transaction);
-        // validateSufficientFunds(transaction);
         checkDayLimitExceeded(transaction);
-        checkIfUserIsBlocked(transaction);
+        checkIfSenderIsBlocked(transaction);
     }
 
-    // validation for all types of ATM transactions
+    // to validate a atm transaction
     private void validateAtmTransaction(Transaction transaction) throws TransactionFailedException {
-        // validate transaction
         validateTransaction(transaction);
 
-        // check if receiver is a savings account
-        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS)
+        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS) {
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
+        }
     }
 
-    // DEZE NOG EVEN LATEN STAAN VOOR ALS ER NIEUWE VALIDATIES MOETEN WORDEN TOEGEVOEGD
-    // private void validateDepositTransaction(Transaction transaction) throws TransactionFailedException {
-    //     validateAtmTransaction(transaction);
-    // }
-    //
-    // private void validateWithdrawalTransaction(Transaction transaction) throws TransactionFailedException {
-    //     validateAtmTransaction(transaction);
-    // }
-
-
-    private void validateRegularTransaction(Transaction transaction)
-        throws TransactionFailedException, InsufficientFundsException {
+    // to validate a regular transaction
+    private void validateRegularTransaction(Transaction transaction) throws TransactionFailedException, InsufficientFundsException {
         validateTransaction(transaction);
-
-        // One cannot directly transfer from a savings account to an account that is not of the same customer
-        // One cannot directly transfer to a savings account from an account that is not of the same customer.
         savingsAccountCheckSend(transaction);
-
-        // check if the user is an employee or owns the account from which the money is being sent
         checkIfUserIsAuthorized(transaction);
     }
 
-    private void checkIfAnAccountIsBlocked(Transaction transaction) throws TransactionFailedException {
+    private void checkIfOneOfTheAccountsIsBlocked(Transaction transaction) throws TransactionFailedException {
         if (!transaction.getSender().isActive())
             throw new TransactionFailedException("Sender account is blocked");
 
@@ -215,69 +185,91 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("Receiver account is blocked");
     }
 
-    private void checkIfUserIsBlocked(Transaction transaction) throws TransactionFailedException {
-        // get User from sender account
-        User user = transaction.getSender().getUser();
-
-        if (user.isBlocked())
+    private void checkIfSenderIsBlocked(Transaction transaction) throws TransactionFailedException {
+        if (transaction.getSender().getUser().isBlocked()) {
             throw new TransactionFailedException("User is blocked");
+        }
     }
 
     private void checkIfUserIsAuthorized(Transaction transaction) throws TransactionFailedException {
+        // if the user is an employee, he is allowed to perform any transaction
+        // if the user is a customer, he is only allowed to perform transactions on his own accounts
         if (transaction.getUserPerforming().getRole() != RoleType.EMPLOYEE
-            && transaction.getUserPerforming().getId() != transaction.getSender().getUser().getId())
+            && transaction.getUserPerforming().getId() != transaction.getSender().getUser().getId()) {
             throw new TransactionFailedException("User performing the transaction is not authorized to perform this transaction");
+        }
     }
 
     private void checkIfTransactionLimitIsExceeded(Transaction transaction) throws TransactionFailedException {
-        if (transaction.getAmount() > transaction.getSender().getUser().getTransactionLimit())
+        // if the transaction amount is higher than the transaction limit of the user
+        if (transaction.getAmount() > transaction.getSender().getUser().getTransactionLimit()) {
             throw new TransactionFailedException("Transaction limit exceeded");
+        }
     }
 
     private void checkIfAbsoluteLimitIsReached(Transaction transaction) throws AccountAbsoluteLimitReachedException {
-        if (transaction.getTransactionType() == TransactionType.TRANSFER ||
-            transaction.getTransactionType() == TransactionType.WITHDRAWAL) {
+        // Check if the transaction type is either TRANSFER or WITHDRAWAL
+        if (transaction.getTransactionType() == TransactionType.TRANSFER
+            || transaction.getTransactionType() == TransactionType.WITHDRAWAL) {
+
+            // Determine the account to check based on the transaction type
             Account accountToCheck = transaction.getTransactionType() == TransactionType.WITHDRAWAL
                 ? transaction.getReceiver()
                 : transaction.getSender();
 
-            if ((accountToCheck.getBalance() - transaction.getAmount()) < accountToCheck.getAbsoluteLimit())
+            double newBalance = accountToCheck.getBalance() - transaction.getAmount();
+
+            if (newBalance < accountToCheck.getAbsoluteLimit()) {
                 throw new AccountAbsoluteLimitReachedException("Balance cannot become lower than absolute limit");
+            }
         }
     }
 
     private void checkDayLimitExceeded(Transaction transaction) throws TransactionFailedException {
-        if (dayLimitExceeded(transaction.getSender(), transaction.getAmount()))
+        Account sender = transaction.getSender();
+        Double totalAmountOfTransactionForToday = transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
+        double totalAmountOfToday = totalAmountOfTransactionForToday != null ? totalAmountOfTransactionForToday : 0.0;
+
+        // check if the total amount of today + the amount of the transaction is higher than the day limit
+        if (totalAmountOfToday + transaction.getAmount() > sender.getUser().getDayLimit())
             throw new TransactionFailedException("Day limit exceeded");
     }
 
     private void savingsAccountCheckSend(Transaction transaction) throws TransactionFailedException {
-        if (transaction.getSender().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
+        // if the sender is a savings account and the receiver is not the same customer
+        if (transaction.getSender().getAccountType() == AccountType.SAVINGS
+            && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId())) {
             throw new TransactionFailedException("Cannot transfer from a savings account to an account that is not of the same customer");
+        }
 
-        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
+        // if the receiver is a savings account and the sender is not the same customer
+        if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS
+            && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId())) {
             throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
+        }
     }
-
-    // private void validateSufficientFunds(Transaction transaction) throws InsufficientFundsException {
-    //     // TODO: moet dit niet met absolute limit?
-    //
-    //     if (transaction.getSender().getBalance() - transaction.getAmount() < 0)
-    //         throw new InsufficientFundsException("Sender has insufficient funds");
-    // }
 
     private void checkIfSenderAndReceiverAreNotTheSame(Transaction transaction) throws TransactionFailedException {
         if (transaction.getSender().getId() == transaction.getReceiver().getId())
             throw new TransactionFailedException("Sender and receiver cannot be the same");
     }
 
-    private boolean dayLimitExceeded(Account sender, double amount) {
-        // save in Double object for the NULL checking
-        Double totalAmountOfTransactionForToday = transactionRepository.getTotalAmountOfTransactionForToday(sender.getId());
-        double currentTotal = totalAmountOfTransactionForToday != null ? totalAmountOfTransactionForToday : 0.0;
+    private void updateAccountBalances(Account senderAccount, Account receiverAccount, double amount) {
+        senderAccount.setBalance(senderAccount.getBalance() - amount);
+        receiverAccount.setBalance(receiverAccount.getBalance() + amount);
 
-        // check if the day limit is exceeded
-        double dayLimit = sender.getUser().getDayLimit();
-        return currentTotal + amount > dayLimit;
+        // save the updated accounts
+        accountRepository.save(senderAccount);
+        accountRepository.save(receiverAccount);
+    }
+
+    private void updateAccountBalanceForAtmAction(Account account, double amount, TransactionType transactionType) {
+        if (transactionType == TransactionType.WITHDRAWAL) {
+            account.setBalance(account.getBalance() - amount);
+        } else {
+            account.setBalance(account.getBalance() + amount);
+        }
+
+        accountRepository.save(account);
     }
 }
