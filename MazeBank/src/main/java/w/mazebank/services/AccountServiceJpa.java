@@ -111,6 +111,29 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return accountResponse;
     }
 
+    private List<IbanResponse> getAccountsByOneName(String name) {
+        List<Account> accounts = accountRepository.findAccountsByOneName(name);
+
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            // skip bank account
+            if (account.getIban().equals("NL01INHO0000000001")) {
+                continue;
+            }
+
+            ibanResponses.add(createIbanResponse(account));
+        }
+        return ibanResponses;
+    }
+
+    private IbanResponse createIbanResponse(Account account){
+        return IbanResponse.builder()
+            .iban(account.getIban())
+            .firstName(account.getUser().getFirstName())
+            .lastName(account.getUser().getLastName())
+            .build();
+    }
+
 
 
     // TODO
@@ -238,19 +261,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
             : getAccountsByOneName(name);
     }
 
-    private List<IbanResponse> getAccountsByOneName(String name) {
-        List<Account> accounts = accountRepository.findAccountsByOneName(name);
-        List<IbanResponse> ibanResponses = new ArrayList<>();
-        for (Account account : accounts) {
-            if (account.getIban().equals("NL01INHO0000000001")) continue;
-            ibanResponses.add(IbanResponse.builder()
-                .iban(account.getIban())
-                .firstName(account.getUser().getFirstName())
-                .lastName(account.getUser().getLastName())
-                .build());
-        }
-        return ibanResponses;
-    }
+
 
     private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
         List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
