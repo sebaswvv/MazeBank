@@ -19,7 +19,11 @@
                 <input v-model="user.phoneNumber" id="phoneNumber" placeholder="Phone Number" />
             </div>
             <button @click="saveUser" class="btn-primary mt-3">Opslaan</button>
+            <!-- Error message -->
             <p id="message">{{ message }}</p>
+            <div v-if="errorMessage" class="alert alert-danger mt-3">
+                {{ errorMessage }}
+            </div>
         </div>
     </div>
 </template>
@@ -31,11 +35,15 @@ import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import router from '../router';
 import User from '../interfaces/User';
 import { RoleType } from '../enums/RoleType';
+import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
+import axios from './../utils/axios'
 
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
 
 const message = ref('');
+const errorMessage = ref<string | null>(null);
+
 
 const user = reactive<User>({
     id: 0,
@@ -63,13 +71,31 @@ onMounted(async () => {
     Object.assign(user, currentUserStore.getUser);
 });
 
+
+
 const saveUser = async () => {
     message.value = '';
-    // Save the updated user data
-    if (await currentUserStore.editUser(user)) {
-        message.value = 'Uw gegevens zijn succesvol aangepast';
-    } else {
-        message.value = 'Er is iets misgegaan';
+    errorMessage.value = null;
+
+    const userPatchRequest: UserPatchRequest = {
+        email: user.email == '' ? undefined : user.email,
+        firstName: user.firstName == '' ? undefined : user.firstName,
+        lastName: user.lastName == '' ? undefined : user.lastName,
+        phoneNumber: user.phoneNumber == '' ? undefined : user.phoneNumber,
+    };
+
+    try {
+        const response = await axios.patch(
+            `/users/${user.id}`,
+            userPatchRequest
+        );
+        if (response.status === 200) {
+            message.value = 'Uw gegevens zijn succesvol aangepast';
+            currentUserStore.fetchUser(authenticationStore.userId);
+        }
+    }
+    catch (error: any) {
+        errorMessage.value = error.response.data.message;
     }
 };
 </script>

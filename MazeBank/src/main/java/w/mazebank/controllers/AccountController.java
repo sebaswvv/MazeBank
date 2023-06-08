@@ -77,12 +77,12 @@ public class AccountController {
     }
 
     @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    public ResponseEntity<TransactionResponse> deposit(@PathVariable("accountId") Long accountId, @RequestBody @Valid AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceJpa.deposit(accountId, atmRequest.getAmount(), user));
     }
 
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    public ResponseEntity<TransactionResponse> withdraw(@PathVariable Long accountId, @RequestBody @Valid AtmRequest atmRequest, @AuthenticationPrincipal User user) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceJpa.withdraw(accountId, atmRequest.getAmount(), user));
     }
 

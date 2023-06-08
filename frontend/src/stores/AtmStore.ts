@@ -51,6 +51,7 @@ export const useAtmStore = defineStore({
       if (response.status !== 201) {
         throw new Error(response.data.message);
       } else {
+        this.fetchAccount();
         this.sceneState = AtmScenes.SELECT;
       }
     },
@@ -66,6 +67,7 @@ export const useAtmStore = defineStore({
       if (response.status !== 200) {
         throw new Error(response.data.message);
       } else {
+        this.fetchAccount();
         this.sceneState = AtmScenes.SELECT;
       }
     },

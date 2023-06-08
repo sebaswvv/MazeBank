@@ -95,31 +95,6 @@ export const useCurrentUserStore = defineStore({
         console.error(error);
       }
     },
-    async editUser(user: User) {
-      try {
-        const userPatchRequest: UserPatchRequest = {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneNumber: user.phoneNumber,
-        };
-
-        const response = await axios.patch(
-          `/users/${user.id}`,
-          userPatchRequest
-        );
-        if (response.status === 200) {
-          this.setUser(user);
-          return true;
-        } else {
-          console.log(response);
-          return false;
-        }
-      } catch (error: any) {
-        console.error(error);
-        return false;
-      }
-    },
     setAccounts(accounts: any[]) {
       this.accounts = accounts;
     },

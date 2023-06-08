@@ -31,7 +31,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(
-        @RequestBody LoginRequest request
+        @RequestBody @Valid LoginRequest request
     ) throws UserNotFoundException {
         return ResponseEntity.ok(authService.login(request));
     }
