@@ -54,7 +54,7 @@ function handleChangeScene(scene: AtmScenes) {
 }
 
 const totalBalance = (balance: any) => {
-    return balance.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return balance?.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 </script>

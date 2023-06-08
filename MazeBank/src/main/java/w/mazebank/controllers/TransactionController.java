@@ -23,9 +23,9 @@ public class TransactionController {
     private TransactionServiceJpa transactionServiceJpa;
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id, @AuthenticationPrincipal User user)
+    public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming)
         throws TransactionNotFoundException, AccountNotFoundException {
-        TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, user);
+        TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, userPerforming);
         return ResponseEntity.ok(transactionResponse);
     }
 

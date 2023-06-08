@@ -12,7 +12,7 @@
         <input type="email" placeholder="Email" v-model="emailRegister">
         <input type="tel" placeholder="Telefoonnummer" v-model="phoneNumber">
         <input type="password" placeholder="Wachtwoord" v-model="passwordRegister">
-        <input type="date" placeholder="Geboortedatum" v-model="dateOfBirth">
+        <input placeholder="Geboortedatum (18+)" type="text" onfocus="(this.type='date')" v-model="dateOfBirth" />
         <p id="error">{{ errorMessage }}</p>
         <button class="btn-primary" @click="handleRegisterClick">Registreer</button>
       </div>
