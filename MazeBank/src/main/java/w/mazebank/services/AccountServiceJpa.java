@@ -61,6 +61,17 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return accountResponses;
     }
 
+    private Account buildAccount(AccountType accountType, User user, boolean isActive, Double absoluteLimit) {
+        return Account.builder()
+            .accountType(accountType)
+            .iban(IbanGenerator.generate())
+            .isActive(isActive)
+            .user(user)
+            .absoluteLimit(absoluteLimit)
+            .balance(0.0)
+            .build();
+    }
+
     private AccountResponse createAccountResponse(Account account) {
         return AccountResponse.builder()
             .id(account.getId())
@@ -134,6 +145,91 @@ public class AccountServiceJpa extends BaseServiceJpa {
             .build();
     }
 
+    // public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
+    //     User user = userServiceJpa.getUserById(body.getUserId());
+    //
+    //     AccountType accountType = body.getAccountType();
+    //     List<Account> accounts = user.getAccounts();
+    //
+    //     int checkingAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.CHECKING).count();
+    //     int savingsAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.SAVINGS).count();
+    //
+    //     // Check account creation limits
+    //     if (accountType == AccountType.SAVINGS) {
+    //         if (checkingAccounts == 0) {
+    //             throw new AccountCreationLimitReachedException("You need a checking account to create a savings account");
+    //         }
+    //         if (savingsAccounts >= 1) {
+    //             throw new AccountCreationLimitReachedException("Savings account creation limit reached");
+    //         }
+    //     } else if (accountType == AccountType.CHECKING) {
+    //         if (checkingAccounts >= 1) {
+    //             throw new AccountCreationLimitReachedException("Checking account creation limit reached");
+    //         }
+    //     }
+    //
+    //     Account account = Account.builder()
+    //         .accountType(accountType)
+    //         .iban(IbanGenerator.generate())
+    //         .isActive(body.isActive())
+    //         .user(user)
+    //         .absoluteLimit(body.getAbsoluteLimit())
+    //         .balance(0.0)
+    //         .build();
+    //
+    //     Account newAccount = accountRepository.save(account);
+    //
+    //     // Map account to account response
+    //     AccountResponse accountResponse = mapper.map(newAccount, AccountResponse.class);
+    //     accountResponse.setAccountType(accountType);
+    //
+    //     return accountResponse;
+    // }
+
+    public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
+        // Get user and account type from request body
+        User user = userServiceJpa.getUserById(body.getUserId());
+        AccountType accountType = body.getAccountType();
+        List<Account> accounts = user.getAccounts();
+
+        // Check account creation limits
+        validateAccountCreationLimits(accountType, accounts);
+
+        // Create account and save it to the database
+        Account account = buildAccount(accountType, user, body.isActive(), body.getAbsoluteLimit());
+        Account newAccount = accountRepository.save(account);
+
+        return createAccountResponse(newAccount);
+    }
+
+    private void validateAccountCreationLimits(AccountType accountType, List<Account> accounts) throws AccountCreationLimitReachedException {
+        // Count the number of checking and savings accounts
+        long checkingAccounts = accounts.stream()
+            .filter(a -> a.getAccountType() == AccountType.CHECKING)
+            .count();
+
+        // Count the number of savings accounts
+        long savingsAccounts = accounts.stream()
+            .filter(a -> a.getAccountType() == AccountType.SAVINGS)
+            .count();
+
+        // Check account creation limits
+        if (accountType == AccountType.SAVINGS) {
+            if (checkingAccounts == 0) {
+                throw new AccountCreationLimitReachedException("You need a checking account to create a savings account");
+            }
+            if (savingsAccounts >= 1) {
+                throw new AccountCreationLimitReachedException("Savings account creation limit reached");
+            }
+        } else if (accountType == AccountType.CHECKING && checkingAccounts >= 1) {
+            throw new AccountCreationLimitReachedException("Checking account creation limit reached");
+        }
+    }
+
+
+
+
+
 
 
     // TODO
@@ -146,44 +242,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
         Account account = getAccountById(accountId);
         validateAccountOwner(user, account);
         return account;
-    }
-
-    public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
-        User user = userServiceJpa.getUserById(body.getUserId());
-
-        Account account = Account.builder()
-            .accountType(body.getAccountType())
-            .iban(IbanGenerator.generate())
-            .isActive(body.isActive())
-            .user(user)
-            .absoluteLimit(body.getAbsoluteLimit())
-            .balance(0.0)
-            .build();
-
-        System.out.println(body);
-
-        List<Account> accounts = user.getAccounts();
-        int checkingAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.CHECKING).count();
-        int savingsAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.SAVINGS).count();
-
-        // you cannot add a savings account when the user doesn't have a checking account
-        if (account.getAccountType() == AccountType.SAVINGS && checkingAccounts == 0)
-            throw new AccountCreationLimitReachedException("You need a checking account to create a savings account");
-
-        // check if account creation limit has been reached
-        if (account.getAccountType() == AccountType.SAVINGS && savingsAccounts >= 1)
-            throw new AccountCreationLimitReachedException("Savings account creation limit reached");
-        if (account.getAccountType() == AccountType.CHECKING && checkingAccounts >= 1)
-            throw new AccountCreationLimitReachedException("Checking account creation limit reached");
-
-        // save account to database
-        Account newAccount = accountRepository.save(account);
-
-        // map account to account response
-        TypeMap<Account, AccountResponse> propertyMapper = mapper.typeMap(Account.class, AccountResponse.class);
-        // cast accountType to integer with AccountResponse::setAccountType
-        propertyMapper.addMapping(Account::getAccountType, AccountResponse::setAccountType);
-        return mapper.map(newAccount, AccountResponse.class);
     }
 
 
