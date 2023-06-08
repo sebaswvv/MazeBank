@@ -14,7 +14,7 @@
                     <p>U heeft nog geen accounts, neem contact op met ons</p>
                 </template>
                 <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance }}</p>
-                <p class="text-total-balance mt-3">Resterend transactie limiet voor vandaags: €{{
+                <p class="text-total-balance mt-3">Resterend transactie limiet voor vandaag: €{{
                     currentUserStore.amountRemaining?.toLocaleString('NL-NL', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2

@@ -27,10 +27,12 @@
             </div>
             <div class="row d-flex justify-content-center align-items-center">
                 <div class="col-md-8">
-                    <input type="checkbox" class="form-check-input" id="withoutAccounts" v-model="withoutAccounts"
+                    <input type="checkbox" class="form-check-input mt-3" id="withoutAccounts" v-model="withoutAccounts"
                         @change="fetchUsers" />
-                    <label class="form-check-label" for="withoutAccounts">Gebruikers zonder rekening(en)</label>
+                    <label class="form-check-label mt-3" for="withoutAccounts" style="margin-left: 10px;">Gebruikers zonder
+                        rekeningen</label>
                 </div>
+
             </div>
             <div class="row d-flex justify-content-center align-items-center mt-3">
                 <div class="col-md-8">
