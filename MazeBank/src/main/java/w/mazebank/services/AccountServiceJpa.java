@@ -37,9 +37,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
     @Autowired
     private UserServiceJpa userServiceJpa;
 
-    @Autowired
-    private TransactionRepository transactionRepository;
-
     private final ModelMapper mapper = new ModelMapper();
 
     public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
@@ -121,9 +118,8 @@ public class AccountServiceJpa extends BaseServiceJpa {
         String[] names = name.split(" ");
         if (names.length == 2) {
             return getAccountsByFirstNameAndLastName(names[0], names[1]);
-        } else {
-            return getAccountsByOneName(name);
         }
+        return getAccountsByOneName(name);
     }
 
     private List<IbanResponse> getAccountsByOneName(String name) {
@@ -133,7 +129,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
         List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
-        List<IbanResponse> ibanResponses = new ArrayList<>();
         return createListOfIbanResponses(accounts);
     }
 
@@ -152,14 +147,11 @@ public class AccountServiceJpa extends BaseServiceJpa {
         Account updatedAccount = accountRepository.save(account);
 
         // Map account to account response
-        AccountResponse accountResponse = mapper.map(updatedAccount, AccountResponse.class);
-        return accountResponse;
+        return mapper.map(updatedAccount, AccountResponse.class);
     }
 
     public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException, UnauthorizedAccountAccessException {
-        if (id == 1) {
-            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-        }
+        checkIfAccountIsBank(id);
 
         Account account = getAccountById(id);
         if (!account.isActive()) {
@@ -172,9 +164,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException, UnauthorizedAccountAccessException {
-        if (id == 1) {
-            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-        }
+        checkIfAccountIsBank(id);
 
         Account account = getAccountById(id);
         if (account.isActive()) {
@@ -184,6 +174,12 @@ public class AccountServiceJpa extends BaseServiceJpa {
         account.setActive(true);
         accountRepository.save(account);
         return account;
+    }
+
+    private void checkIfAccountIsBank(Long id) {
+        if (id == 1) {
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+        }
     }
 
     public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
@@ -202,7 +198,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
         validateAccountAccess(accountId);
 
         // get the account and validate if it exists
-        Account account = getAccountAndValidate(accountId, user);
         Sort sortObject = createSortObject(sort);
         Pageable pageable = createPageable(pageNumber, pageSize, sortObject);
 
@@ -281,9 +276,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     private void validateAccountAccess(Long accountId) throws UnauthorizedAccountAccessException {
-        if (accountId == 1) {
-            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-        }
+        checkIfAccountIsBank(accountId);
     }
 
     private Sort createSortObject(String sort) {

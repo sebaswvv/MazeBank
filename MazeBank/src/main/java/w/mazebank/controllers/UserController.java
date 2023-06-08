@@ -80,8 +80,7 @@ public class UserController {
         @RequestParam(required = false) String search,
         @RequestParam(defaultValue = "false") boolean withoutAccounts)
     {
-        List<UserResponse> users = userService.getAllUsers(pageNumber, pageSize, sort, search, withoutAccounts);
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok(userService.getAllUsers(pageNumber, pageSize, sort, search, withoutAccounts));
     }
 
 
