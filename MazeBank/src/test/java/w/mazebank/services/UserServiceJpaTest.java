@@ -476,13 +476,17 @@ class UserServiceJpaTest {
 
 
         // Call the method
-        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(2L, user, 0, 10, "Asc", null, null, null, null, null, null, null);
+        List<TransactionResponse> transactions = userServiceJpa.getTransactionsByUserId(
+            2L, user, 0, 10, "Asc", Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+            Optional.empty(), Optional.empty(), Optional.empty()
+        );
 
         // Test results
         assertEquals(2, transactions.size());
         assertEquals(transactionResponse1, transactions.get(0));
         assertEquals(transactionResponse2, transactions.get(1));
     }
+
 
 
     @Test

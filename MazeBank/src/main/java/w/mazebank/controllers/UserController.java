@@ -17,6 +17,7 @@ import w.mazebank.services.UserServiceJpa;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -97,7 +98,6 @@ public class UserController {
         return ResponseEntity.ok(new LockedResponse(false));
     }
 
-    // GET/users/{userId}/transactions
     @GetMapping("/{userId}/transactions")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByUserId(
         @PathVariable Long userId,
@@ -105,17 +105,20 @@ public class UserController {
         @RequestParam(defaultValue = "0") int pageNumber,
         @RequestParam(defaultValue = "10") int pageSize,
         @RequestParam(defaultValue = "asc") String sort,
-        @RequestParam(required = false) String fromIban,
-        @RequestParam(required = false) String toIban,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-        @RequestParam(required = false) Double maxAmount,
-        @RequestParam(required = false) Double minAmount,
-        @RequestParam(required = false) Double amount
+        @RequestParam(required = false) Optional<String> fromIban,
+        @RequestParam(required = false) Optional<String> toIban,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDate> endDate,
+        @RequestParam(required = false) Optional<Double> maxAmount,
+        @RequestParam(required = false) Optional<Double> minAmount,
+        @RequestParam(required = false) Optional<Double> amount
     ) throws UserNotFoundException {
-        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(userId, user, pageNumber, pageSize, sort, fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount);
+        List<TransactionResponse> transactionResponses = userService.getTransactionsByUserId(
+            userId, user, pageNumber, pageSize, sort, fromIban, toIban, startDate, endDate, maxAmount, minAmount, amount
+        );
         return ResponseEntity.ok(transactionResponses);
     }
+
 
     @GetMapping("{userId}/balance")
     public ResponseEntity<BalanceResponse> getBalanceByUserId(@PathVariable Long userId, @AuthenticationPrincipal User user) throws UserNotFoundException {

@@ -23,10 +23,7 @@ import w.mazebank.repositories.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserServiceJpa extends BaseServiceJpa {
@@ -191,76 +188,26 @@ public class UserServiceJpa extends BaseServiceJpa {
         int pageNumber,
         int pageSize,
         String sort,
-        String fromIban,
-        String toIban,
-        LocalDate startDate,
-        LocalDate endDate,
-        Double maxAmount,
-        Double minAmount,
-        Double amount
+        Optional<String> fromIban,
+        Optional<String> toIban,
+        Optional<LocalDate> startDate,
+        Optional<LocalDate> endDate,
+        Optional<Double> maxAmount,
+        Optional<Double> minAmount,
+        Optional<Double> amount
     ) throws UserNotFoundException {
         User requestedUser = getUserByIdAndValidate(userId, user);
 
         Specification<Transaction> specification = Specification.where(null);
 
-        if (fromIban != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("sender").get("iban")),
-                    "%" + fromIban.toLowerCase() + "%"
-                )
-            );
-        }
-
-        if (toIban != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("receiver").get("iban")),
-                    "%" + toIban.toLowerCase() + "%"
-                )
-            );
-        }
-
-        // if (startDate != null && endDate != null) {
-        //     specification = specification.and((root, query, criteriaBuilder) ->
-        //         criteriaBuilder.between(root.get("timestamp"), startDate.atStartOfDay(), endDate.atTime(LocalTime.MAX))
-        //     );
-        // }
-
-        if (startDate != null)
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
-            );
-
-        if (endDate != null)
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
-            );
-
-        if (maxAmount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
-            );
-        }
-
-        if (minAmount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
-            );
-        }
-
-        if (amount != null) {
-            specification = specification.and((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("amount"), amount)
-            );
-        }
-
-        specification = specification.and((root, query, criteriaBuilder) ->
-            criteriaBuilder.or(
-                criteriaBuilder.equal(root.get("sender"), requestedUser),
-                criteriaBuilder.equal(root.get("receiver"), requestedUser)
-            )
-        );
+        fromIban.ifPresent(value -> addFromIbanCondition(specification, value));
+        toIban.ifPresent(value -> addToIbanCondition(specification, value));
+        startDate.ifPresent(value -> addStartDateCondition(specification, value));
+        endDate.ifPresent(value -> addEndDateCondition(specification, value));
+        maxAmount.ifPresent(value -> addMaxAmountCondition(specification, value));
+        minAmount.ifPresent(value -> addMinAmountCondition(specification, value));
+        amount.ifPresent(value -> addAmountCondition(specification, value));
+        addRequestedUserCondition(specification, requestedUser);
 
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(direction, "timestamp"));
@@ -269,6 +216,63 @@ public class UserServiceJpa extends BaseServiceJpa {
         List<Transaction> transactions = transactionPage != null ? transactionPage.getContent() : Collections.emptyList();
 
         return mapTransactionsToResponses(transactions);
+    }
+
+    private void addFromIbanCondition(Specification<Transaction> specification, String fromIban) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.like(
+                criteriaBuilder.lower(root.get("sender").get("iban")),
+                "%" + fromIban.toLowerCase() + "%"
+            )
+        );
+    }
+
+    private void addToIbanCondition(Specification<Transaction> specification, String toIban) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.like(
+                criteriaBuilder.lower(root.get("receiver").get("iban")),
+                "%" + toIban.toLowerCase() + "%"
+            )
+        );
+    }
+
+    private void addStartDateCondition(Specification<Transaction> specification, LocalDate startDate) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.greaterThanOrEqualTo(root.get("timestamp"), startDate.atStartOfDay())
+        );
+    }
+
+    private void addEndDateCondition(Specification<Transaction> specification, LocalDate endDate) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.lessThanOrEqualTo(root.get("timestamp"), endDate.atTime(LocalTime.MAX))
+        );
+    }
+
+    private void addMaxAmountCondition(Specification<Transaction> specification, Double maxAmount) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.lessThanOrEqualTo(root.get("amount"), maxAmount)
+        );
+    }
+
+    private void addMinAmountCondition(Specification<Transaction> specification, Double minAmount) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.greaterThanOrEqualTo(root.get("amount"), minAmount)
+        );
+    }
+
+    private void addAmountCondition(Specification<Transaction> specification, Double amount) {
+        specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.equal(root.get("amount"), amount)
+        );
+    }
+
+    private void addRequestedUserCondition(Specification<Transaction> specification, User requestedUser) {
+       specification.and((root, query, criteriaBuilder) ->
+            criteriaBuilder.or(
+                criteriaBuilder.equal(root.get("sender"), requestedUser),
+                criteriaBuilder.equal(root.get("receiver"), requestedUser)
+            )
+        );
     }
 
     private List<TransactionResponse> mapTransactionsToResponses(List<Transaction> transactions) {
