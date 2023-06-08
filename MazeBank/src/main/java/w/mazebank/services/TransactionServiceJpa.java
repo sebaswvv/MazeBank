@@ -35,12 +35,12 @@ public class TransactionServiceJpa {
 
     public TransactionResponse getTransactionAndValidate(Long id, User user) throws TransactionNotFoundException {
         Transaction transaction = getTransactionById(id);
-        validateTransactionSender(transaction);
+        checkIfSenderIsBankAccount(transaction);
         checkIfUserIsTransactionParticipant(user, transaction);
         return mapTransactionToResponse(transaction);
     }
 
-    private void validateTransactionSender(Transaction transaction) throws UnauthorizedTransactionAccessException {
+    private void checkIfSenderIsBankAccount(Transaction transaction) throws UnauthorizedTransactionAccessException {
         String bankIban = "NL01INHO0000000001";
         if (transaction.getSender().getIban().equals(bankIban)) {
             throw new UnauthorizedTransactionAccessException("You are not allowed to access transactions of the bank's bank account");
@@ -185,14 +185,6 @@ public class TransactionServiceJpa {
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");
     }
 
-    // DEZE NOG EVEN LATEN STAAN VOOR ALS ER NIEUWE VALIDATIES MOETEN WORDEN TOEGEVOEGD
-    // private void validateDepositTransaction(Transaction transaction) throws TransactionFailedException {
-    //     validateAtmTransaction(transaction);
-    // }
-    //
-    // private void validateWithdrawalTransaction(Transaction transaction) throws TransactionFailedException {
-    //     validateAtmTransaction(transaction);
-    // }
 
 
     private void validateRegularTransaction(Transaction transaction)
@@ -258,13 +250,6 @@ public class TransactionServiceJpa {
         if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS && (transaction.getSender().getUser().getId() != transaction.getReceiver().getUser().getId()))
             throw new TransactionFailedException("Cannot transfer to a savings account from an account that is not of the same customer");
     }
-
-    // private void validateSufficientFunds(Transaction transaction) throws InsufficientFundsException {
-    //     // TODO: moet dit niet met absolute limit?
-    //
-    //     if (transaction.getSender().getBalance() - transaction.getAmount() < 0)
-    //         throw new InsufficientFundsException("Sender has insufficient funds");
-    // }
 
     private void checkIfSenderAndReceiverAreNotTheSame(Transaction transaction) throws TransactionFailedException {
         if (transaction.getSender().getId() == transaction.getReceiver().getId())
