@@ -82,12 +82,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
             .build();
     }
 
-
-
-    // TODO
-
-
-
     public Account getAccountById(Long id) throws AccountNotFoundException {
         return accountRepository.findById(id)
             .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
@@ -97,6 +91,33 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return accountRepository.findByIban(iban)
             .orElseThrow(() -> new AccountNotFoundException("Account with iban: " + iban + " not found"));
     }
+
+    public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
+        Account account = getAccountById(id);
+
+        // Check if the account is a bank account
+        if (account.getIban().equals("NL01INHO0000000001")) {
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+        }
+
+        if (body.getAbsoluteLimit() != null) {
+            account.setAbsoluteLimit(body.getAbsoluteLimit());
+        }
+
+        Account updatedAccount = accountRepository.save(account);
+
+        // Map account to account response
+        AccountResponse accountResponse = mapper.map(updatedAccount, AccountResponse.class);
+        return accountResponse;
+    }
+
+
+
+    // TODO
+
+
+
+
 
     public Account getAccountAndValidate(Long accountId, User user) throws AccountNotFoundException {
         Account account = getAccountById(accountId);
@@ -142,25 +163,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return mapper.map(newAccount, AccountResponse.class);
     }
 
-    public AccountResponse updateAccount(long id, AccountPatchRequest body) throws AccountNotFoundException {
-        Account account = getAccountById(id);
 
-        // if the account is a bank account, throw exception
-        if (account.getIban().equals("NL01INHO0000000001"))
-            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-
-        if (body.getAbsoluteLimit() != null) {
-            account.setAbsoluteLimit(body.getAbsoluteLimit());
-        }
-
-        Account updatedAccount = accountRepository.save(account);
-
-        // map account to account response
-        TypeMap<Account, AccountResponse> propertyMapper = mapper.typeMap(Account.class, AccountResponse.class);
-        // cast accountType to integer with AccountResponse::setAccountType
-        propertyMapper.addMapping(Account::getAccountType, AccountResponse::setAccountType);
-        return mapper.map(updatedAccount, AccountResponse.class);
-    }
 
     public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
         // get account from database and validate owner
