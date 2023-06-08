@@ -284,8 +284,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return account;
     }
 
-    //
-
     public List<IbanResponse> getAccountsByName(String name) {
         String[] names = name.split(" ");
         if (names.length == 2) {
@@ -294,6 +292,36 @@ public class AccountServiceJpa extends BaseServiceJpa {
             return getAccountsByOneName(name);
         }
     }
+
+    private void validateAccountOwner(User user, Account account) {
+        // check if current user is the same as account owner or if current user is an employee
+        if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
+            throw new UnauthorizedAccountAccessException("You are not authorized to access this account");
+        }
+    }
+
+    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        Account account = getAccountAndValidate(accountId, userDetails);
+        return performTransaction(account, amount, TransactionType.DEPOSIT, userDetails);
+    }
+
+    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+        Account account = getAccountAndValidate(accountId, userDetails);
+        validateCheckingAccount(account);
+        return performTransaction(account, amount, TransactionType.WITHDRAWAL, userDetails);
+    }
+
+    private TransactionResponse performTransaction(Account account, double amount, TransactionType transactionType, User userDetails) throws TransactionFailedException, AccountNotFoundException {
+        return transactionServiceJpa.atmAction(account, amount, transactionType, userDetails);
+    }
+
+    private void validateCheckingAccount(Account account) throws InvalidAccountTypeException {
+        if (account.getAccountType() != AccountType.CHECKING) {
+            throw new InvalidAccountTypeException("Only checking accounts are allowed for withdrawals");
+        }
+    }
+
+
 
 
 
@@ -305,42 +333,26 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
 
 
-    public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        // get account from database and validate owner
-        Account account = getAccountAndValidate(accountId, userDetails);
-
-        // use transaction service to deposit money
-        return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
-    }
-
-
-    public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
-        // get account from database and validate owner
-        Account account = getAccountAndValidate(accountId, userDetails);
-
-
-        // CHECKS:
-        // check if it is a checking account
-
-        // use transaction service to withdraw money
-        return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
-    }
-
-    private void validateAccountOwner(User user, Account account) {
-
-        System.out.println(user.getId());
-        System.out.println(account.getUser().getId());
-
-        // check if current user is the same as account owner or if current user is an employee
-        if (user.getRole() != RoleType.EMPLOYEE && user.getId() != account.getUser().getId()) {
-            throw new UnauthorizedAccountAccessException("You are not authorized to access this account");
-        }
-    }
-
-    // public List<IbanResponse> getAccountsByName(String name) {
-    //     String[] names = name.split(" ");
-    //     return names.length == 2
-    //         ? getAccountsByFirstNameAndLastName(names[0], names[1])
-    //         : getAccountsByOneName(name);
+    // public TransactionResponse deposit(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    //     // get account from database and validate owner
+    //     Account account = getAccountAndValidate(accountId, userDetails);
+    //
+    //     // use transaction service to deposit money
+    //     return transactionServiceJpa.atmAction(account, amount, TransactionType.DEPOSIT, userDetails);
     // }
+    //
+    //
+    // public TransactionResponse withdraw(Long accountId, double amount, User userDetails) throws AccountNotFoundException, InvalidAccountTypeException, TransactionFailedException {
+    //     // get account from database and validate owner
+    //     Account account = getAccountAndValidate(accountId, userDetails);
+    //
+    //
+    //     // CHECKS:
+    //     // check if it is a checking account
+    //
+    //     // use transaction service to withdraw money
+    //     return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
+    // }
+
+
 }
