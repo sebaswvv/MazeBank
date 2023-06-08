@@ -87,21 +87,25 @@ public class TransactionServiceJpa {
         Account receiverAccount = accountServiceJpa.getAccountByIban(transactionRequest.getReceiverIban());
 
         // create the transaction
-        Transaction transaction = Transaction.builder()
-            .amount(transactionRequest.getAmount())
-            .description(transactionRequest.getDescription())
-            .transactionType(TransactionType.TRANSFER)
-            .userPerforming(userPerforming)
-            .sender(senderAccount)
-            .receiver(receiverAccount)
-            .timestamp(LocalDateTime.now())
-            .build();
+        Transaction transaction = buildTransaction(transactionRequest, userPerforming, senderAccount, receiverAccount);
 
         validateRegularTransaction(transaction);
 
         updateAccountBalances(senderAccount, receiverAccount, transactionRequest.getAmount());
 
         return performTransaction(transaction);
+    }
+
+    private Transaction buildTransaction(TransactionRequest request, User userPerforming, Account senderAccount, Account receiverAccount) {
+        return Transaction.builder()
+            .amount(request.getAmount())
+            .description(request.getDescription())
+            .transactionType(TransactionType.TRANSFER)
+            .userPerforming(userPerforming)
+            .sender(senderAccount)
+            .receiver(receiverAccount)
+            .timestamp(LocalDateTime.now())
+            .build();
     }
 
     private Transaction getTransactionById(Long id) throws TransactionNotFoundException {
