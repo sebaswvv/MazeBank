@@ -29,6 +29,9 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private UserServiceJpa userServiceJpa;
+
     public boolean checkIfUserIsBlocked(String email) throws UserNotFoundException {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new BadCredentialsException("User not found"));
@@ -73,6 +76,7 @@ public class AuthService {
             throw new UnauthorizedAccountAccessException("User is blocked");
         }
 
+        // authenticate user
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getEmail(),
@@ -80,10 +84,8 @@ public class AuthService {
             )
         );
 
-        // get user
-        User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new BadCredentialsException("User not found"));
-
+        // get the user
+        User user = userServiceJpa.getUserByEmail(request.getEmail());
         return buildAuthenticationResponse(user);
     }
 
@@ -94,7 +96,6 @@ public class AuthService {
     }
 
     private static void checkIfUserIs18(RegisterRequest request) throws UserNotOldEnoughException {
-        // TODO: uitzoeken of deze check echt moest
         if (request.getDateOfBirth().plusYears(18).isAfter(java.time.LocalDate.now())) {
             throw new UserNotOldEnoughException("User is not 18 years or older");
         }

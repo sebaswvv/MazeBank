@@ -2,7 +2,7 @@ Feature: Everything accounts
 
     Scenario: As an employee I want to create a new account for a user
         Given I have a valid token for role "employee"
-        When I create a new checkings account for user 4
+        When I create a new checkings account for user 5
         Then I should get a 201 status code
 
     Scenario: As an employee I want to disable an account
