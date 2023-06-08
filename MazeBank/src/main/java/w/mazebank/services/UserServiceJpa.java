@@ -182,24 +182,13 @@ public class UserServiceJpa extends BaseServiceJpa {
     }
 
 
-    public List<TransactionResponse> getTransactionsByUserId(
-        Long userId,
-        User user,
-        int pageNumber,
-        int pageSize,
-        String sort,
-        Optional<String> fromIban,
-        Optional<String> toIban,
-        Optional<LocalDate> startDate,
-        Optional<LocalDate> endDate,
-        Optional<Double> maxAmount,
-        Optional<Double> minAmount,
-        Optional<Double> amount
+    public List<TransactionResponse> getTransactionsByUserId(Long userId, User user, int pageNumber, int pageSize, String sort, Optional<String> fromIban, Optional<String> toIban, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<Double> maxAmount, Optional<Double> minAmount, Optional<Double> amount
     ) throws UserNotFoundException {
         User requestedUser = getUserByIdAndValidate(userId, user);
-
+        // initial empty Specification to build the dynamic query conditions.
         Specification<Transaction> specification = Specification.where(null);
 
+        // If present, it adds conditions to filter transactions
         fromIban.ifPresent(value -> addFromIbanCondition(specification, value));
         toIban.ifPresent(value -> addToIbanCondition(specification, value));
         startDate.ifPresent(value -> addStartDateCondition(specification, value));
@@ -207,6 +196,8 @@ public class UserServiceJpa extends BaseServiceJpa {
         maxAmount.ifPresent(value -> addMaxAmountCondition(specification, value));
         minAmount.ifPresent(value -> addMinAmountCondition(specification, value));
         amount.ifPresent(value -> addAmountCondition(specification, value));
+
+        // adds a condition to filter transactions by the requested user.
         addRequestedUserCondition(specification, requestedUser);
 
         Sort.Direction direction = sort.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
