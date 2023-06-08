@@ -195,6 +195,37 @@ public class AccountServiceJpa extends BaseServiceJpa {
         return createListOfIbanResponses(accounts);
     }
 
+    public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException, UnauthorizedAccountAccessException {
+        if (id == 1) {
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+        }
+
+        Account account = getAccountById(id);
+        if (!account.isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already locked");
+        }
+
+        account.setActive(false);
+        accountRepository.save(account);
+        return account;
+    }
+
+    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException, UnauthorizedAccountAccessException {
+        if (id == 1) {
+            throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+        }
+
+        Account account = getAccountById(id);
+        if (account.isActive()) {
+            throw new AccountLockOrUnlockStatusException("Account is already unlocked");
+        }
+
+        account.setActive(true);
+        accountRepository.save(account);
+        return account;
+    }
+
+
 
 
 
@@ -244,32 +275,32 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
-    public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
-
-        if (id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-        if (!getAccountById(id).isActive()) {
-            throw new AccountLockOrUnlockStatusException("Account is already locked");
-        }
-        Account account = getAccountById(id);
-        account.setActive(false);
-
-        accountRepository.save(account);
-        return account;
-    }
-
-    public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
-        if (id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
-
-        if (getAccountById(id).isActive()) {
-            throw new AccountLockOrUnlockStatusException("Account is already unlocked");
-        }
-
-        Account account = getAccountById(id);
-        account.setActive(true);
-
-        accountRepository.save(account);
-        return account;
-    }
+    // public Account lockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+    //
+    //     if (id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+    //     if (!getAccountById(id).isActive()) {
+    //         throw new AccountLockOrUnlockStatusException("Account is already locked");
+    //     }
+    //     Account account = getAccountById(id);
+    //     account.setActive(false);
+    //
+    //     accountRepository.save(account);
+    //     return account;
+    // }
+    //
+    // public Account unlockAccount(Long id) throws AccountNotFoundException, AccountLockOrUnlockStatusException {
+    //     if (id == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
+    //
+    //     if (getAccountById(id).isActive()) {
+    //         throw new AccountLockOrUnlockStatusException("Account is already unlocked");
+    //     }
+    //
+    //     Account account = getAccountById(id);
+    //     account.setActive(true);
+    //
+    //     accountRepository.save(account);
+    //     return account;
+    // }
 
     public List<IbanResponse> getAccountsByName(String name) {
         String[] names = name.split(" ");
