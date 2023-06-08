@@ -17,7 +17,7 @@ Feature: Everything Users
         When I call the users endpoint "/users/3/accounts" with a get request
         Then the result is a list of accounts of size 2
         When I call the users endpoint "/users/3/transactions" with a get request
-        Then the result is a list of transactions of size 3
+        Then the result is a list of transactions of size 4
 
     Scenario: As a bank, I want to make sure that other customers cannot access a customer’s account details, transaction history, and user details.
         Given I have a valid token for role "customer"
