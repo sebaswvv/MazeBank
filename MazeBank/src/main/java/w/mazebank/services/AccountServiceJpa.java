@@ -48,32 +48,44 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public List<AccountResponse> getAllAccounts(int pageNumber, int pageSize, String sort, String search) {
+        //
         List<Account> accounts = findAllPaginationAndSort(pageNumber, pageSize, sort, search, accountRepository);
 
-        // parse users to user responses
-        List<AccountResponse> accountResponses = new ArrayList<>();
+        // map all accounts to account responses
+        List<AccountResponse> accountResponses = new ArrayList<>(accounts.size());
         for (Account account : accounts) {
-
-            AccountResponse accountResponse = AccountResponse.builder()
-                .id(account.getId())
-                .accountType(account.getAccountType().getValue())
-                .iban(account.getIban())
-                // get user response
-                .user(UserResponse.builder()
-                    .id(account.getUser().getId())
-                    .firstName(account.getUser().getFirstName())
-                    .lastName(account.getUser().getLastName())
-                    .build())
-                .balance(account.getBalance())
-                .absoluteLimit(account.getAbsoluteLimit())
-                .active(account.isActive())
-                .timestamp(account.getCreatedAt().toString())
-                .build();
+            AccountResponse accountResponse = createAccountResponse(account);
             accountResponses.add(accountResponse);
         }
 
         return accountResponses;
     }
+
+    private AccountResponse createAccountResponse(Account account) {
+        return AccountResponse.builder()
+            .id(account.getId())
+            .accountType(account.getAccountType().getValue())
+            .iban(account.getIban())
+            .user(createUserResponse(account.getUser()))
+            .balance(account.getBalance())
+            .absoluteLimit(account.getAbsoluteLimit())
+            .active(account.isActive())
+            .timestamp(account.getCreatedAt().toString())
+            .build();
+    }
+
+    private UserResponse createUserResponse(User user) {
+        return UserResponse.builder()
+            .id(user.getId())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .build();
+    }
+
+
+
+    // TODO
+
 
 
     public Account getAccountById(Long id) throws AccountNotFoundException {
