@@ -31,7 +31,7 @@ class TransactionRequestTest {
         assertFalse(violations.isEmpty());
 
         ConstraintViolation<TransactionRequest> violation = violations.iterator().next();
-        assertEquals("Amount should be positive", violation.getMessage());
+        assertEquals("Amount should be a positive number", violation.getMessage());
     }
 
     @Test

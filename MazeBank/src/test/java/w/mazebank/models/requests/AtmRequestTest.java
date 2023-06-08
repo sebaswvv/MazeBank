@@ -29,7 +29,7 @@ class AtmRequestTest {
         Set<ConstraintViolation<AtmRequest>> violations = validator.validate(atmRequest);
         ConstraintViolation<AtmRequest> violation = violations.iterator().next();
         assertFalse(violations.isEmpty());
-        assertEquals("Amount must be greater than 0", violation.getMessage());
+        assertEquals("Amount should be a positive number", violation.getMessage());
     }
 
     @Test
