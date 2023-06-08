@@ -93,6 +93,20 @@ public class AccountServiceJpa extends BaseServiceJpa {
             .build();
     }
 
+    private  List<IbanResponse> createListOfIbanResponses(List<Account> accounts) {
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        for (Account account : accounts) {
+            // Skip bank account
+            if (account.getIban().equals("NL01INHO0000000001")) {
+                continue;
+            }
+
+            IbanResponse ibanResponse = createIbanResponse(account);
+            ibanResponses.add(ibanResponse);
+        }
+        return ibanResponses;
+    }
+
     public Account getAccountById(Long id) throws AccountNotFoundException {
         return accountRepository.findById(id)
             .orElseThrow(() -> new AccountNotFoundException("Account with id: " + id + " not found"));
@@ -124,17 +138,7 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
     private List<IbanResponse> getAccountsByOneName(String name) {
         List<Account> accounts = accountRepository.findAccountsByOneName(name);
-
-        List<IbanResponse> ibanResponses = new ArrayList<>();
-        for (Account account : accounts) {
-            // skip bank account
-            if (account.getIban().equals("NL01INHO0000000001")) {
-                continue;
-            }
-
-            ibanResponses.add(createIbanResponse(account));
-        }
-        return ibanResponses;
+        return createListOfIbanResponses(accounts);
     }
 
     private IbanResponse createIbanResponse(Account account){
@@ -144,47 +148,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
             .lastName(account.getUser().getLastName())
             .build();
     }
-
-    // public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
-    //     User user = userServiceJpa.getUserById(body.getUserId());
-    //
-    //     AccountType accountType = body.getAccountType();
-    //     List<Account> accounts = user.getAccounts();
-    //
-    //     int checkingAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.CHECKING).count();
-    //     int savingsAccounts = (int) accounts.stream().filter(a -> a.getAccountType() == AccountType.SAVINGS).count();
-    //
-    //     // Check account creation limits
-    //     if (accountType == AccountType.SAVINGS) {
-    //         if (checkingAccounts == 0) {
-    //             throw new AccountCreationLimitReachedException("You need a checking account to create a savings account");
-    //         }
-    //         if (savingsAccounts >= 1) {
-    //             throw new AccountCreationLimitReachedException("Savings account creation limit reached");
-    //         }
-    //     } else if (accountType == AccountType.CHECKING) {
-    //         if (checkingAccounts >= 1) {
-    //             throw new AccountCreationLimitReachedException("Checking account creation limit reached");
-    //         }
-    //     }
-    //
-    //     Account account = Account.builder()
-    //         .accountType(accountType)
-    //         .iban(IbanGenerator.generate())
-    //         .isActive(body.isActive())
-    //         .user(user)
-    //         .absoluteLimit(body.getAbsoluteLimit())
-    //         .balance(0.0)
-    //         .build();
-    //
-    //     Account newAccount = accountRepository.save(account);
-    //
-    //     // Map account to account response
-    //     AccountResponse accountResponse = mapper.map(newAccount, AccountResponse.class);
-    //     accountResponse.setAccountType(accountType);
-    //
-    //     return accountResponse;
-    // }
 
     public AccountResponse createAccount(AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
         // Get user and account type from request body
@@ -226,8 +189,11 @@ public class AccountServiceJpa extends BaseServiceJpa {
         }
     }
 
-
-
+    private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
+        List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
+        List<IbanResponse> ibanResponses = new ArrayList<>();
+        return createListOfIbanResponses(accounts);
+    }
 
 
 
@@ -266,13 +232,6 @@ public class AccountServiceJpa extends BaseServiceJpa {
         // use transaction service to withdraw money
         return transactionServiceJpa.atmAction(account, amount, TransactionType.WITHDRAWAL, userDetails);
     }
-
-    // private static void verifySufficientFunds(double amount, Account account) {
-    //     // check if account has enough money
-    //     if (account.getBalance() < amount) {
-    //         throw new InsufficientFundsException("Not enough funds in account");
-    //     }
-    // }
 
     private void validateAccountOwner(User user, Account account) {
 
@@ -321,19 +280,19 @@ public class AccountServiceJpa extends BaseServiceJpa {
 
 
 
-    private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
-        List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
-        List<IbanResponse> ibanResponses = new ArrayList<>();
-        for (Account account : accounts) {
-            if (account.getIban().equals("NL01INHO0000000001")) continue;
-            ibanResponses.add(IbanResponse.builder()
-                .iban(account.getIban())
-                .firstName(account.getUser().getFirstName())
-                .lastName(account.getUser().getLastName())
-                .build());
-        }
-        return ibanResponses;
-    }
+    // private List<IbanResponse> getAccountsByFirstNameAndLastName(String firstName, String lastName) {
+    //     List<Account> accounts = accountRepository.findAccountsByFirstNameAndLastName(firstName, lastName);
+    //     List<IbanResponse> ibanResponses = new ArrayList<>();
+    //     for (Account account : accounts) {
+    //         if (account.getIban().equals("NL01INHO0000000001")) continue;
+    //         ibanResponses.add(IbanResponse.builder()
+    //             .iban(account.getIban())
+    //             .firstName(account.getUser().getFirstName())
+    //             .lastName(account.getUser().getLastName())
+    //             .build());
+    //     }
+    //     return ibanResponses;
+    // }
 
     public List<TransactionResponse> getTransactionsFromAccount(int pageNumber, int pageSize, String sort, User user, Long accountId) throws AccountNotFoundException {
         if (accountId == 1) throw new UnauthorizedAccountAccessException("Unauthorized access to bank account");
