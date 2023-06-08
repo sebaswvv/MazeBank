@@ -149,7 +149,7 @@ public class UserServiceJpa extends BaseServiceJpa {
         if (userPerforming.getId() != id && !userPerforming.getRole().equals(RoleType.EMPLOYEE)) {
             throw new UnauthorizedUserAccessException("user not allowed to access user with id: " + id);
         }
-        
+
         checkAllowedFields(userPatchRequest);
 
         patchesAllowedForCustomer(userPatchRequest, userToPatch);
@@ -192,14 +192,18 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public void deleteUserById(Long id)
         throws UserNotFoundException, UserHasAccountsException {
-        if (id == 1) throw new UnauthorizedUserAccessException("You are not allowed to delete the bank");
+       checkIfUserIsNotTheBank(id);
         User user = getUserById(id);
 
+        checkIfUserHasAccounts(user);
+
+        userRepository.delete(user);
+    }
+
+    private void checkIfUserHasAccounts(User user) throws UserHasAccountsException {
         // if user has accounts, cannot delete user
         if (user.getAccounts() != null && !user.getAccounts().isEmpty())
             throw new UserHasAccountsException("user has accounts, cannot delete user");
-
-        userRepository.delete(user);
     }
 
 
@@ -327,6 +331,10 @@ public class UserServiceJpa extends BaseServiceJpa {
         BalanceResponse balanceResponse = new BalanceResponse();
         balanceResponse.setUserId(userId);
 
+        return getBalanceResponse(user, balanceResponse);
+    }
+
+    private BalanceResponse getBalanceResponse(User user, BalanceResponse balanceResponse) {
         // calculate total balance and set checking and savings balance if account exists
         for (Account account : user.getAccounts()) {
             if (account.getAccountType() == AccountType.CHECKING) {
