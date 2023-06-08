@@ -1,8 +1,6 @@
 package w.mazebank.models.requests;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionRequest {
-    @Min(value = 0, message = "Amount should be positive")
+    @NotNull(message = "Amount cannot be null")
+    // @NotBlank(message = "Amount cannot be left empty")
+    @Positive(message = "Amount should be a positive number")
     private double amount;
 
     private String description;

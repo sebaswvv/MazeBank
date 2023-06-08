@@ -44,6 +44,8 @@
                     </div>
                 </div>
                 <div class="col">
+                    <button class="btn-primary mt-3" @click="handleSearchTransactions">Zoeken</button>
+                    <span class="button-spacing"></span>
                     <button v-if="sort === 'asc'" class="btn btn-secondary btn-sm" @click="performSort('desc')">Sorteer
                         aflopend</button>
                     <button v-else class="btn btn-secondary btn-sm" @click="performSort('asc')">Sorteer oplopend</button>
@@ -63,7 +65,6 @@
                         <p>Geen transacties gevonden met deze zoekopdracht.</p>
                     </template>
                 </div>
-                <button class="btn-primary" @click="handleSearchTransactions">Zoeken</button>
             </div>
             <div class="row d-flex justify-content-center align-items-center mt-3">
                 <div class="col-md-8">
@@ -169,5 +170,10 @@ onMounted(async () => {
 .single-account-link {
     text-decoration: none;
     color: black;
+}
+
+.button-spacing {
+    margin-right: 20px;
+    /* Adjust the margin value as per your preference */
 }
 </style>

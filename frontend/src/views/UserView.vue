@@ -36,7 +36,7 @@
                     <label for="transactionLimit">Transactie limiet:</label>
                     <input v-model="user.transactionLimit" id="transactionLimit" placeholder="Transaction Limit" />
                 </div>
-                <button @click="saveUser" class="btn-primary">Opslaan</button>
+                <button @click="saveUser" class="btn-primary mt-3">Opslaan</button>
                 <p id="message">{{ message }}</p>
             </div>
             <div class="col ">
@@ -72,7 +72,7 @@
                             <button class="btn-primary" @click="navigateToTransactions">Transacties inzien</button>
                         </div>
                         <div class="col">
-                            <button class="btn-secondary" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
+                            <button class="btn-secondary mt-3" @click="handleBlockState"> {{ isBlocked ? 'Deblokkeer gebruiker' :
                                 'Blokkeer gebruiker' }}
                             </button>
                         </div>
@@ -251,6 +251,11 @@ async function handleDeleteUser() {
 
 /* button disabled */
 .btn-primary:disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+.btn-secondary:disabled {
     background-color: #6c757d !important;
     border-color: #6c757d !important;
 }

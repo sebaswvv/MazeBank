@@ -8,7 +8,8 @@
 
         <div v-if="!employeeView" class="row mb-5 rounded">
             <div class="col d-flex justify-content-center">
-                <AccountPreview :title="account?.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" />
+                <AccountPreview
+                    :title="account?.accountType === AccountType.CURRENT ? 'Betaalrekening' : 'Spaarrekening'" />
             </div>
         </div>
 
@@ -17,12 +18,15 @@
                 <label for="amount" class="form-label">Bedrag</label>
                 <div class="input-group">
                     <span class="input-group-text" id="amount">€</span>
-                    <input type="number" class="form-control" placeholder="0.00" inputmode="decimal" step="0.01" min="0.01" v-model="amount">
+                    <input type="number" class="form-control" placeholder="0.00" inputmode="decimal" step="0.01" min="0.01"
+                        v-model="amount">
                 </div>
 
                 <div v-if="employeeView" class="mb-3">
                     <label for="senderIban" class="form-label">Rekeningnummer verzender (IBAN)</label>
-                    <input class="form-control" id="senderIban" list="senderIbanSearch" placeholder="Vul een IBAN in of zoek op naam..." v-model="senderIban" @input="e => handleIbanSearch(e, 'sender')">
+                    <input class="form-control" id="senderIban" list="senderIbanSearch"
+                        placeholder="Vul een IBAN in of zoek op naam..." v-model="senderIban"
+                        @input="e => handleIbanSearch(e, 'sender')">
                     <datalist id="senderIbanSearch">
                         <option v-for="result in senderIbanSearchResults" :value="result.iban">
                             {{ result.firstName }} {{ result.lastName }}
@@ -32,7 +36,9 @@
 
                 <div class="mb-3">
                     <label for="receiverIban" class="form-label">Rekeningnummer ontvanger (IBAN)</label>
-                    <input class="form-control" id="receiverIban" list="receiverIbanSearch" placeholder="Vul een IBAN in of zoek op naam..." v-model="receiverIban" @input="e => handleIbanSearch(e, 'receiver')">
+                    <input class="form-control" id="receiverIban" list="receiverIbanSearch"
+                        placeholder="Vul een IBAN in of zoek op naam..." v-model="receiverIban"
+                        @input="e => handleIbanSearch(e, 'receiver')">
                     <datalist id="receiverIbanSearch">
                         <option v-for="result in receiverIbanSearchResults" :value="result.iban">
                             {{ result.firstName }} {{ result.lastName }}
@@ -42,11 +48,14 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Omschrijving</label>
-                    <input type="text" class="form-control" id="description" placeholder="Vul hier een omschrijving in" v-model="description">
+                    <input type="text" class="form-control" id="description" placeholder="Vul hier een omschrijving in"
+                        v-model="description">
                 </div>
 
                 <button type="submit" class="btn btn-primary" @click="handleSubmit">Overboeken</button>
-                <div id="submitHelp" class="form-text py-2 text-danger">{{ submitMessage }}</div>
+                <div class="alert alert-danger mt-3" role="alert" v-if="submitMessage">
+                    {{ submitMessage }}
+                </div>
             </form>
         </div>
     </div>
