@@ -29,7 +29,7 @@
                         </div>
                     </div>
                     <div class="col d-flex flex-column">
-                        <p>precieze prijs</p>
+                        <p>Precieze prijs</p>
                         <div class="input-group">
                             <span class="input-group-text" id="amount">€</span>
                             <input type="number" class="form-control" placeholder="0.00" inputmode="decimal" step="0.01"
@@ -37,10 +37,10 @@
                         </div>
                     </div>
                     <div class="col d-flex flex-column">
-                        <p>van IBAN</p><input type="text" name="" id="" v-model="fromIban">
+                        <p>Verzender IBAN</p><input type="text" name="" id="" v-model="fromIban">
                     </div>
                     <div class="col d-flex flex-column">
-                        <p>Naar IBAN</p><input type="text" name="" id="" v-model="toIban">
+                        <p>Ontvanger IBAN</p><input type="text" name="" id="" v-model="toIban">
                     </div>
                 </div>
                 <div class="col">
@@ -77,9 +77,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import router from '../router';
 import SingleTransactionPreview from '../components/SingleTransactionPreview.vue';
-import { useTransactionStore } from '../stores/TransactionStore';
 import Transaction from '../interfaces/Transaction';
 import axios from './../utils/axios';
 
@@ -94,8 +92,6 @@ const pageSize = 10;
 const startDate = ref('');
 const endDate = ref('');
 
-
-
 const fromIban = ref('');
 const toIban = ref('');
 const amount = ref(null);
@@ -103,20 +99,6 @@ const minAmount = ref(null);
 const maxAmount = ref(null);
 const sort = ref('desc');
 
-const transactionStore = useTransactionStore();
-
-const performSearch = ({ target }: Event) => {
-    const lowerCaseQuery = (target as HTMLInputElement).value.toLowerCase();
-    if (!lowerCaseQuery) {
-        filteredTransactions.value = transactions.value;
-        return;
-    }
-    filteredTransactions.value = transactions.value.filter((t) =>
-        t.sender.toLowerCase().includes(lowerCaseQuery) ||
-        t.receiver.toLowerCase().includes(lowerCaseQuery) ||
-        t.description.toLowerCase().includes(lowerCaseQuery)
-    );
-};
 
 async function handleSearchTransactions() {
     transactions.value = await fetchTransactions()!;

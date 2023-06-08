@@ -15,7 +15,7 @@
                 </template>
                 <p class="text-total-balance mt-3">Totaal saldo: €{{ totalBalance }}</p>
                 <p class="text-total-balance mt-3">Resterend transactie limiet voor vandaags: €{{
-                    currentUserStore.amountRemaining.toLocaleString('NL-NL', {
+                    currentUserStore.amountRemaining?.toLocaleString('NL-NL', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
                     }) }}</p>
