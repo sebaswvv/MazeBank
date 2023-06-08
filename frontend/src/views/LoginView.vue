@@ -13,7 +13,9 @@
         <input type="tel" placeholder="Telefoonnummer" v-model="phoneNumber">
         <input type="password" placeholder="Wachtwoord" v-model="passwordRegister">
         <input placeholder="Geboortedatum (18+)" type="text" onfocus="(this.type='date')" v-model="dateOfBirth" />
-        <p id="error">{{ errorMessage }}</p>
+        <div class="alert alert-danger" role="alert" v-if="errorMessage">
+          {{ errorMessage }}
+        </div>
         <button class="btn-primary" @click="handleRegisterClick">Registreer</button>
       </div>
     </div>
@@ -23,7 +25,9 @@
         <h1>Login</h1>
         <input @keydown.enter="handleLoginClick" type="email" placeholder="Email" v-model="email">
         <input @keydown.enter="handleLoginClick" type="password" placeholder="Password" v-model="password">
-        <p id="error">{{ errorMessage }}</p>
+        <div class="alert alert-danger" role="alert" v-if="errorMessage">
+          {{ errorMessage }}
+        </div>
         <button class="btn-primary" @click="handleLoginClick">Login</button>
       </div>
     </div>
@@ -46,6 +50,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref } from 'vue';
