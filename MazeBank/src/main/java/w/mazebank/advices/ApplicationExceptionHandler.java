@@ -50,8 +50,10 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleInvalidArgument(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
+            errors.put("message", error.getDefaultMessage());
         });
+
+        System.out.println(" HIERERNJEKFJHJAKWFNJKWAHFKAHKJ");
         return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
     }
 

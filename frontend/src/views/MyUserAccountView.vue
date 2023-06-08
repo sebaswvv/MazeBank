@@ -35,6 +35,8 @@ import { useAuthenticationStore } from '../stores/AuthenticationStore';
 import router from '../router';
 import User from '../interfaces/User';
 import { RoleType } from '../enums/RoleType';
+import UserPatchRequest from '../interfaces/requests/UserPatchRequest';
+import axios from './../utils/axios'
 
 const authenticationStore = useAuthenticationStore();
 const currentUserStore = useCurrentUserStore();
@@ -73,11 +75,27 @@ onMounted(async () => {
 
 const saveUser = async () => {
     message.value = '';
-    // Save the updated user data
-    if (await currentUserStore.editUser(user)) {
-        message.value = 'Uw gegevens zijn succesvol aangepast';
-    } else {
-        errorMessage.value = 'Er is iets misgegaan bij het aanpassen van uw gegevens';
+    errorMessage.value = null;
+
+    const userPatchRequest: UserPatchRequest = {
+        email: user.email == '' ? undefined : user.email,
+        firstName: user.firstName == '' ? undefined : user.firstName,
+        lastName: user.lastName == '' ? undefined : user.lastName,
+        phoneNumber: user.phoneNumber == '' ? undefined : user.phoneNumber,
+    };
+
+    try {
+        const response = await axios.patch(
+            `/users/${user.id}`,
+            userPatchRequest
+        );
+        if (response.status === 200) {
+            message.value = 'Uw gegevens zijn succesvol aangepast';
+            currentUserStore.fetchUser(authenticationStore.userId);
+        }
+    }
+    catch (error: any) {
+        errorMessage.value = error.response.data.message;
     }
 };
 </script>
