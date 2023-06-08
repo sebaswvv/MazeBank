@@ -50,9 +50,11 @@ public class UserServiceJpa extends BaseServiceJpa {
         }
         return getUserById(id);
     }
+
     private void checkIfUserIsNotTheBank(Long userId) {
         if (userId == 1) throw new UnauthorizedUserAccessException("You are not allowed to access the bank");
     }
+
     private void checkIfUserIsAllowedToAccessAccount(Long userId, User userPerforming) {
         // throw exception if user is not an employee and not the user performing the request
         if (!userPerforming.getRole().equals(RoleType.EMPLOYEE) && userPerforming.getId() != userId) {
@@ -90,8 +92,6 @@ public class UserServiceJpa extends BaseServiceJpa {
         // return account responses
         return accountResponses;
     }
-
-
 
     public List<UserResponse> getAllUsers(int pageNumber, int pageSize, String sort, String search, boolean withoutAccounts) {
         List<User> users = findAllPaginationAndSort(pageNumber, pageSize, sort, search, userRepository);

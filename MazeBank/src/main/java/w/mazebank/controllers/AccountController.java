@@ -38,16 +38,14 @@ public class AccountController {
         @RequestParam(defaultValue = "asc") String sort,
         @RequestParam(required = false) String search
     ) {
-        List<AccountResponse> accounts = accountServiceJpa.getAllAccounts(pageNumber, pageSize, sort, search);
-        return ResponseEntity.ok(accounts);
+        return ResponseEntity.ok(accountServiceJpa.getAllAccounts(pageNumber, pageSize, sort, search));
     }
 
     @GetMapping("/search/{name}")
     public ResponseEntity<Object> getAccountsByName(
         @PathVariable String name
     ) {
-        List<IbanResponse> accounts = accountServiceJpa.getAccountsByName(name);
-        return ResponseEntity.ok(accounts);
+        return ResponseEntity.ok(accountServiceJpa.getAccountsByName(name));
     }
 
     @GetMapping("/{accountId}")
@@ -62,8 +60,7 @@ public class AccountController {
     @PostMapping
     @Secured("ROLE_EMPLOYEE")
     public ResponseEntity<Object> createAccount(@RequestBody @Valid AccountRequest body) throws UserNotFoundException, AccountCreationLimitReachedException {
-        AccountResponse account = accountServiceJpa.createAccount(body);
-        return ResponseEntity.status(HttpStatus.CREATED).body(account);
+        return ResponseEntity.status(HttpStatus.CREATED).body(accountServiceJpa.createAccount(body));
     }
 
     @PatchMapping("/{accountId}")
@@ -72,8 +69,7 @@ public class AccountController {
         @PathVariable Long accountId,
         @RequestBody @Valid AccountPatchRequest body
     ) throws AccountNotFoundException {
-        AccountResponse account = accountServiceJpa.updateAccount(accountId, body);
-        return ResponseEntity.ok(account);
+        return ResponseEntity.ok(accountServiceJpa.updateAccount(accountId, body));
     }
 
     @PostMapping("/{accountId}/deposit")
@@ -108,7 +104,6 @@ public class AccountController {
         @RequestParam(defaultValue = "desc") String sort,
         @AuthenticationPrincipal User user
     ) throws AccountNotFoundException {
-        List<TransactionResponse> transactionResponses = accountServiceJpa.getTransactionsFromAccount(pageNumber, pageSize, sort, user, accountId);
-        return ResponseEntity.ok(transactionResponses);
+        return ResponseEntity.ok(accountServiceJpa.getTransactionsFromAccount(pageNumber, pageSize, sort, user, accountId));
     }
 }

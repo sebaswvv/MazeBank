@@ -28,14 +28,9 @@ public interface TransactionRepository extends BaseRepository<Transaction, Long,
     @Query("SELECT t FROM Transaction t WHERE t.sender.iban LIKE %?1% OR t.receiver.iban LIKE %?1%")
     List<Transaction> findBySearchString(@Param("iban") String search, Pageable pageable);
 
-    @Query("SELECT t FROM Transaction t WHERE (t.sender.user.id = :sender OR t.receiver.user.id = :receiver)")
-    List<Transaction> findBySenderUserIdOrReceiverUserId(@Param("sender") Long senderId, @Param("receiver") Long receiverId, Pageable pageable);
-
     List<Transaction> findBySenderIdOrReceiverId(Long senderIban, Long receiverIban, Pageable pageable);
 
     Page<Transaction> findAll(Specification<Transaction> specification, Pageable pageable);
-
-
 }
 
 

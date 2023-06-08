@@ -24,15 +24,13 @@ public class TransactionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getTransactionById(@PathVariable Long id, @AuthenticationPrincipal User userPerforming)
-        throws TransactionNotFoundException, AccountNotFoundException {
-        TransactionResponse transactionResponse = transactionServiceJpa.getTransactionAndValidate(id, userPerforming);
-        return ResponseEntity.ok(transactionResponse);
+        throws TransactionNotFoundException {
+        return ResponseEntity.ok(transactionServiceJpa.getTransactionAndValidate(id, userPerforming));
     }
 
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
-        TransactionResponse response = transactionServiceJpa.postTransaction(transactionRequest, user);
-        return ResponseEntity.status(201).body(response);
+        return ResponseEntity.status(201).body(transactionServiceJpa.postTransaction(transactionRequest, user));
     }
 }
