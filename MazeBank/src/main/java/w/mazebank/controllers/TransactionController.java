@@ -3,6 +3,7 @@ package w.mazebank.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,8 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User user)
+    public ResponseEntity<TransactionResponse> createTransaction(@RequestBody @Valid TransactionRequest transactionRequest, @AuthenticationPrincipal User userPerforming)
         throws TransactionFailedException, InsufficientFundsException, AccountNotFoundException {
-        return ResponseEntity.status(201).body(transactionServiceJpa.postTransaction(transactionRequest, user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionServiceJpa.postTransaction(transactionRequest, userPerforming));
     }
 }

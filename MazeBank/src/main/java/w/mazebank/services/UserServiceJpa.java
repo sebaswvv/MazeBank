@@ -192,7 +192,7 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public void deleteUserById(Long id)
         throws UserNotFoundException, UserHasAccountsException {
-       checkIfUserIsNotTheBank(id);
+        checkIfUserIsNotTheBank(id);
         User user = getUserById(id);
 
         checkIfUserHasAccounts(user);
