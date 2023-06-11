@@ -91,10 +91,12 @@ public class AccountServiceJpa extends BaseServiceJpa {
     }
 
     public List<AccountResponse> getAllAccounts(int pageNumber, int pageSize, String sort, String search) {
-        //
         List<Account> accounts = findAllPaginationAndSort(pageNumber, pageSize, sort, search, accountRepository);
 
-        // map all accounts to account responses
+        return mapAccountsToAccountResponses(accounts);
+    }
+
+    private List<AccountResponse> mapAccountsToAccountResponses(List<Account> accounts) {
         List<AccountResponse> accountResponses = new ArrayList<>(accounts.size());
         for (Account account : accounts) {
             AccountResponse accountResponse = createAccountResponse(account);

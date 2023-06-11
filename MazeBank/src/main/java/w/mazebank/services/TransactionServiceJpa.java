@@ -179,6 +179,7 @@ public class TransactionServiceJpa {
         }
     }
 
+    // to validate a regular transaction
     private void validateRegularTransaction(Transaction transaction) throws TransactionFailedException, InsufficientFundsException {
         // validate all transaction validations
         validateTransaction(transaction);

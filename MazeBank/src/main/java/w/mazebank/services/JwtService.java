@@ -45,15 +45,18 @@ public class JwtService {
             .compact();
     }
 
+    // check if the email in the jwt matches the email in the UserDetails object
     public boolean isTokenValid(String jwt, UserDetails userDetails) {
         final String email = extractEmail(jwt);
         return (email.equals(userDetails.getUsername()) && !isTokenExpired(jwt));
     }
 
+    // check if the email in the jwt matches the email in the User object
     private boolean isTokenExpired(String jwt) {
         return extractExpiration(jwt).before(new Date());
     }
 
+    // extract a claim from the token
     public <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver) {
         // extract all claims from the token
         final Claims claims = extractAllClaims(jwt);
