@@ -26,7 +26,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleNotFoundException(NotFoundException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND, "Not Found");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.NOT_FOUND);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -34,7 +34,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUnauthorizedUserAccessException(UnauthorizedUserAccessException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized User Access");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -42,7 +42,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Access Denied");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -53,7 +53,7 @@ public class ApplicationExceptionHandler {
             errors.put("message", error.getDefaultMessage());
         });
 
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     // handle invalid types and enums
@@ -68,14 +68,16 @@ public class ApplicationExceptionHandler {
         } else {
             errors.put(cause.getPath().get(0).getFieldName(), "Invalid type provided");
         }
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Validation Error");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     // handle bad request errors
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleInvalidArgument(BadRequestException e) {
-        return ResponseHandler.generateErrorResponse(null, HttpStatus.BAD_REQUEST, e.getMessage());
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -83,7 +85,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUnauthorizedAccountAccessException(UnauthorizedAccountAccessException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized Account Access");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -91,7 +93,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUnauthorizedTransactionAccessException(UnauthorizedTransactionAccessException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN, "Unauthorized Transaction Access");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.FORBIDDEN);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -99,7 +101,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleDisallowedFieldException(DisallowedFieldException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Disallowed Field");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -107,7 +109,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleTransactionFailedException(TransactionFailedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Transaction Failed");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -115,7 +117,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleInsufficientFundsException(InsufficientFundsException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Insufficient Funds");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -123,7 +125,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUserHasAccountsException(UserHasAccountsException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Has Accounts");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     // BadCredentialsException = 401
@@ -132,7 +134,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", "Invalid username or password");
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED, "Invalid Credentials");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.UNAUTHORIZED);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -140,7 +142,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUsernameNotFoundException(UsernameNotFoundException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Username Not Found");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -148,7 +150,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleEmailAlreadyUsedException(EmailAlreadyUsedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Email Already Used");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -156,7 +158,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleBsnAlreadyUsedException(BsnAlreadyUsedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "Bsn Already Used");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -164,7 +166,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleUserNotOldEnoughException(UserNotOldEnoughException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, "User Not Old Enough");
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     //  AccountLockOrUnlockStatusException
@@ -173,7 +175,7 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleAccountLockOrUnlockStatusException(AccountLockOrUnlockStatusException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -181,6 +183,6 @@ public class ApplicationExceptionHandler {
     public ResponseEntity<Object> handleAccountCreationLimitReachedException(AccountCreationLimitReachedException e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
-        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseHandler.generateErrorResponse(errors, HttpStatus.BAD_REQUEST);
     }
 }
