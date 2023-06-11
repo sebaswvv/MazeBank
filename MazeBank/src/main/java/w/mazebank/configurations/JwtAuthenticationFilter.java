@@ -24,6 +24,8 @@ import w.mazebank.services.JwtService;
 import java.io.IOException;
 import io.jsonwebtoken.security.SignatureException;
 
+// This class is responsible for authenticating the user based on the JWT
+// It is called before every request only ONCE!
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -49,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String email;
 
 
-        // If the Authorization header is missing or doesn't start with "Bearer ", return
+        // If the Authorization header is missing or doesn't start with "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
             // if request was made from /auth/** OR /h2, continue the filter chain
@@ -57,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-
 
             respondUnauthorized(response, "Unauthorized");
             return;
@@ -78,6 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
+                // If the JWT is valid, set the authentication context
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -103,6 +105,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
+    // Responds with a 401 status code and a message
     private void respondUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");

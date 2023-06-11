@@ -39,15 +39,12 @@ public class AuthService {
     }
 
     public AuthenticationResponse register(RegisterRequest request) throws BsnAlreadyUsedException, UserNotOldEnoughException, EmailAlreadyUsedException {
-        // do some checks
+        // check the request and create a user
         checkRegisterRequest(request);
-
-        // create user
         User user = buildUser(request);
 
         // save the user to the db
         userRepository.save(user);
-
         return buildAuthenticationResponse(user);
     }
 

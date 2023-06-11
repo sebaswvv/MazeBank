@@ -18,12 +18,15 @@ import w.mazebank.repositories.UserRepository;
 public class ApplicationConfig {
     private final UserRepository userRepository;
 
+    // This is needed to make Spring Security work with JPA
+    // check if user exists in database
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByEmail(username)
             .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    // Makes a bean of AuthenticationProvider which is used by Spring Security
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -31,6 +34,7 @@ public class ApplicationConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

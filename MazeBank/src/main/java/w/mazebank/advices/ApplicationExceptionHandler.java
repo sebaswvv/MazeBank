@@ -21,7 +21,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class ApplicationExceptionHandler {
 
-    // map errors to a map
+    // map errors to a map with a message field
     private Map<String, String> mapErrors(Exception e) {
         Map<String, String> errors = new HashMap<>();
         errors.put("message", e.getMessage());
