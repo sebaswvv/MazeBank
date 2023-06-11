@@ -10,4 +10,5 @@ public class ResponseHandler {
     public static ResponseEntity<Object> generateErrorResponse(Map<String, String> errors, HttpStatus status) {
         return new ResponseEntity<Object>(errors, status);
     }
+
 }
