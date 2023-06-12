@@ -148,18 +148,23 @@ public class TransactionServiceJpa {
             .amount(amount)
             .build();
 
-        Transaction transaction;
-        if (transactionType == TransactionType.WITHDRAWAL) {
-            transaction =  buildTransaction(request, userPerforming, account, getBankAccount(), transactionType);
-        } else {
-            transaction = buildTransaction(request, userPerforming, getBankAccount(), account, transactionType);
-        }
+        Transaction transaction = checkAndBuildTransaction(account, transactionType, userPerforming, request);
 
         // validate the transaction and update the account balance
         validateAtmTransaction(transaction);
         updateAccountBalanceForAtmAction(account, amount, transactionType);
 
         return performTransaction(transaction);
+    }
+
+    private Transaction checkAndBuildTransaction(Account account, TransactionType transactionType, User userPerforming, TransactionRequest request) throws AccountNotFoundException {
+        Transaction transaction;
+        if (transactionType == TransactionType.WITHDRAWAL) {
+            transaction =  buildTransaction(request, userPerforming, account, getBankAccount(), transactionType);
+        } else {
+            transaction = buildTransaction(request, userPerforming, getBankAccount(), account, transactionType);
+        }
+        return transaction;
     }
 
     // to validate any transaction
@@ -176,7 +181,10 @@ public class TransactionServiceJpa {
     private void validateAtmTransaction(Transaction transaction) throws TransactionFailedException {
         // validate all transaction validations
         validateTransaction(transaction);
+        checkIfAccountIsNotSavings(transaction);
+    }
 
+    private void checkIfAccountIsNotSavings(Transaction transaction) throws TransactionFailedException {
         // validate ATM transaction validations
         if (transaction.getReceiver().getAccountType() == AccountType.SAVINGS) {
             throw new TransactionFailedException("Cannot deposit or withdraw to a savings account from an ATM");

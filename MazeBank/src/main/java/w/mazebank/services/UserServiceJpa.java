@@ -95,15 +95,18 @@ public class UserServiceJpa extends BaseServiceJpa {
 
     public List<UserResponse> getAllUsers(int pageNumber, int pageSize, String sort, String search, boolean withoutAccounts) {
         List<User> users = findAllPaginationAndSort(pageNumber, pageSize, sort, search, userRepository);
+        List<User> filteredUsers = filterUsersWithoutAccounts(withoutAccounts, users);
+        return buildUserResponse(filteredUsers);
+    }
 
+    private List<User> filterUsersWithoutAccounts(boolean withoutAccounts, List<User> users) {
         List<User> filteredUsers = new ArrayList<>(users);
 
         // If withoutAccounts is true, remove users that have accounts
         if (withoutAccounts) {
             filteredUsers.removeIf(user -> user.getAccounts() != null && !user.getAccounts().isEmpty());
         }
-
-        return buildUserResponse(filteredUsers);
+        return filteredUsers;
     }
 
     private List<UserResponse> buildUserResponse(List<User> filteredUsers) {
