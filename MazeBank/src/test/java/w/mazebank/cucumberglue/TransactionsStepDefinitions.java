@@ -46,30 +46,6 @@ public class TransactionsStepDefinitions extends BaseStepDefinitions {
 
         // assert that the response body is not null
         assert lastResponse.getBody() != null;
-        // Object id = JsonPath.parse(lastResponse.getBody()).read("$.[0].id");
-        // Object amount = JsonPath.parse(lastResponse.getBody()).read("$.[0].amount");
-        // Object description = JsonPath.parse(lastResponse.getBody()).read("$.[0].description");
-        // Object sender = JsonPath.parse(lastResponse.getBody()).read("$.[0].sender");
-        // Object receiver = JsonPath.parse(lastResponse.getBody()).read("$.[0].receiver");
-        // Object timestamp = JsonPath.parse(lastResponse.getBody()).read("$.[0].timestamp");
-        // Object id1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].id");
-        // Object amount1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].amount");
-        // Object description1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].description");
-        // Object sender1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].sender");
-        // Object receiver1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].receiver");
-        // Object timestamp1 = JsonPath.parse(lastResponse.getBody()).read("$.[1].timestamp");
-        // assertEquals(1, id);
-        // assertEquals(500.0, amount);
-        // assertEquals("Transfer from account1 to account3", description);
-        // assertEquals("NL76INHO0493458014", sender);
-        // assertEquals("NL76INHO0493458018", receiver);
-        // assertEquals("2023-05-30T10:30", timestamp);
-        // assertEquals(2, id1);
-        // assertEquals(2000.0, amount1);
-        // assertEquals("Transfer from account2 to account4", description1);
-        // assertEquals("NL45INHO0328598538", sender1);
-        // assertEquals("NL29INHO0165148974", receiver1);
-        // assertEquals("2023-05-31T10:30", timestamp1);
 
         System.out.println(lastResponse.getBody());
     }

@@ -50,6 +50,8 @@ public class DataSeeder implements ApplicationRunner {
         User user10 = new User(11, "user10@example.com", 321654897, "Charles", "Leclerc", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
         User user11 = new User(12, "user11@example.com", 444321897, "Max", "Verstappen", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
 
+        User user12 = new User(13, "employee@mazebank.com", 254198632, "Frank", "Bank", passwordEncoder.encode("1234"), "1234567890", RoleType.EMPLOYEE, LocalDate.now().minusYears(25), LocalDateTime.now(), 5000.00, 5000.00, false, null);
+        User user13 = new User(14, "customer@mazebank.com", 785412596, "Kylo", "Ren", passwordEncoder.encode("1234"), "1234567890", RoleType.CUSTOMER, LocalDate.now().minusYears(25), LocalDateTime.now(), 100.00, 5000.00, false, null);
 
         userService.addUser(bank);
         userService.addUser(user1);
@@ -63,6 +65,8 @@ public class DataSeeder implements ApplicationRunner {
         userService.addUser(user9);
         userService.addUser(user10);
         userService.addUser(user11);
+        userService.addUser(user12);
+        userService.addUser(user13);
 
 
         // Create some sample accounts for user1
@@ -81,10 +85,18 @@ public class DataSeeder implements ApplicationRunner {
         Account account5 = new Account(6, "NL45INHO0328598536", AccountType.CHECKING, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
         Account account6 = new Account(7, "NL76INHO0493458015", AccountType.SAVINGS, 2000.0, user3, true, LocalDateTime.now(), -1500.0, null, null);
 
+        Account account7 = new Account(8, "NL45INHO0328598537", AccountType.CHECKING, 2000.0, user13, true, LocalDateTime.now(), 0.0, null, null);
+        Account account8 = new Account(9, "NL76INHO0493458016", AccountType.SAVINGS, 2000.0, user13, true, LocalDateTime.now(), 0.0, null, null);
+
+        Account account9 = new Account(10, "NL45INHO0328598539", AccountType.CHECKING, 2000.0, user12, true, LocalDateTime.now(), -1500.0, null, null);
+
         accountService.addAccount(account3);
         accountService.addAccount(account4);
         accountService.addAccount(account5);
         accountService.addAccount(account6);
+        accountService.addAccount(account7);
+        accountService.addAccount(account8);
+        accountService.addAccount(account9);
 
         LocalDateTime date = LocalDateTime.of(2023, 5, 30, 10, 30, 0);
         LocalDateTime date2 = LocalDateTime.of(2023, 5, 31, 10, 30, 0);
