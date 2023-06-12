@@ -148,8 +148,12 @@ public class TransactionServiceJpa {
             .amount(amount)
             .build();
 
-        // create the transaction
-        Transaction transaction = buildTransaction(request, userPerforming, getBankAccount(), account, transactionType);
+        Transaction transaction;
+        if (transactionType == TransactionType.WITHDRAWAL) {
+            transaction =  buildTransaction(request, userPerforming, account, getBankAccount(), transactionType);
+        } else {
+            transaction = buildTransaction(request, userPerforming, getBankAccount(), account, transactionType);
+        }
 
         // validate the transaction and update the account balance
         validateAtmTransaction(transaction);
